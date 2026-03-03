@@ -62,9 +62,9 @@
         .animate-pop-scale { animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
         @keyframes redAlert {
-            0% { box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0); }
-            50% { box-shadow: inset 0 0 0 4px rgba(220, 38, 38, 0.8), inset 0 0 20px rgba(220, 38, 38, 0.5); }
-            100% { box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0); }
+            0% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
+            50% { box-shadow: inset 0 0 0 10px rgba(239, 68, 68, 0.8), inset 0 0 60px rgba(239, 68, 68, 0.5); background-color: rgba(239, 68, 68, 0.15); }
+            100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
         }
         .animate-red-alert { animation: redAlert 1s infinite cubic-bezier(0.4, 0, 0.6, 1); }
 
@@ -137,6 +137,12 @@
             '-': 'bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white shadow-lg',     
             '*': 'bg-slate-600 hover:bg-slate-500 border border-slate-400 text-white shadow-lg',   
             '/': 'bg-amber-500 hover:bg-amber-400 border border-amber-300 text-black shadow-lg font-extrabold'
+        };
+        const OPERATOR_STYLES_INACTIVE = {
+            '+': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '-': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '*': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '/': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300'
         };
 
         // --- Logic ---
@@ -748,7 +754,7 @@
             ];
 
             const getGuideBoxStyle = (pos) => {
-                if (pos === 'top') return { top: '15%', left: '50%', transform: 'translate(-50%, 0)' };
+                if (pos === 'top') return { top: '20%', left: '50%', transform: 'translate(-50%, 0)' };
                 if (pos === 'bottom') return { bottom: '5%', left: '50%', transform: 'translate(-50%, 0)' };
                 return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
             };
@@ -758,7 +764,7 @@
             const slotCardClass = "w-[16vw] max-w-[4.5rem] h-[22vw] max-h-[6.5rem] rounded-lg";
 
             return (
-                <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300 ${gameState === 'playing' && timeLeft <= 10 && !isPaused ? 'animate-red-alert' : ''}`}>
+                <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
                     {/* 상단 헤더 */}
                     <div className="flex-none px-3 py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg h-[12vh] min-h-[60px]">
                          <div className="flex flex-col items-center justify-center w-14 shrink-0">
@@ -802,6 +808,7 @@
                     )}
 
                     {/* 게임 오버레이/팝업 영역 */}
+                    {/* 시간이 10초 이하일 때 뜨는 붉은색 경고 효과 (z-index 및 CSS 효과 대폭 상향 적용) */}
                     {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
                     
                     {gameState === 'tutorial' && tutorialPhase === 0 && <div className="absolute inset-0 z-[60] bg-black/60" onClick={(e) => e.stopPropagation()} />}
@@ -1027,30 +1034,25 @@
                                                     </div>
                                                 </div>
 
-                                                {/* 연산자 팝업 버튼 - z-index를 높임 */}
+                                                {/* 연산자 팝업 대신 세로로 4개 배치 */}
                                                 {idx < 3 && (
-                                                    <div className="relative z-[40] flex items-center justify-center mx-1 sm:mx-2">
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); setActiveOpSelector(activeOpSelector === idx ? null : idx); }}
-                                                            className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-transform active:scale-90 ${OPERATOR_STYLES[operators[idx]]}`}
-                                                        >
-                                                            {OPERATOR_DISPLAY[operators[idx]]}
-                                                        </button>
-
-                                                        {/* 연산자 선택 팝업 - z-index를 더 높임 */}
-                                                        {activeOpSelector === idx && (
-                                                            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 p-2 rounded-2xl shadow-2xl border border-slate-600 flex gap-1.5 animate-popup z-[50]">
-                                                                {OPERATORS.map(op => (
-                                                                    <button 
-                                                                        key={op}
-                                                                        onClick={(e) => { e.stopPropagation(); selectOperator(idx, op); }}
-                                                                        className={`w-9 h-9 rounded-xl font-black text-lg transition-transform active:scale-95 ${OPERATOR_STYLES[op]}`}
-                                                                    >
-                                                                        {OPERATOR_DISPLAY[op]}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                    <div className="relative z-[40] flex flex-col items-center justify-center mx-0.5 sm:mx-1 gap-1.5">
+                                                        {OPERATORS.map(op => (
+                                                            <button 
+                                                                key={op}
+                                                                onClick={(e) => { 
+                                                                    e.stopPropagation(); 
+                                                                    selectOperator(idx, op); 
+                                                                }}
+                                                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 ${
+                                                                    operators[idx] === op 
+                                                                    ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
+                                                                    : OPERATOR_STYLES_INACTIVE[op] + ' hover:scale-105 opacity-60 hover:opacity-100'
+                                                                }`}
+                                                            >
+                                                                {OPERATOR_DISPLAY[op]}
+                                                            </button>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </React.Fragment>
