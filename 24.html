@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>24 만들기 - 포커 에디션</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            background-color: #262626;
+            margin: 0;
+        }
+
+        .checkerboard-bg {
+            background-color: #262626;
+            background-image:
+                linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)),
+                linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));
+            background-position: 0 0, 30px 30px;
+            background-size: 60px 60px;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -40%) scale(0.9); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popScale {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-scale {
+            animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes redAlert {
+            0% { box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0); }
+            50% { box-shadow: inset 0 0 0 8px rgba(220, 38, 38, 0.8), inset 0 0 30px rgba(220, 38, 38, 0.5); }
+            100% { box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        .animate-red-alert {
+            animation: redAlert 1s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes comboPopup {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .animate-combo {
+            animation: comboPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bigComboPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.5) rotate(-5deg); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.8) rotate(0deg); opacity: 0; }
+        }
+        .animate-big-combo {
+            animation: bigComboPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes scoreFloat {
+            0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+            20% { transform: translate(-50%, -20px) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -40px) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -60px) scale(0.8); opacity: 0; }
+        }
+        .animate-score {
+            animation: scoreFloat 1s ease-out forwards;
+        }
+
+        @keyframes timePlus {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1); opacity: 0; }
+        }
+        .animate-time-plus {
+            animation: timePlus 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col">
+    <div id="root" class="h-full w-full flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // --- Icons ---
+        const Play = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        );
+        const Pause = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        );
+        const RotateCcw = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        );
+        const CheckCircle = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        );
+        const Timer = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15.82" y2="15.82"></line><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4"></path></svg>
+        );
+        const Trophy = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v6a5 5 0 1 1-10 0V4"></path><path d="M5 9v1a10 10 0 0 0 10 10"></path><path d="M19 9v1a10 10 0 0 1-10 10"></path><path d="M2 5h3"></path><path d="M19 5h3"></path></svg>
+        );
+        const CloseIcon = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        );
+        const Edit2 = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        );
+        const User = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        );
+        const Home = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        );
+        const ArrowDown = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+        );
+        const Fire = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+        );
+        const Lightbulb = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
+        );
+        const ClockPlus = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+                <path d="M16 4l4 4"></path>
+                <path d="M22 6l-2 2"></path>
+            </svg>
+        );
+        const FastForward = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+        );
+        const ShoppingBag = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        );
+        const Coins = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>
+        );
+        const Gem = ({ size = 24, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>
+        );
+
+        // --- Constants ---
+        const SUITS = ['♠', '♥', '♦', '♣'];
+        const COLORS = { '♠': 'text-slate-800', '♣': 'text-slate-800', '♥': 'text-red-600', '♦': 'text-red-600' };
+        const AVAILABLE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const OPERATORS = ['+', '-', '*', '/'];
+        const OPERATOR_DISPLAY = { '+': '+', '-': '-', '*': '×', '/': '÷' };
+        
+        const OPERATOR_STYLES = {
+            '+': 'bg-indigo-900 hover:bg-indigo-800 border-2 border-indigo-300 text-white shadow-md', 
+            '-': 'bg-red-600 hover:bg-red-500 border-2 border-red-300 text-white shadow-md',     
+            '*': 'bg-gray-600 hover:bg-gray-500 border-2 border-gray-400 text-white shadow-md',   
+            '/': 'bg-yellow-400 hover:bg-yellow-300 border-2 border-white text-black shadow-md font-extrabold'
+        };
+        const OPERATOR_STYLES_INACTIVE = {
+            '+': 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300',
+            '-': 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300',
+            '*': 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300',
+            '/': 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300'
+        };
+
+        // --- Logic ---
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const getRandomSuit = () => SUITS[Math.floor(Math.random() * SUITS.length)];
+
+        const isSolvable = (nums) => {
+            if (nums.length === 1) return Math.abs(nums[0] - 24) < 0.000001;
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = 0; j < nums.length; j++) {
+                    if (i === j) continue;
+                    const list = [];
+                    for (let k = 0; k < nums.length; k++) {
+                        if (k !== i && k !== j) list.push(nums[k]);
+                    }
+                    const a = nums[i];
+                    const b = nums[j];
+                    const results = [a + b, a - b, b - a, a * b];
+                    if (b !== 0 && a % b === 0) results.push(a / b);
+                    if (a !== 0 && b % a === 0) results.push(b / a);
+                    for (let res of results) {
+                        if (isSolvable([...list, res])) return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        const isHandValid = (handValues) => {
+            const combinations = [[]];
+            for (let val of handValues) {
+                const newCombs = [];
+                combinations.forEach(comb => {
+                    if (val === 1) {
+                        newCombs.push([...comb, 1]);
+                        newCombs.push([...comb, 10]);
+                    } else {
+                        newCombs.push([...comb, val]);
+                    }
+                });
+                combinations.length = 0;
+                combinations.push(...newCombs);
+            }
+            return combinations.some(comb => isSolvable(comb));
+        };
+
+        const generateEasyNumbers = () => {
+            const types = ['identity', 'cancel', 'split_sum', 'split_mul'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let nums = [];
+
+            const base = Math.random() < 0.5 ? [3, 8] : [4, 6];
+            
+            if (type === 'identity') {
+                nums = [...base, 1, 1];
+            } else if (type === 'cancel') {
+                const n = getRandomInt(2, 9);
+                nums = [...base, n, n];
+            } else if (type === 'split_sum') {
+                const target = base[1]; 
+                const splitA = getRandomInt(1, target - 1);
+                const splitB = target - splitA;
+                nums = [base[0], splitA, splitB, 1];
+            } else if (type === 'split_mul') {
+                nums = [2, 3, 4, 1];
+            }
+
+            for (let i = nums.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [nums[i], nums[j]] = [nums[j], nums[i]];
+            }
+            return nums;
+        };
+
+        const generateProblem = (targetLevel) => { 
+            if (targetLevel === 'T1') return [{ id: 't1-1', value: 3, suit: '♣', display: '3' }, { id: 't1-2', value: 8, suit: '♥', display: '8' }, { id: 't1-3', value: 1, suit: '♠', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
+            if (targetLevel === 'T2') return [{ id: 't2-1', value: 4, suit: '♣', display: '4' }, { id: 't2-2', value: 6, suit: '♥', display: '6' }, { id: 't2-3', value: 2, suit: '♠', display: '2' }, { id: 't2-4', value: 2, suit: '♦', display: '2' }];
+            if (targetLevel === 'T3') return [{ id: 't3-1', value: 10, suit: '♣', display: '10' }, { id: 't3-2', value: 10, suit: '♥', display: '10' }, { id: 't3-3', value: 2, suit: '♠', display: '2' }, { id: 't3-4', value: 2, suit: '♦', display: '2' }];
+            
+            let cards = [];
+            let attempts = 0;
+            const levelNum = typeof targetLevel === 'number' ? targetLevel : 1;
+
+            if (levelNum <= 5) {
+                while (attempts < 100) {
+                    const values = generateEasyNumbers();
+                    if (isHandValid(values)) {
+                        cards = values.map((val, index) => ({
+                            id: `card-${index}-${Date.now()}`,
+                            value: val,
+                            suit: getRandomSuit(),
+                            display: val === 1 ? 'A' : val.toString()
+                        }));
+                        return cards;
+                    }
+                    attempts++;
+                }
+            }
+
+            attempts = 0;
+            while (attempts < 1000) {
+                const values = Array.from({ length: 4 }, () => AVAILABLE_NUMBERS[getRandomInt(0, 9)]);
+                if (isHandValid(values)) {
+                    cards = values.map((val, index) => ({
+                        id: `card-${index}-${Date.now()}`,
+                        value: val,
+                        suit: getRandomSuit(),
+                        display: val === 1 ? 'A' : val.toString()
+                    }));
+                    return cards;
+                }
+                attempts++;
+            }
+            
+            return [
+                { id: '1', value: 8, suit: '♠', display: '8' },
+                { id: '2', value: 8, suit: '♥', display: '8' },
+                { id: '3', value: 3, suit: '♦', display: '3' },
+                { id: '4', value: 1, suit: '♣', display: 'A' }
+            ];
+        };
+
+        const OPERATOR_FUNCS = {
+            '+': (a, b) => a + b,
+            '-': (a, b) => a - b,
+            '*': (a, b) => a * b,
+            '/': (a, b) => a / b
+        };
+        
+        const OPERATOR_PRECEDENCE = {
+            '+': 1, '-': 1,
+            '*': 2, '/': 2
+        };
+
+        const solve24 = (nums) => {
+            if (nums.length === 1) {
+                if (Math.abs(nums[0].val - 24) < 0.001) return nums[0].str;
+                return null;
+            }
+
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = 0; j < nums.length; j++) {
+                    if (i === j) continue;
+                    
+                    const list = [];
+                    for (let k = 0; k < nums.length; k++) {
+                        if (k !== i && k !== j) list.push(nums[k]);
+                    }
+
+                    const a = nums[i];
+                    const b = nums[j];
+
+                    for (let op of Object.keys(OPERATOR_FUNCS)) {
+                        if (op === '/' && (b.val === 0 || a.val % b.val !== 0)) continue;
+                        if (op === '-' && a.val < b.val) continue;
+
+                        const newVal = OPERATOR_FUNCS[op](a.val, b.val);
+                        const opPrec = OPERATOR_PRECEDENCE[op];
+                        
+                        let strA = a.str;
+                        let strB = b.str;
+
+                        if (a.prec < opPrec) strA = `(${strA})`;
+                        if (b.prec < opPrec || (b.prec === opPrec && (op === '-' || op === '/'))) {
+                            strB = `(${strB})`;
+                        }
+
+                        const newStr = `${strA} ${OPERATOR_DISPLAY[op]} ${strB}`;
+                        const res = solve24([...list, { val: newVal, str: newStr, prec: opPrec }]);
+                        if (res) return res;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const getBestSolution = (cards) => {
+            const rawValues = cards.map(c => c.value);
+            const combinations = [[]];
+            
+            for (let val of rawValues) {
+                const newCombs = [];
+                combinations.forEach(comb => {
+                    if (val === 1) {
+                        newCombs.push([...comb, { val: 1, str: 'A', prec: 3 }]);
+                        newCombs.push([...comb, { val: 10, str: 'A', prec: 3 }]);
+                    } else {
+                        newCombs.push([...comb, { val: val, str: val.toString(), prec: 3 }]);
+                    }
+                });
+                combinations.length = 0;
+                combinations.push(...newCombs);
+            }
+
+            for (let comb of combinations) {
+                const solution = solve24(comb);
+                if (solution) return solution;
+            }
+            return "해답을 찾을 수 없습니다.";
+        };
+
+        const getPartialHint = (solution) => {
+             if(!solution || solution.length < 5) return solution;
+             return solution.substring(0, Math.ceil(solution.length * 0.55)) + '...';
+        };
+
+        const Card = ({ card, onClick, isPlaceholder }) => {
+            const sizeClass = "w-[12vh] h-[16vh] md:w-[15vh] md:h-[20vh] landscape:w-[16vh] landscape:h-[22vh] rounded-lg";
+            if (isPlaceholder) {
+                return (
+                    <div className={`border-4 border-dashed border-white/40 flex items-center justify-center bg-white/10 text-sm text-white/80 font-bold ${sizeClass} backdrop-blur-sm transition-all`}>
+                        빈칸
+                    </div>
+                );
+            }
+            return (
+                <div 
+                    className={`bg-white shadow-xl border border-slate-300 flex flex-col items-center justify-between p-1 cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform ${sizeClass} ${COLORS[card.suit]}`}
+                    onClick={() => {
+                        onClick();
+                    }}
+                >
+                    <div className="self-start flex flex-col items-center leading-none pl-0.5 pt-0.5">
+                        <span className="font-bold text-sm md:text-base">{card.display}</span>
+                    </div>
+                    <div className="text-2xl md:text-3xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">{card.suit}</div>
+                    <div className="self-end flex flex-col items-center leading-none transform rotate-180 pr-0.5 pt-0.5">
+                        <span className="font-bold text-sm md:text-base">{card.display}</span>
+                    </div>
+                    {card.value === 1 && <div className="absolute bottom-1 right-1 text-[8px] text-slate-400 font-mono font-bold">1/10</div>}
+                </div>
+            );
+        };
+
+        function Make24Game() {
+            const [nickname, setNickname] = useState('Player');
+            const [level, setLevel] = useState(1);
+            const [sourceCards, setSourceCards] = useState([]);
+            const [slots, setSlots] = useState([null, null, null, null]);
+            const [operators, setOperators] = useState(['+', '+', '+']);
+            const [startBrackets, setStartBrackets] = useState([0, 0, 0, 0]); 
+            const [endBrackets, setEndBrackets] = useState([0, 0, 0, 0]);     
+            const [timeLeft, setTimeLeft] = useState(30);
+            const [gameState, setGameState] = useState('start'); 
+            const [resultMessage, setResultMessage] = useState('');
+            const [shake, setShake] = useState(false);
+            const [activeOpSelector, setActiveOpSelector] = useState(null); 
+            const [solutionStr, setSolutionStr] = useState('');
+            const [isPaused, setIsPaused] = useState(false);
+            const [streak, setStreak] = useState(0);
+            const [comboFlash, setComboFlash] = useState(null);
+            
+            const [hintsLeft, setHintsLeft] = useState(() => parseInt(localStorage.getItem('make24_hints') || '3', 10));
+            const [timeItemsLeft, setTimeItemsLeft] = useState(() => parseInt(localStorage.getItem('make24_timeItems') || '3', 10));
+            const [passItemsLeft, setPassItemsLeft] = useState(() => parseInt(localStorage.getItem('make24_passItems') || '3', 10));
+            const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
+
+            const [showShop, setShowShop] = useState(false);
+            const [gold, setGold] = useState(() => parseInt(localStorage.getItem('make24_gold') || '1000', 10));
+            const [gem, setGem] = useState(() => parseInt(localStorage.getItem('make24_gem') || '0', 10));
+            
+            const [score, setScore] = useState(0);
+            const [lastScoreGain, setLastScoreGain] = useState(null); 
+            const [rankingScores, setRankingScores] = useState([]); 
+            const [showRanking, setShowRanking] = useState(false);
+            const [isEditingName, setIsEditingName] = useState(false);
+            const [tempName, setTempName] = useState('');
+            
+            const [tutorialStep, setTutorialStep] = useState(0); 
+            const [tutorialPhase, setTutorialPhase] = useState(0); 
+            const [hintText, setHintText] = useState('');
+            const [problemStartTime, setProblemStartTime] = useState(0);
+
+            const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
+
+            useEffect(() => {
+                const savedName = localStorage.getItem('make24_nickname');
+                if (savedName) setNickname(savedName);
+                loadRankings();
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('make24_gold', gold.toString());
+                localStorage.setItem('make24_gem', gem.toString());
+                localStorage.setItem('make24_hints', hintsLeft.toString());
+                localStorage.setItem('make24_timeItems', timeItemsLeft.toString());
+                localStorage.setItem('make24_passItems', passItemsLeft.toString());
+            }, [gold, gem, hintsLeft, timeItemsLeft, passItemsLeft]);
+
+            const loadRankings = () => {
+                const savedRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+                setRankingScores(savedRankings.sort((a, b) => b.score - a.score));
+            };
+
+            const saveRecord = (finalScore, currentLevel) => {
+                const date = Date.now();
+                const newRecord = { nickname, level: currentLevel, score: finalScore, date };
+                let currentRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+                
+                currentRankings.push(newRecord);
+                const sortedRankings = currentRankings.sort((a, b) => b.score - a.score).slice(0, 50);
+                localStorage.setItem('make24_rankings', JSON.stringify(sortedRankings));
+                setRankingScores(sortedRankings);
+            };
+
+            const updateNickname = () => {
+                if (tempName.trim()) {
+                    setNickname(tempName.trim());
+                    localStorage.setItem('make24_nickname', tempName.trim());
+                    setIsEditingName(false);
+                }
+            };
+
+            const startLevel = useCallback((targetLevel) => {
+                const isTutorial = typeof targetLevel === 'string' && targetLevel.startsWith('T');
+                
+                setSourceCards(generateProblem(targetLevel));
+                setLevel(targetLevel);
+                setSlots([null, null, null, null]);
+                setOperators(['+', '+', '+']);
+                setStartBrackets([0, 0, 0, 0]);
+                setEndBrackets([0, 0, 0, 0]);
+                setTimeLeft(isTutorial ? 999 : 30);
+                setGameState(isTutorial ? 'tutorial' : 'playing');
+                setResultMessage('');
+                setSolutionStr('');
+                setHintText('');
+                setActiveOpSelector(null);
+                setProblemStartTime(Date.now());
+                setIsPaused(false);
+                setLastScoreGain(null);
+                
+                if (isTutorial) {
+                   const phaseStr = targetLevel.substring(1);
+                   if(phaseStr) setTutorialPhase(parseInt(phaseStr));
+                }
+            }, []);
+
+            const startTutorial = () => {
+                setGameState('tutorial');
+                setTutorialStep(0);
+                setTutorialPhase(0);
+                setSourceCards(generateProblem('T1')); 
+                setLevel('T');
+            };
+
+            const finishTutorialGuide = () => {
+                setTutorialStep(0);
+                setTutorialPhase(1); 
+                startLevel('T1');
+            };
+
+            const initGame = useCallback(() => {
+                const hasCompleted = localStorage.getItem('make24_tutorial_done');
+                if (!hasCompleted) {
+                    startTutorial();
+                } else {
+                    const savedLevel = parseInt(localStorage.getItem('make24_level') || '1', 10);
+                    startLevel(savedLevel);
+                    setScore(0);
+                    setStreak(0);
+                    setComboFlash(null);
+                }
+            }, [startLevel]);
+
+            const nextLevel = () => {
+                if (gameState === 'tutorial' || (typeof level === 'string' && level.startsWith('T'))) {
+                    if (tutorialPhase > 0 && tutorialPhase < 3) {
+                         startLevel(`T${tutorialPhase + 1}`);
+                    } else if (tutorialPhase === 3) {
+                         localStorage.setItem('make24_tutorial_done', 'true');
+                         setGameState('tutorial_complete');
+                    }
+                    return;
+                }
+
+                const nextLv = level + 1;
+                localStorage.setItem('make24_level', nextLv.toString());
+                setTimeout(() => {
+                    startLevel(nextLv);
+                }, 100);
+            };
+
+            const retryLevel = () => {
+                startLevel(level);
+                setStreak(0);
+                setComboFlash(null);
+            };
+
+            const useHint = () => {
+                if (hintsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    const answer = getBestSolution(sourceCards);
+                    setHintText(getPartialHint(answer));
+                    setHintsLeft(prev => prev - 1);
+                } else if (hintsLeft === 0) {
+                    setResultMessage("힌트가 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const useTimeItem = () => {
+                if (timeItemsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    setTimeItemsLeft(prev => prev - 1);
+                    setTimeLeft(prev => prev + 10);
+                    setShowTimePlusEffect(true);
+                    setTimeout(() => setShowTimePlusEffect(false), 800);
+                    setResultMessage("⏰ 시간 연장! (+10초)");
+                } else if (timeItemsLeft === 0) {
+                    setResultMessage("아이템이 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const usePassItem = () => {
+                if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    setPassItemsLeft(prev => prev - 1);
+                    setResultMessage("⏩ PASS! 새로운 문제로 변경합니다.");
+                    setTimeout(() => {
+                        startLevel(level);
+                    }, 500);
+                } else if (passItemsLeft === 0) {
+                    setResultMessage("패스 아이템이 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const goToLobby = () => {
+                if (score > 0) saveRecord(score, level);
+                setIsPaused(false);
+                setGameState('start');
+            };
+
+            const buyItem = (type, cost) => {
+                if (gold >= cost) {
+                    setGold(prev => prev - cost);
+                    if (type === 'hint') setHintsLeft(prev => prev + 3);
+                    if (type === 'time') setTimeItemsLeft(prev => prev + 3);
+                    if (type === 'pass') setPassItemsLeft(prev => prev + 3);
+                }
+            };
+
+            useEffect(() => {
+                let timer;
+                const isTutorialGuide = gameState === 'tutorial' && tutorialPhase === 0;
+                
+                if ((gameState === 'playing' || (gameState === 'tutorial' && !isTutorialGuide)) && !isPaused) {
+                    timer = setInterval(() => {
+                        setTimeLeft((prev) => {
+                            if (prev <= 1) {
+                                if (gameState === 'tutorial') return 999;
+                                const answer = getBestSolution(sourceCards);
+                                setSolutionStr(answer);
+                                setGameState('fail');
+                                setStreak(0);
+                                setComboFlash(null);
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(timer);
+            }, [gameState, isPaused, sourceCards, tutorialPhase]);
+
+            const handleSourceCardClick = (card) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                
+                const emptySlotIdx = slots.indexOf(null);
+                if (emptySlotIdx !== -1) {
+                    const newSlots = [...slots];
+                    newSlots[emptySlotIdx] = card;
+                    setSlots(newSlots);
+                } else {
+                    setResultMessage("슬롯이 꽉 찼어요!");
+                    setTimeout(() => setResultMessage(""), 1000);
+                }
+            };
+
+            const handleSlotCardClick = (index) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                
+                if (slots[index]) {
+                    const newSlots = [...slots];
+                    newSlots[index] = null;
+                    setSlots(newSlots);
+                }
+            };
+
+            const toggleStartBracket = (idx) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+
+                const newBrackets = [...startBrackets];
+                newBrackets[idx] = (newBrackets[idx] + 1) % 3;
+                setStartBrackets(newBrackets);
+            };
+
+            const toggleEndBracket = (idx) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+
+                const newBrackets = [...endBrackets];
+                newBrackets[idx] = (newBrackets[idx] + 1) % 3;
+                setEndBrackets(newBrackets);
+            };
+
+            const selectOperator = (idx, op) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                const newOps = [...operators];
+                newOps[idx] = op;
+                setOperators(newOps);
+            };
+
+            const triggerConfetti = () => {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            };
+
+            const calculateScore = (timeTaken, currentStreak) => {
+                let basePoints = 0;
+                if (timeTaken <= 10000) basePoints = 3;
+                else if (timeTaken <= 20000) basePoints = 2;
+                else basePoints = 1;
+
+                let multiplier = 1;
+                if (currentStreak > 50) multiplier = 10;
+                else if (currentStreak >= 31) multiplier = 8;
+                else if (currentStreak >= 21) multiplier = 4;
+                else if (currentStreak >= 10) multiplier = 2;
+                else multiplier = 1;
+
+                return { base: basePoints, multiplier, total: basePoints * multiplier };
+            };
+
+            const checkResult = () => {
+                if (slots.some(s => s === null)) {
+                    setResultMessage("카드를 모두 넣어주세요");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                    return;
+                }
+                const cardOptions = slots.map(c => c.value === 1 ? [1, 10] : [c.value]); 
+                let possibleValueSets = [[]];
+                for (let options of cardOptions) {
+                    const next = [];
+                    for (let prev of possibleValueSets) {
+                        for (let opt of options) {
+                            next.push([...prev, opt]);
+                        }
+                    }
+                    possibleValueSets = next;
+                }
+                let solved = false;
+                let winningExpression = "";
+                let lastError = null;
+                for (let values of possibleValueSets) {
+                    let expression = "";
+                    for(let i=0; i<4; i++) {
+                        if (startBrackets[i] > 0) expression += "(".repeat(startBrackets[i]);
+                        expression += values[i];
+                        if (endBrackets[i] > 0) expression += ")".repeat(endBrackets[i]);
+                        if (i < 3) expression += ` ${operators[i]} `;
+                    }
+                    try {
+                        const result = new Function(`return ${expression}`)();
+                        if (Math.abs(result - 24) < 0.0001) {
+                            solved = true;
+                            let displayExp = "";
+                            for(let i=0; i<4; i++) {
+                                if (startBrackets[i] > 0) displayExp += "(".repeat(startBrackets[i]);
+                                displayExp += values[i];
+                                if (endBrackets[i] > 0) displayExp += ")".repeat(endBrackets[i]);
+                                if(i < 3) displayExp += ` ${OPERATOR_DISPLAY[operators[i]]} `;
+                            }
+                            winningExpression = displayExp;
+                            break;
+                        }
+                    } catch (e) { lastError = "괄호 짝 확인 필요"; }
+                }
+
+                if (solved) {
+                    const now = Date.now();
+                    const solveDuration = now - problemStartTime;
+                    
+                    if (gameState === 'tutorial') {
+                        setGameState('success');
+                        if (tutorialPhase === 1) setResultMessage("잘했어요! 다음 문제도 풀어보세요.");
+                        else if (tutorialPhase === 2) setResultMessage("잘했어요! 마지막 문제도 풀어보세요.");
+                        else setResultMessage("잘했어요! 이제 본격적으로 플레이 해보세요!");
+                        triggerConfetti();
+                        return;
+                    }
+
+                    const nextStreak = streak + 1;
+                    const scoreInfo = calculateScore(solveDuration, nextStreak);
+                    
+                    setScore(prev => prev + scoreInfo.total);
+                    setGold(prev => prev + 10 + Math.min(nextStreak, 5));
+
+                    setLastScoreGain(scoreInfo);
+                    setStreak(nextStreak);
+                    if (nextStreak > 1) {
+                        setComboFlash(nextStreak);
+                        setTimeout(() => setComboFlash(null), 1200);
+                    }
+
+                    setGameState('success');
+                    setResultMessage(`정답! (${winningExpression} = 24)`);
+                    triggerConfetti();
+                } else {
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                    setResultMessage(lastError || "틀렸습니다");
+                    setStreak(0);
+                    setComboFlash(null);
+                }
+            };
+
+            const tutorialTexts = [
+                { text: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.", focus: "deck", position: "bottom" },
+                { text: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.", focus: "slot", position: "top" },
+                { text: "사칙 연산 부호 및 괄호를 활용할 수 있습니다.\n괄호를 두번 터치하면 이중 괄호로 활용할 수 있습니다.", focus: "slot", position: "top" },
+                { text: "우측에는 아이템이 있습니다.\n시간 연장, 힌트, 패스", focus: "items", position: "left-center" },
+                { text: "시간 연장은 제한 시간이 10초 연장됩니다.", focus: "item-time", position: "left-center" },
+                { text: "힌트는 정답 수식의 일부를 보여줍니다.", focus: "item-hint", position: "left-center" },
+                { text: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.", focus: "item-pass", position: "left-center" }
+            ];
+
+            const getGuideBoxStyle = (pos) => {
+                if (pos === 'top') return { top: '15%', left: '50%', transform: 'translate(-50%, 0)' };
+                if (pos === 'bottom') return { bottom: '2.5%', left: '50%', transform: 'translate(-50%, 0)' };
+                if (pos === 'left-center') return { top: '50%', right: '25%', transform: 'translate(0, -50%)' };
+                return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+            };
+
+            return (
+                <div 
+                    className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300 ${gameState === 'playing' && timeLeft <= 10 && !isPaused ? 'animate-red-alert' : ''}`} 
+                    onClick={() => setActiveOpSelector(null)}
+                >
+                    <div className="flex-none px-4 py-1 md:py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg h-[12vh] landscape:h-[16vh]">
+                         <div className="flex flex-col items-center justify-center w-12 md:w-20 shrink-0">
+                            <span className="text-[8px] md:text-[10px] text-slate-400 font-bold tracking-widest">LEVEL</span>
+                            <span className="text-lg md:text-2xl font-black text-blue-400">{level.toString().startsWith('T') ? level : level}</span>
+                         </div>
+                        <div className="flex-1 flex justify-center items-center gap-2 md:gap-6">
+                            <div className="flex flex-col items-end justify-center relative min-w-[4rem]">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-[10px] md:text-xs text-slate-400 font-bold tracking-widest italic hidden md:inline landscape:inline">SCORE</span>
+                                    <span className="text-xl md:text-2xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
+                                </div>
+                                {lastScoreGain && (
+                                    <span className="text-[10px] md:text-xs font-bold text-emerald-400 animate-score absolute top-6 right-0 pointer-events-none whitespace-nowrap">
+                                        +{lastScoreGain.total}
+                                    </span>
+                                )}
+                            </div>
+                            <div className={`flex items-center justify-center gap-1 px-3 py-1 md:px-6 md:py-2 landscape:py-1 landscape:px-4 rounded-2xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
+                                <Timer size={18} className="md:w-7 md:h-7" />
+                                <span className="text-2xl md:text-4xl landscape:text-3xl font-black font-mono tracking-wider w-12 md:w-20 landscape:w-16 text-center leading-none">
+                                    {level.toString().startsWith('T') ? '∞' : timeLeft}
+                                </span>
+                                {showTimePlusEffect && (
+                                    <span className="absolute text-emerald-400 font-black text-lg md:text-xl animate-time-plus ml-12 md:ml-20">+10s</span>
+                                )}
+                            </div>
+                            <div className="flex flex-col items-start justify-center min-w-[4rem]">
+                                <div className={`flex items-baseline gap-1 font-black ${streak > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
+                                    <span className="text-xl md:text-2xl leading-none">{streak}</span>
+                                    <span className="text-[10px] md:text-xs italic hidden md:inline landscape:inline">COMBO</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 w-12 md:w-20 shrink-0">
+                            {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
+                                <button onClick={() => setIsPaused(true)} className="p-2 md:p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600">
+                                    <Pause size={20} className="md:w-6 md:h-6" />
+                                </button>
+                            ) : (
+                                <button onClick={() => setShowRanking(true)} className="p-2 md:p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600">
+                                    <Trophy size={20} className="md:w-6 md:h-6" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {gameState === 'playing' && timeLeft <= 10 && !isPaused && (
+                        <div className="absolute inset-0 pointer-events-none z-50 animate-red-alert" />
+                    )}
+
+                    {/* 튜토리얼 배경 (가이드 단계) - 하이라이트 효과를 위해 z-40으로 설정 */}
+                    {gameState === 'tutorial' && tutorialPhase === 0 && (
+                        <div className="absolute inset-0 z-40 bg-black/60" onClick={(e) => e.stopPropagation()} />
+                    )}
+
+                    {gameState === 'tutorial_complete' && (
+                        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-pop-scale" onClick={(e) => e.stopPropagation()}>
+                            <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-lg shadow-2xl">
+                                <h2 className="text-3xl font-black text-emerald-400 mb-4">튜토리얼 완료! 🎉</h2>
+                                <p className="text-lg text-slate-200 mb-8 leading-relaxed">
+                                    이제 모든 준비가 끝났습니다.<br/>
+                                    <b>자유롭게 게임을 즐겨보세요!</b>
+                                </p>
+                                <button onClick={() => { setGameState('start'); initGame(); }} className="w-full py-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xl rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95">
+                                    <Play size={24} fill="currentColor" /> 본 게임 시작하기
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {isPaused && (
+                        <div className="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale">
+                            <h2 className="text-5xl font-black text-white tracking-widest drop-shadow-lg">PAUSED</h2>
+                            <div className="flex flex-col gap-4 w-72">
+                                <button onClick={() => setIsPaused(false)} className="w-full py-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xl rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95">
+                                    <Play size={24} fill="currentColor" /> {gameState === 'fail' ? '결과 보기' : '계속하기'}
+                                </button>
+                                <button onClick={retryLevel} className="w-full py-4 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-xl rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95 border border-slate-600">
+                                    <RotateCcw size={24} /> 다시하기
+                                </button>
+                                <button onClick={goToLobby} className="w-full py-4 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-xl rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95 border border-rose-600">
+                                    <Home size={24} /> 로비로 나가기
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showShop && (
+                        <div className="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-pop-scale">
+                            <div className="w-full max-w-lg bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh] landscape:max-h-[90vh]">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <ShoppingBag className="text-indigo-400" size={24} />
+                                        <h2 className="text-xl font-bold">아이템 상점</h2>
+                                    </div>
+                                    <button onClick={() => setShowShop(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={24} /></button>
+                                </div>
+                                <div className="p-4 bg-slate-900/50 flex justify-around items-center border-b border-slate-700">
+                                    <div className="flex items-center gap-2">
+                                        <Coins className="text-yellow-400" size={20} />
+                                        <span className="text-lg font-bold text-yellow-400">{gold.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Gem className="text-cyan-400" size={20} />
+                                        <span className="text-lg font-bold text-cyan-400">{gem.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                    <div className="bg-slate-700/50 rounded-xl p-4 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-yellow-600 rounded-lg"><Lightbulb size={24} className="text-white"/></div>
+                                            <div>
+                                                <div className="font-bold">힌트 x 3</div>
+                                                <div className="text-xs text-slate-400">정답을 살짝 보여줍니다</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => buyItem('hint', 100)} className="px-4 py-2 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-1">
+                                            <Coins size={14} className="text-yellow-400" /> 100
+                                        </button>
+                                    </div>
+                                    <div className="bg-slate-700/50 rounded-xl p-4 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-indigo-600 rounded-lg"><ClockPlus size={24} className="text-white"/></div>
+                                            <div>
+                                                <div className="font-bold">시간 연장 x 3</div>
+                                                <div className="text-xs text-slate-400">제한시간 +10초</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => buyItem('time', 150)} className="px-4 py-2 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-1">
+                                            <Coins size={14} className="text-yellow-400" /> 150
+                                        </button>
+                                    </div>
+                                    <div className="bg-slate-700/50 rounded-xl p-4 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-rose-600 rounded-lg"><FastForward size={24} className="text-white"/></div>
+                                            <div>
+                                                <div className="font-bold">패스 x 3</div>
+                                                <div className="text-xs text-slate-400">문제 교체 (레벨 유지)</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => buyItem('pass', 200)} className="px-4 py-2 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-1">
+                                            <Coins size={14} className="text-yellow-400" /> 200
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {comboFlash && (
+                        <div className="absolute top-1/2 left-1/2 z-[60] pointer-events-none animate-big-combo flex flex-col items-center justify-center whitespace-nowrap">
+                            <div className="text-[10rem] leading-none drop-shadow-2xl filter" style={{ textShadow: '0 0 30px rgba(251, 146, 60, 0.8)' }}>
+                                <Fire size={140} className="text-orange-500 inline-block mb-4 animate-pulse" fill="currentColor" />
+                            </div>
+                            <div className="text-7xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 drop-shadow-lg tracking-tighter" style={{ textShadow: '4px 4px 0px rgba(0,0,0,0.5)' }}>
+                                {comboFlash} COMBO!
+                            </div>
+                            <div className="text-2xl font-bold text-white mt-2 tracking-widest uppercase">Excellent!</div>
+                        </div>
+                    )}
+
+                    <div className="flex-1 flex flex-col landscape:flex-row overflow-hidden relative">
+                        {gameState === 'start' ? (
+                            <div className="flex items-center justify-center w-full h-full p-4">
+                                <div className="w-full max-w-sm text-center space-y-4 bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl relative z-10">
+                                    <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">24 만들기</h1>
+                                    <p className="text-slate-300 text-sm flex flex-col gap-1">
+                                        <span>카드와 연산부호를 사용해서 24를 만드세요</span>
+                                        <span className="text-xs text-slate-400">A는 1 또는 10 모두 될 수 있습니다.</span>
+                                    </p>
+                                    <div className="flex flex-col gap-3 w-full">
+                                        <button onClick={initGame} className="w-full py-4 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95">
+                                            <Play size={24} fill="currentColor" /> 게임 시작
+                                        </button>
+                                        <button onClick={startTutorial} className="w-full py-3 bg-emerald-700 active:bg-emerald-600 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 border border-emerald-600">
+                                            <CheckCircle size={20} /> 튜토리얼 (방법 배우기)
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-lg rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
+                                            <Trophy size={20} /> 랭킹
+                                        </button>
+                                        <button onClick={() => setShowShop(true)} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-lg rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95 border border-indigo-600">
+                                            <ShoppingBag size={20} /> 상점
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className={`flex-1 landscape:flex-[0.45] flex flex-col items-center justify-center bg-emerald-900 border-b-4 landscape:border-b-0 landscape:border-r-4 border-emerald-800 relative shadow-inner overflow-hidden ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'deck' ? 'z-50 relative ring-4 ring-yellow-400' : ''}`} style={{background: 'linear-gradient(to bottom, #064e3b, #065f46)'}}>
+                                    {!isPaused && (
+                                        <>
+                                            <div className="absolute top-2 text-[10px] text-emerald-200/50 font-bold uppercase tracking-wider flex items-center gap-2">
+                                                사용할 카드
+                                                {streak > 1 && (
+                                                    <span className="flex items-center gap-1 text-orange-400 font-black animate-combo">
+                                                        <Fire size={12} fill="currentColor" /> {streak}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
+                                            {gameState === 'fail' && solutionStr && (
+                                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                                                    <div className="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-6 text-center shadow-2xl max-w-sm w-full animate-pop-scale">
+                                                        <div className="text-xs text-yellow-500/80 font-bold mb-2 uppercase tracking-widest">TIME OVER</div>
+                                                        <div className="text-sm text-slate-300 mb-4">아쉬워요! 정답은...</div>
+                                                        <div className="text-3xl font-mono font-black text-yellow-400 tracking-wider drop-shadow-lg mb-2">
+                                                            {solutionStr}
+                                                        </div>
+                                                        <div className="text-xl font-black text-white">= 24</div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {hintText && (
+                                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-40 animate-pop">
+                                                    <div className="bg-black/60 backdrop-blur-md border border-yellow-400/50 rounded-full px-6 py-2 flex items-center gap-2 shadow-xl">
+                                                        <span className="text-yellow-400 text-xs font-bold uppercase tracking-widest">HINT</span>
+                                                        <span className="text-2xl font-black font-mono text-white tracking-widest">{hintText}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-center gap-2 md:gap-4 w-full h-full px-4 portrait:pr-20 landscape:px-6 landscape:flex-wrap landscape:content-center">
+                                                {sourceCards.map((card, idx) => {
+                                                    const used = isCardUsed(card.id);
+                                                    return (
+                                                        <div 
+                                                            key={card.id} 
+                                                            className={`transition-all duration-300 ${used ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100 hover:scale-105 z-20'}`}
+                                                        >
+                                                            <Card card={card} onClick={() => handleSourceCardClick(card)} />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            
+                                            <div className="absolute bottom-[-14px] landscape:bottom-auto landscape:top-1/2 landscape:right-[-14px] landscape:-translate-y-1/2 landscape:-rotate-90 text-slate-500/50 z-20 bg-slate-900 rounded-full p-1"><ArrowDown size={20} /></div>
+                                        </>
+                                    )}
+                                    {isPaused && (
+                                        <div className="flex items-center justify-center h-full text-emerald-200/30 text-2xl font-black tracking-widest">
+                                            HIDDEN
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className={`flex-1 landscape:flex-[0.55] flex flex-col items-center justify-center p-2 portrait:pb-6 landscape:pr-20 relative bg-emerald-900 shadow-[inset_0_4px_20px_rgba(0,0,0,0.4)] border-t landscape:border-t-0 border-emerald-800 ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'slot' ? 'z-50 relative ring-4 ring-yellow-400' : ''}`}>
+                                    <div className={`flex items-center justify-center gap-0 mt-2 ${shake ? 'animate-shake' : ''}`}>
+                                        {slots.map((slotCard, idx) => (
+                                            <React.Fragment key={idx}>
+                                                <div className="flex items-center">
+                                                    <div 
+                                                        onClick={() => toggleStartBracket(idx)} 
+                                                        className={`w-8 h-20 md:w-10 md:h-28 landscape:w-6 landscape:h-16 flex items-center justify-center cursor-pointer text-4xl md:text-5xl landscape:text-4xl select-none transition-all duration-200 ${startBrackets[idx] > 0 ? 'text-yellow-300 font-black scale-110 drop-shadow-lg' : 'text-emerald-600 hover:text-emerald-200 font-bold opacity-70 hover:opacity-100'}`}
+                                                    >
+                                                        {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
+                                                    </div>
+                                                    
+                                                    {slotCard ? <Card card={slotCard} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} />}
+
+                                                    <div 
+                                                        onClick={() => toggleEndBracket(idx)} 
+                                                        className={`w-8 h-20 md:w-10 md:h-28 landscape:w-6 landscape:h-16 flex items-center justify-center cursor-pointer text-4xl md:text-5xl landscape:text-4xl select-none transition-all duration-200 ${endBrackets[idx] > 0 ? 'text-yellow-300 font-black scale-110 drop-shadow-lg' : 'text-emerald-600 hover:text-emerald-200 font-bold opacity-70 hover:opacity-100'}`}
+                                                    >
+                                                        {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
+                                                    </div>
+                                                </div>
+
+                                                {idx < 3 && (
+                                                    <div className="relative mx-0">
+                                                        <div className="flex flex-col gap-1 z-20 relative mx-0 justify-center h-full">
+                                                            {OPERATORS.map(op => (
+                                                                <button 
+                                                                    key={op}
+                                                                    onClick={(e) => { 
+                                                                        e.stopPropagation(); 
+                                                                        selectOperator(idx, op); 
+                                                                    }}
+                                                                    className={`w-8 h-8 md:w-10 md:h-10 landscape:w-7 landscape:h-7 flex items-center justify-center rounded-lg font-black text-lg landscape:text-base shadow-sm transition-all duration-150 ${
+                                                                        operators[idx] === op 
+                                                                        ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
+                                                                        : OPERATOR_STYLES_INACTIVE[op] + ' hover:scale-105 opacity-60 hover:opacity-100'
+                                                                    }`}
+                                                                >
+                                                                    {OPERATOR_DISPLAY[op]}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-4 w-full flex flex-col items-center gap-2">
+                                        <div className={`min-h-[3rem] landscape:min-h-[2rem] flex flex-col justify-center items-center text-center leading-tight ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-yellow-400'}`}>
+                                            {resultMessage ? (
+                                                <span className="text-sm font-bold drop-shadow-md">{resultMessage}</span>
+                                            ) : (
+                                                <>
+                                                    <span className="text-sm font-bold text-emerald-100/90 hidden portrait:inline">카드와 연산부호를 사용해서 24를 만드세요</span>
+                                                    <span className="text-[10px] text-emerald-400/60 font-normal mt-1 hidden portrait:inline">A는 1 또는 10 모두 될 수 있습니다.</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {gameState === 'playing' || gameState === 'tutorial' ? (
+                                            <button onClick={checkResult} disabled={isPaused || (gameState === 'tutorial' && tutorialPhase === 0)} className="w-64 py-2.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 border border-emerald-400/30">
+                                                <CheckCircle size={20} /> 정답 확인
+                                            </button>
+                                        ) : null}
+                                        
+                                        {gameState === 'success' && (
+                                            <button onClick={nextLevel} className="w-64 py-2.5 bg-blue-600 active:bg-blue-700 text-white font-bold rounded-xl shadow-lg animate-bounce flex items-center justify-center gap-2">
+                                                {level === 'T' ? (tutorialPhase === 3 ? '본 게임 시작하기' : '다음 문제') : '다음 문제'} <Play size={20} fill="currentColor" />
+                                            </button>
+                                        )}
+                                        {gameState === 'fail' && (
+                                            <div className="flex flex-col items-center gap-3 w-full">
+                                                <button onClick={retryLevel} className="w-64 py-2.5 bg-slate-600 active:bg-slate-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2">
+                                                    <RotateCcw size={18} /> 다시 도전
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {(gameState === 'playing' || gameState === 'tutorial') && !isPaused && (
+                                    <div className={`absolute right-4 portrait:top-[25%] landscape:top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-30 ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'items' ? 'z-50 ring-4 ring-yellow-400 rounded-xl p-2 bg-black/50' : ''}`}>
+                                        <button onClick={useTimeItem} disabled={timeItemsLeft === 0} className={`w-14 h-14 landscape:w-12 landscape:h-12 flex flex-col items-center justify-center rounded-xl border-2 shadow-xl transition-all active:scale-90 ${timeItemsLeft > 0 ? 'bg-indigo-600 border-indigo-400 hover:bg-indigo-500 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'} ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'item-time' ? 'z-50 ring-4 ring-yellow-400' : ''}`} title="시간 연장 (+10초)">
+                                            <ClockPlus size={22} className="landscape:w-5 landscape:h-5" />
+                                            <span className="text-[10px] font-bold mt-0.5">{timeItemsLeft}</span>
+                                        </button>
+                                        <button onClick={useHint} disabled={hintsLeft === 0} className={`w-14 h-14 landscape:w-12 landscape:h-12 flex flex-col items-center justify-center rounded-xl border-2 shadow-xl transition-all active:scale-90 ${hintsLeft > 0 ? 'bg-yellow-600 border-yellow-400 hover:bg-yellow-500 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'} ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'item-hint' ? 'z-50 ring-4 ring-yellow-400' : ''}`} title="힌트 보기">
+                                            <Lightbulb size={22} className="landscape:w-5 landscape:h-5" />
+                                            <span className="text-[10px] font-bold mt-0.5">{hintsLeft}</span>
+                                        </button>
+                                        <button onClick={usePassItem} disabled={passItemsLeft === 0} className={`w-14 h-14 landscape:w-12 landscape:h-12 flex flex-col items-center justify-center rounded-xl border-2 shadow-xl transition-all active:scale-90 ${passItemsLeft > 0 ? 'bg-rose-600 border-rose-400 hover:bg-rose-500 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'} ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'item-pass' ? 'z-50 ring-4 ring-yellow-400' : ''}`} title="패스 (문제 변경)">
+                                            <FastForward size={22} className="landscape:w-5 landscape:h-5" />
+                                            <span className="text-[10px] font-bold mt-0.5">{passItemsLeft}</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    {showRanking && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setShowRanking(false)}>
+                            <div className="bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh] landscape:max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                                <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
+                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">랭킹</h2></div>
+                                    <button onClick={() => setShowRanking(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                <div className="p-3 bg-slate-750 border-b border-slate-700">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <User size={18} className="text-blue-400" />
+                                            {isEditingName ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24" maxLength={8} />
+                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">저장</button>
+                                                </div>
+                                            ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
+                                        </div>
+                                        {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
+                                    </div>
+                                </div>
+                                <div className="flex border-b border-slate-700">
+                                    <div className="flex-1 py-3 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">🏆 종합 점수</div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">기록 없음</div> : rankingScores.map((rank, idx) => (
+                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${rank.nickname === nickname ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
+                                            <div className="flex items-center gap-2"><span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span><span className="text-xs font-medium text-slate-200">{rank.nickname}</span></div>
+                                            <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}점</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 튜토리얼 팝업 박스 (가이드 단계) - 항상 최상단 노출을 위해 분리하여 z-[100] 설정 */}
+                    {gameState === 'tutorial' && tutorialPhase === 0 && (
+                        <div
+                            className="absolute z-[100] w-full max-w-sm px-4 animate-pop pointer-events-auto"
+                            style={getGuideBoxStyle(tutorialTexts[tutorialStep].position)}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="bg-slate-800 border-2 border-indigo-500 rounded-2xl p-6 shadow-2xl relative">
+                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-black px-4 py-1 rounded-full shadow-lg border-2 border-slate-800">
+                                    GUIDE {tutorialStep + 1}/7
+                                </div>
+                                <p className="text-lg font-bold text-white mb-6 whitespace-pre-wrap leading-relaxed mt-2">
+                                    {tutorialTexts[tutorialStep].text}
+                                </p>
+                                <div className="flex justify-between gap-3">
+                                    <button 
+                                        onClick={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
+                                        className={`px-4 py-2 rounded-lg font-bold text-sm ${tutorialStep === 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-600 text-white hover:bg-slate-500'}`}
+                                        disabled={tutorialStep === 0}
+                                    >
+                                        이전
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            if (tutorialStep < tutorialTexts.length - 1) {
+                                                setTutorialStep(tutorialStep + 1);
+                                            } else {
+                                                finishTutorialGuide();
+                                            }
+                                        }}
+                                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg text-sm"
+                                    >
+                                        {tutorialStep < tutorialTexts.length - 1 ? '다음' : '연습 시작하기'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Make24Game />);
+    </script>
+</body>
+</html>
