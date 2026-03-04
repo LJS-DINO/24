@@ -416,6 +416,12 @@
             const [hintText, setHintText] = useState('');
             const [problemStartTime, setProblemStartTime] = useState(0);
 
+            // --- 클라우드 & 로그인 연동 State ---
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const [user, setUser] = useState(null);
+            const [db, setDb] = useState(null);
+            const [firebaseApi, setFirebaseApi] = useState(null);
+
             const [energy, setEnergy] = useState(() => parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10));
             const [lastEnergyTime, setLastEnergyTime] = useState(() => parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10));
             const [timeToNextEnergy, setTimeToNextEnergy] = useState(0);
@@ -439,8 +445,63 @@
             useEffect(() => {
                 const savedName = localStorage.getItem('make24_nickname');
                 if (savedName) setNickname(savedName);
-                loadRankings();
             }, []);
+
+            // 실시간 클라우드 데이터베이스 초기화 및 자동 로그인
+            useEffect(() => {
+                let unsubscribeAuth;
+                const setupFirebase = async () => {
+                    try {
+                        // Babel의 변환을 피하기 위해 우회하여 동적 import 실행
+                        const { initializeApp } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js")')();
+                        const { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
+                        const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
+                        
+                        setFirebaseApi({ collection, doc, setDoc, getDoc, onSnapshot });
+
+                        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                        const app = initializeApp(firebaseConfig);
+                        const auth = getAuth(app);
+                        const dbInstance = getFirestore(app);
+                        setDb(dbInstance);
+
+                        const initAuth = async () => {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        };
+                        await initAuth();
+
+                        unsubscribeAuth = onAuthStateChanged(auth, (u) => setUser(u));
+                    } catch (err) {
+                        console.error("Cloud DB Init Error", err);
+                    }
+                };
+                setupFirebase();
+                return () => { if (unsubscribeAuth) unsubscribeAuth(); };
+            }, []);
+
+            // 실시간 랭킹 구독 (Real-time Listener)
+            useEffect(() => {
+                if (!user || !db || !firebaseApi) return;
+                const { collection, onSnapshot } = firebaseApi;
+                
+                const rankingsRef = collection(db, 'artifacts', appId, 'public', 'data', 'rankings');
+                const unsubscribe = onSnapshot(rankingsRef, (snapshot) => {
+                    const fetched = [];
+                    snapshot.forEach(doc => {
+                        fetched.push({ id: doc.id, ...doc.data() });
+                    });
+                    fetched.sort((a, b) => b.score - a.score);
+                    setRankingScores(fetched.slice(0, 50));
+                }, (error) => {
+                    console.error("Ranking fetch error:", error);
+                });
+
+                return () => unsubscribe();
+            }, [user, db, firebaseApi]);
 
             useEffect(() => {
                 const checkAdCooldowns = () => {
@@ -526,27 +587,48 @@
                 localStorage.setItem('make24_passItems', passItemsLeft.toString());
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
-            const loadRankings = () => {
-                const savedRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
-                setRankingScores(savedRankings.sort((a, b) => b.score - a.score));
-            };
-
-            const saveRecord = (finalScore, currentLevel) => {
-                const date = Date.now();
-                const newRecord = { nickname, level: currentLevel, score: finalScore, date };
-                let currentRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+            const saveRecord = async (finalScore, currentLevel) => {
+                if (!user || !db || !firebaseApi) return;
+                const { doc, setDoc, getDoc } = firebaseApi;
                 
-                currentRankings.push(newRecord);
-                const sortedRankings = currentRankings.sort((a, b) => b.score - a.score).slice(0, 50);
-                localStorage.setItem('make24_rankings', JSON.stringify(sortedRankings));
-                setRankingScores(sortedRankings);
+                const date = Date.now();
+                const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                
+                try {
+                    const docSnap = await getDoc(userRankRef);
+                    if (docSnap.exists()) {
+                        if (docSnap.data().score >= finalScore) return; 
+                    }
+                    await setDoc(userRankRef, {
+                        nickname: nickname,
+                        level: currentLevel,
+                        score: finalScore,
+                        date: date,
+                        userId: user.uid
+                    }, { merge: true });
+                } catch(e) {
+                    console.error("Save record error:", e);
+                }
             };
 
-            const updateNickname = () => {
+            const updateNickname = async () => {
                 if (tempName.trim()) {
-                    setNickname(tempName.trim());
-                    localStorage.setItem('make24_nickname', tempName.trim());
+                    const newName = tempName.trim();
+                    setNickname(newName);
+                    localStorage.setItem('make24_nickname', newName);
                     setIsEditingName(false);
+
+                    // 온라인 랭킹 닉네임 즉시 업데이트 반영
+                    if (user && db && firebaseApi && score > 0) {
+                        const { doc, setDoc, getDoc } = firebaseApi;
+                        const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                        try {
+                            const docSnap = await getDoc(userRankRef);
+                            if (docSnap.exists()) {
+                                await setDoc(userRankRef, { nickname: newName }, { merge: true });
+                            }
+                        } catch(e) {}
+                    }
                 }
             };
 
@@ -891,9 +973,13 @@
 
                     const nextStreak = streak + 1;
                     const scoreInfo = calculateScore(solveDuration, nextStreak);
+                    const newTotalScore = score + scoreInfo.total;
                     
-                    setScore(prev => prev + scoreInfo.total);
+                    setScore(newTotalScore);
                     setGold(prev => prev + 10 + Math.min(nextStreak, 5));
+                    
+                    // 정답을 맞출 때마다 실시간으로 클라우드에 랭킹 저장 반영
+                    saveRecord(newTotalScore, level);
 
                     setLastScoreGain(scoreInfo);
                     setStreak(nextStreak);
@@ -1134,9 +1220,15 @@
                                     <div className="flex-1 py-2 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">🏆 종합 점수</div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">기록 없음</div> : rankingScores.map((rank, idx) => (
-                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${rank.nickname === nickname ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
-                                            <div className="flex items-center gap-2"><span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span><span className="text-xs font-medium text-slate-200">{rank.nickname}</span></div>
+                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">데이터 로딩중...</div> : rankingScores.map((rank, idx) => (
+                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${user && rank.userId === user.uid ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
+                                                    <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
+                                                </div>
+                                            </div>
                                             <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}점</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
                                         </div>
                                     ))}
