@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>24 만들기 - 회원제 에디션</title>
+    <title>24 만들기 - 세로형 포커 에디션</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,199 +11,1391 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; overscroll-behavior: none; touch-action: manipulation; background-color: #0f172a; margin: 0; }
-        .checkerboard-bg { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%), linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%); background-position: 0 0, 20px 20px; background-size: 40px 40px; }
-        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            background-color: #0f172a; /* slate-900 */
+            margin: 0;
+        }
+
+        .checkerboard-bg {
+            background-color: #0f172a;
+            background-image:
+                linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%, rgba(255, 255, 255, 0.03)),
+                linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%, rgba(255, 255, 255, 0.03));
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-4px); }
+          75% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -40%) scale(0.9); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes popUp {
+            0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-popup { animation: popUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes popScale {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-scale { animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes redAlert {
+            0% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
+            50% { box-shadow: inset 0 0 0 10px rgba(239, 68, 68, 0.8), inset 0 0 60px rgba(239, 68, 68, 0.5); background-color: rgba(239, 68, 68, 0.15); }
+            100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
+        }
+        .animate-red-alert { animation: redAlert 1s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+
+        @keyframes comboPopup {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .animate-combo { animation: comboPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes bigComboPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.5) rotate(-5deg); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.8) rotate(0deg); opacity: 0; }
+        }
+        .animate-big-combo { animation: bigComboPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes scoreFloat {
+            0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+            20% { transform: translate(-50%, -15px) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -30px) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -45px) scale(0.8); opacity: 0; }
+        }
+        .animate-score { animation: scoreFloat 1s ease-out forwards; }
+
+        @keyframes timePlus {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-30px) scale(1); opacity: 0; }
+        }
+        .animate-time-plus { animation: timePlus 0.8s ease-out forwards; }
     </style>
 </head>
 <body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col">
-    <div id="root" class="h-full w-full"></div>
+    <div id="root" class="h-full w-full flex flex-col"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
 
-        // --- 사장님의 Firebase 설정 ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCCELb4mV6fQaotFsQtjXp2AxMiiF5dvOI",
-            authDomain: "dinogames-f6440.firebaseapp.com",
-            projectId: "dinogames-f6440",
-            storageBucket: "dinogames-f6440.firebasestorage.app",
-            messagingSenderId: "220151125192",
-            appId: "1:220151125192:web:65773e921095bea95e81fd",
-            measurementId: "G-PSP0TCY595"
-        };
+        // --- Icons ---
+        const Play = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const Pause = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
+        const RotateCcw = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>;
+        const CheckCircle = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+        const Timer = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15.82" y2="15.82"></line><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4"></path></svg>;
+        const Trophy = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v6a5 5 0 1 1-10 0V4"></path><path d="M5 9v1a10 10 0 0 0 10 10"></path><path d="M19 9v1a10 10 0 0 1-10 10"></path><path d="M2 5h3"></path><path d="M19 5h3"></path></svg>;
+        const CloseIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const Edit2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
+        const User = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+        const Home = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
+        const ArrowDown = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>;
+        const Fire = ({ size = 24, className, fill }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill || "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>;
+        const Heart = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>;
+        const VideoIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><polygon points="10 9 15 12 10 15 10 9"></polygon></svg>;
+        const Lightbulb = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>;
+        const ClockPlus = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline><path d="M16 4l4 4"></path><path d="M22 6l-2 2"></path></svg>;
+        const FastForward = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>;
+        const ShoppingBag = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
+        const Coins = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>;
+        const Gem = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>;
 
-        // [원본 아이콘들 그대로 유지]
-        const Play = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
-        const Pause = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
-        const Trophy = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><path d="M8 21h8M12 17v4M7 4h10M17 4v6a5 5 0 1 1-10 0V4M5 9v1a10 10 0 0 0 10 10M19 9v1a10 10 0 0 1-10 10M2 5h3M19 5h3"></path></svg>;
-        const Heart = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>;
-        const Timer = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4M12 14l3-3"></path></svg>;
-
-        // [언어팩/상수 원본 그대로 유지]
+        // --- Constants ---
         const SUITS = ['♠', '♥', '♦', '♣'];
+        const COLORS = { '♠': 'text-slate-800', '♣': 'text-slate-800', '♥': 'text-red-600', '♦': 'text-red-600' };
+        const AVAILABLE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         const OPERATORS = ['+', '-', '*', '/'];
         const OPERATOR_DISPLAY = { '+': '+', '-': '-', '*': '×', '/': '÷' };
         
-        function Make24Game() {
-            // --- 1. 닉네임 및 인증 상태 ---
-            const [nickname, setNickname] = useState(localStorage.getItem('make24_nickname') || '');
-            const [isNicknameConfirmed, setIsNicknameConfirmed] = useState(!!localStorage.getItem('make24_nickname'));
-            const [uid, setUid] = useState(null);
+        const MAX_ENERGY = 10;
+        const RECHARGE_TIME_MS = 20 * 60 * 1000;
+        
+        const OPERATOR_STYLES = {
+            '+': 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-white shadow-lg', 
+            '-': 'bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white shadow-lg',     
+            '*': 'bg-slate-600 hover:bg-slate-500 border border-slate-400 text-white shadow-lg',   
+            '/': 'bg-amber-500 hover:bg-amber-400 border border-amber-300 text-black shadow-lg font-extrabold'
+        };
+        const OPERATOR_STYLES_INACTIVE = {
+            '+': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '-': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '*': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
+            '/': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300'
+        };
 
-            // --- 2. 원본 게임 상태 (사장님 코드와 100% 동일) ---
+        // --- Logic ---
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const getRandomSuit = () => SUITS[Math.floor(Math.random() * SUITS.length)];
+
+        const isSolvable = (nums) => {
+            if (nums.length === 1) return Math.abs(nums[0] - 24) < 0.000001;
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = 0; j < nums.length; j++) {
+                    if (i === j) continue;
+                    const list = [];
+                    for (let k = 0; k < nums.length; k++) {
+                        if (k !== i && k !== j) list.push(nums[k]);
+                    }
+                    const a = nums[i];
+                    const b = nums[j];
+                    const results = [a + b, a - b, b - a, a * b];
+                    if (b !== 0 && a % b === 0) results.push(a / b);
+                    if (a !== 0 && b % a === 0) results.push(b / a);
+                    for (let res of results) {
+                        if (isSolvable([...list, res])) return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        const isHandValid = (handValues) => {
+            const combinations = [[]];
+            for (let val of handValues) {
+                const newCombs = [];
+                combinations.forEach(comb => {
+                    if (val === 1) {
+                        newCombs.push([...comb, 1]);
+                        newCombs.push([...comb, 10]);
+                    } else {
+                        newCombs.push([...comb, val]);
+                    }
+                });
+                combinations.length = 0;
+                combinations.push(...newCombs);
+            }
+            return combinations.some(comb => isSolvable(comb));
+        };
+
+        const generateEasyNumbers = () => {
+            const types = ['identity', 'cancel', 'split_sum', 'split_mul'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let nums = [];
+
+            const base = Math.random() < 0.5 ? [3, 8] : [4, 6];
+            
+            if (type === 'identity') {
+                nums = [...base, 1, 1];
+            } else if (type === 'cancel') {
+                const n = getRandomInt(2, 9);
+                nums = [...base, n, n];
+            } else if (type === 'split_sum') {
+                const target = base[1]; 
+                const splitA = getRandomInt(1, target - 1);
+                const splitB = target - splitA;
+                nums = [base[0], splitA, splitB, 1];
+            } else if (type === 'split_mul') {
+                nums = [2, 3, 4, 1];
+            }
+
+            for (let i = nums.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [nums[i], nums[j]] = [nums[j], nums[i]];
+            }
+            return nums;
+        };
+
+        const generateProblem = (targetLevel) => { 
+            if (targetLevel === 'T1') return [{ id: 't1-1', value: 3, suit: '♣', display: '3' }, { id: 't1-2', value: 8, suit: '♥', display: '8' }, { id: 't1-3', value: 1, suit: '♠', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
+            if (targetLevel === 'T2') return [{ id: 't2-1', value: 4, suit: '♣', display: '4' }, { id: 't2-2', value: 6, suit: '♥', display: '6' }, { id: 't2-3', value: 2, suit: '♠', display: '2' }, { id: 't2-4', value: 2, suit: '♦', display: '2' }];
+            if (targetLevel === 'T3') return [{ id: 't3-1', value: 10, suit: '♣', display: '10' }, { id: 't3-2', value: 10, suit: '♥', display: '10' }, { id: 't3-3', value: 2, suit: '♠', display: '2' }, { id: 't3-4', value: 2, suit: '♦', display: '2' }];
+            
+            let cards = [];
+            let attempts = 0;
+            const levelNum = typeof targetLevel === 'number' ? targetLevel : 1;
+
+            if (levelNum <= 5) {
+                while (attempts < 100) {
+                    const values = generateEasyNumbers();
+                    if (isHandValid(values)) {
+                        cards = values.map((val, index) => ({
+                            id: `card-${index}-${Date.now()}`,
+                            value: val,
+                            suit: getRandomSuit(),
+                            display: val === 1 ? 'A' : val.toString()
+                        }));
+                        return cards;
+                    }
+                    attempts++;
+                }
+            }
+
+            attempts = 0;
+            while (attempts < 1000) {
+                const values = Array.from({ length: 4 }, () => AVAILABLE_NUMBERS[getRandomInt(0, 9)]);
+                if (isHandValid(values)) {
+                    cards = values.map((val, index) => ({
+                        id: `card-${index}-${Date.now()}`,
+                        value: val,
+                        suit: getRandomSuit(),
+                        display: val === 1 ? 'A' : val.toString()
+                    }));
+                    return cards;
+                }
+                attempts++;
+            }
+            
+            return [
+                { id: '1', value: 8, suit: '♠', display: '8' },
+                { id: '2', value: 8, suit: '♥', display: '8' },
+                { id: '3', value: 3, suit: '♦', display: '3' },
+                { id: '4', value: 1, suit: '♣', display: 'A' }
+            ];
+        };
+
+        const OPERATOR_FUNCS = { '+': (a, b) => a + b, '-': (a, b) => a - b, '*': (a, b) => a * b, '/': (a, b) => a / b };
+        const OPERATOR_PRECEDENCE = { '+': 1, '-': 1, '*': 2, '/': 2 };
+
+        const solve24 = (nums) => {
+            if (nums.length === 1) {
+                if (Math.abs(nums[0].val - 24) < 0.001) return nums[0].str;
+                return null;
+            }
+
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = 0; j < nums.length; j++) {
+                    if (i === j) continue;
+                    
+                    const list = [];
+                    for (let k = 0; k < nums.length; k++) {
+                        if (k !== i && k !== j) list.push(nums[k]);
+                    }
+
+                    const a = nums[i];
+                    const b = nums[j];
+
+                    for (let op of Object.keys(OPERATOR_FUNCS)) {
+                        if (op === '/' && (b.val === 0 || a.val % b.val !== 0)) continue;
+                        if (op === '-' && a.val < b.val) continue;
+
+                        const newVal = OPERATOR_FUNCS[op](a.val, b.val);
+                        const opPrec = OPERATOR_PRECEDENCE[op];
+                        
+                        let strA = a.str;
+                        let strB = b.str;
+
+                        if (a.prec < opPrec) strA = `(${strA})`;
+                        if (b.prec < opPrec || (b.prec === opPrec && (op === '-' || op === '/'))) {
+                            strB = `(${strB})`;
+                        }
+
+                        const newStr = `${strA} ${OPERATOR_DISPLAY[op]} ${strB}`;
+                        const res = solve24([...list, { val: newVal, str: newStr, prec: opPrec }]);
+                        if (res) return res;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const getBestSolution = (cards) => {
+            const rawValues = cards.map(c => c.value);
+            const combinations = [[]];
+            
+            for (let val of rawValues) {
+                const newCombs = [];
+                combinations.forEach(comb => {
+                    if (val === 1) {
+                        newCombs.push([...comb, { val: 1, str: 'A', prec: 3 }]);
+                        newCombs.push([...comb, { val: 10, str: 'A', prec: 3 }]);
+                    } else {
+                        newCombs.push([...comb, { val: val, str: val.toString(), prec: 3 }]);
+                    }
+                });
+                combinations.length = 0;
+                combinations.push(...newCombs);
+            }
+
+            for (let comb of combinations) {
+                const solution = solve24(comb);
+                if (solution) return solution;
+            }
+            return "해답을 찾을 수 없습니다.";
+        };
+
+        const getPartialHint = (solution) => {
+             if(!solution || solution.length < 5) return solution;
+             return solution.substring(0, Math.ceil(solution.length * 0.55)) + '...';
+        };
+
+        const getKSTDateString = () => {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const kst = new Date(utc + (9 * 3600000));
+            return `${kst.getFullYear()}-${kst.getMonth() + 1}-${kst.getDate()}`;
+        };
+
+        const formatTime = (ms) => {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.floor(ms / 1000);
+            const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+            const s = (totalSec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        };
+
+        const Card = ({ card, onClick, isPlaceholder, className }) => {
+            if (isPlaceholder) {
+                return (
+                    <div className={`border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-xs text-white/50 font-bold backdrop-blur-sm transition-all ${className}`}>
+                        빈칸
+                    </div>
+                );
+            }
+            return (
+                <div 
+                    className={`bg-white shadow-xl border-b-4 border-slate-300 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform text-slate-800 ${className}`}
+                    onClick={() => { onClick(); }}
+                >
+                    <span className="font-black text-3xl sm:text-4xl">{card.display}</span>
+                </div>
+            );
+        };
+
+        function Make24Game() {
+            const [nickname, setNickname] = useState('Player');
             const [level, setLevel] = useState(1);
-            const [score, setScore] = useState(0);
-            const [energy, setEnergy] = useState(10);
+            const [sourceCards, setSourceCards] = useState([]);
             const [slots, setSlots] = useState([null, null, null, null]);
             const [operators, setOperators] = useState(['+', '+', '+']);
-            const [sourceCards, setSourceCards] = useState([]);
-            const [gameState, setGameState] = useState('start');
-            const [showRanking, setShowRanking] = useState(false);
-            const [rankingScores, setRankingScores] = useState([]);
+            const [startBrackets, setStartBrackets] = useState([0, 0, 0, 0]); 
+            const [endBrackets, setEndBrackets] = useState([0, 0, 0, 0]);     
             const [timeLeft, setTimeLeft] = useState(30);
+            const [gameState, setGameState] = useState('start'); 
+            const [resultMessage, setResultMessage] = useState('');
+            const [shake, setShake] = useState(false);
+            const [activeOpSelector, setActiveOpSelector] = useState(null); 
+            const [solutionStr, setSolutionStr] = useState('');
+            const [isPaused, setIsPaused] = useState(false);
+            const [streak, setStreak] = useState(0);
+            const [comboFlash, setComboFlash] = useState(null);
+            
+            const [hintsLeft, setHintsLeft] = useState(() => parseInt(localStorage.getItem('make24_hints') || '3', 10));
+            const [timeItemsLeft, setTimeItemsLeft] = useState(() => parseInt(localStorage.getItem('make24_timeItems') || '3', 10));
+            const [passItemsLeft, setPassItemsLeft] = useState(() => parseInt(localStorage.getItem('make24_passItems') || '3', 10));
+            const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
 
-            // --- Firebase 연동 로직 ---
+            const [showShop, setShowShop] = useState(false);
+            const [gold, setGold] = useState(() => parseInt(localStorage.getItem('make24_gold') || '1000', 10));
+            
+            const [score, setScore] = useState(0);
+            const [lastScoreGain, setLastScoreGain] = useState(null); 
+            const [rankingScores, setRankingScores] = useState([]); 
+            const [showRanking, setShowRanking] = useState(false);
+            const [isEditingName, setIsEditingName] = useState(false);
+            const [tempName, setTempName] = useState('');
+            
+            const [tutorialStep, setTutorialStep] = useState(0); 
+            const [tutorialPhase, setTutorialPhase] = useState(0); 
+            const [hintText, setHintText] = useState('');
+            const [problemStartTime, setProblemStartTime] = useState(0);
+
+            const [energy, setEnergy] = useState(() => parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10));
+            const [lastEnergyTime, setLastEnergyTime] = useState(() => parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10));
+            const [timeToNextEnergy, setTimeToNextEnergy] = useState(0);
+
+            const [adState, setAdState] = useState(() => {
+                const saved = localStorage.getItem('make24_ads');
+                const today = getKSTDateString();
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.date === today) return parsed;
+                    } catch(e) {}
+                }
+                return { date: today, hint: 0, time: 0, pass: 0, energy: 0 };
+            });
+            const [isWatchingAd, setIsWatchingAd] = useState(false);
+            const [adCooldowns, setAdCooldowns] = useState({ energy: 0, hint: 0, time: 0, pass: 0 });
+
+            const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
+
             useEffect(() => {
-                const initFirebase = async () => {
-                    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-                    const { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-                    const { getAuth, signInAnonymously, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                const savedName = localStorage.getItem('make24_nickname');
+                if (savedName) setNickname(savedName);
+                loadRankings();
+            }, []);
 
-                    const app = initializeApp(firebaseConfig);
-                    const db = getFirestore(app);
-                    const auth = getAuth(app);
-
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            setUid(user.uid);
-                            // 기존 클라우드 데이터 로드
-                            const userDoc = await getDoc(doc(db, "make24_users", user.uid));
-                            if (userDoc.exists()) {
-                                const data = userDoc.data();
-                                setScore(data.score || 0);
-                                setLevel(data.level || 1);
-                                if (data.nickname) {
-                                    setNickname(data.nickname);
-                                    setIsNicknameConfirmed(true);
-                                }
-                            }
-                        } else {
-                            await signInAnonymously(auth);
+            useEffect(() => {
+                const checkAdCooldowns = () => {
+                    const saved = localStorage.getItem('make24_ad_cooldowns');
+                    const cooldownEnds = saved ? JSON.parse(saved) : {};
+                    const now = Date.now();
+                    const newCooldowns = { energy: 0, hint: 0, time: 0, pass: 0 };
+                    
+                    ['energy', 'hint', 'time', 'pass'].forEach(type => {
+                        const end = cooldownEnds[type] || 0;
+                        if (end > now) {
+                            newCooldowns[type] = Math.ceil((end - now) / 1000);
                         }
                     });
 
-                    // 랭킹 구독
-                    const q = query(collection(db, "make24_rankings"), orderBy("score", "desc"), limit(20));
-                    onSnapshot(q, (snapshot) => {
-                        setRankingScores(snapshot.docs.map(d => d.data()));
-                    });
-
-                    // 점수 전송 전역 함수
-                    window.cloudSync = async (updatedData) => {
-                        if (auth.currentUser) {
-                            await setDoc(doc(db, "make24_users", auth.currentUser.uid), updatedData, { merge: true });
-                            await setDoc(doc(db, "make24_rankings", auth.currentUser.uid), {
-                                nickname, score: updatedData.score, level: updatedData.level, date: Date.now()
-                            }, { merge: true });
+                    setAdCooldowns(prev => {
+                        if (prev.energy === newCooldowns.energy && prev.hint === newCooldowns.hint && prev.time === newCooldowns.time && prev.pass === newCooldowns.pass) {
+                            return prev;
                         }
-                    };
+                        return newCooldowns;
+                    });
                 };
-                initFirebase();
-            }, [nickname]);
+                checkAdCooldowns();
+                const interval = setInterval(checkAdCooldowns, 1000);
+                return () => clearInterval(interval);
+            }, []);
 
-            // [원본 게임 로직 함수들 - 수식 계산 등 그대로 유지 필요]
-            // ... (중략: 사장님의 정답 체크 로직이 들어가는 부분) ...
-            const solveSuccess = (newScore) => {
-                setScore(newScore);
-                if (window.cloudSync) window.cloudSync({ score: newScore, level, nickname });
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            useEffect(() => {
+                localStorage.setItem('make24_ads', JSON.stringify(adState));
+            }, [adState]);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    const today = getKSTDateString();
+                    if (adState.date !== today) {
+                        setAdState({ date: today, hint: 0, time: 0, pass: 0, energy: 0 });
+                    }
+                }, 10000);
+                return () => clearInterval(interval);
+            }, [adState.date]);
+
+            useEffect(() => {
+                const calculateEnergy = () => {
+                    let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
+                    let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
+
+                    if (currentEnergy < MAX_ENERGY) {
+                        const now = Date.now();
+                        const diff = now - lastTime;
+                        if (diff >= RECHARGE_TIME_MS) {
+                            const gained = Math.floor(diff / RECHARGE_TIME_MS);
+                            currentEnergy = Math.min(MAX_ENERGY, currentEnergy + gained);
+                            lastTime = lastTime + (gained * RECHARGE_TIME_MS);
+                            
+                            setEnergy(currentEnergy);
+                            setLastEnergyTime(lastTime);
+                            localStorage.setItem('make24_energy', currentEnergy.toString());
+                            localStorage.setItem('make24_energy_time', lastTime.toString());
+                        }
+                        
+                        if (currentEnergy < MAX_ENERGY) {
+                            setTimeToNextEnergy(RECHARGE_TIME_MS - (Date.now() - lastTime));
+                        } else {
+                            setTimeToNextEnergy(0);
+                        }
+                    } else {
+                        // 행동력이 10 이상일 때는 초과분을 강제로 깎지 않고 시간 갱신만 수행
+                        setLastEnergyTime(Date.now());
+                        localStorage.setItem('make24_energy_time', Date.now().toString());
+                        setTimeToNextEnergy(0);
+                    }
+                };
+
+                calculateEnergy();
+                const interval = setInterval(calculateEnergy, 1000);
+                return () => clearInterval(interval);
+            }, [energy]);
+
+            useEffect(() => {
+                localStorage.setItem('make24_gold', gold.toString());
+                localStorage.setItem('make24_hints', hintsLeft.toString());
+                localStorage.setItem('make24_timeItems', timeItemsLeft.toString());
+                localStorage.setItem('make24_passItems', passItemsLeft.toString());
+            }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
+
+            const loadRankings = () => {
+                const savedRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+                setRankingScores(savedRankings.sort((a, b) => b.score - a.score));
             };
 
-            const handleConfirmNickname = () => {
-                if (nickname.trim().length < 2) return alert("닉네임을 2자 이상 입력해주세요!");
-                localStorage.setItem('make24_nickname', nickname);
-                setIsNicknameConfirmed(true);
-                if (window.cloudSync) window.cloudSync({ nickname, score, level });
+            const saveRecord = (finalScore, currentLevel) => {
+                const date = Date.now();
+                const newRecord = { nickname, level: currentLevel, score: finalScore, date };
+                let currentRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+                
+                currentRankings.push(newRecord);
+                const sortedRankings = currentRankings.sort((a, b) => b.score - a.score).slice(0, 50);
+                localStorage.setItem('make24_rankings', JSON.stringify(sortedRankings));
+                setRankingScores(sortedRankings);
             };
+
+            const updateNickname = () => {
+                if (tempName.trim()) {
+                    setNickname(tempName.trim());
+                    localStorage.setItem('make24_nickname', tempName.trim());
+                    setIsEditingName(false);
+                }
+            };
+
+            const startLevel = useCallback((targetLevel, free = false) => {
+                const isTutorial = typeof targetLevel === 'string' && targetLevel.startsWith('T');
+                
+                if (!isTutorial && !free) {
+                    let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
+                    let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
+                    if (currentEnergy < 1) {
+                        setResultMessage("행동력이 부족합니다!");
+                        setShake(true);
+                        setTimeout(() => setShake(false), 500);
+                        return false;
+                    }
+                    const newEnergy = currentEnergy - 1;
+                    // 행동력이 MAX 미만으로 떨어지는 순간에만 20분 타이머를 새로 시작함 (초과일 때는 현재 시간 유지)
+                    const newLastTime = currentEnergy >= MAX_ENERGY ? Date.now() : lastTime;
+                    
+                    setEnergy(newEnergy);
+                    setLastEnergyTime(newLastTime);
+                    localStorage.setItem('make24_energy', newEnergy.toString());
+                    localStorage.setItem('make24_energy_time', newLastTime.toString());
+                    
+                    if (currentEnergy >= MAX_ENERGY && newEnergy < MAX_ENERGY) {
+                        setTimeToNextEnergy(RECHARGE_TIME_MS);
+                    }
+                }
+
+                setSourceCards(generateProblem(targetLevel));
+                setLevel(targetLevel);
+                setSlots([null, null, null, null]);
+                setOperators(['+', '+', '+']);
+                setStartBrackets([0, 0, 0, 0]);
+                setEndBrackets([0, 0, 0, 0]);
+                setTimeLeft(isTutorial ? 999 : 30);
+                setGameState(isTutorial ? 'tutorial' : 'playing');
+                setResultMessage('');
+                setSolutionStr('');
+                setHintText('');
+                setActiveOpSelector(null);
+                setProblemStartTime(Date.now());
+                setIsPaused(false);
+                setLastScoreGain(null);
+                
+                if (isTutorial) {
+                   const phaseStr = targetLevel.substring(1);
+                   if(phaseStr) setTutorialPhase(parseInt(phaseStr));
+                }
+                return true;
+            }, []);
+
+            const startTutorial = () => {
+                setGameState('tutorial');
+                setTutorialStep(0);
+                setTutorialPhase(0);
+                setSourceCards(generateProblem('T1')); 
+                setLevel('T');
+            };
+
+            const finishTutorialGuide = () => {
+                setTutorialStep(0);
+                setTutorialPhase(1); 
+                startLevel('T1');
+            };
+
+            const initGame = useCallback(() => {
+                const hasCompleted = localStorage.getItem('make24_tutorial_done');
+                if (!hasCompleted) {
+                    startTutorial();
+                } else {
+                    const savedLevel = parseInt(localStorage.getItem('make24_level') || '1', 10);
+                    if (startLevel(savedLevel)) {
+                        setScore(0);
+                        setStreak(0);
+                        setComboFlash(null);
+                    }
+                }
+            }, [startLevel]);
+
+            const nextLevel = () => {
+                if (gameState === 'tutorial' || (typeof level === 'string' && level.startsWith('T'))) {
+                    if (tutorialPhase > 0 && tutorialPhase < 3) {
+                         startLevel(`T${tutorialPhase + 1}`);
+                    } else if (tutorialPhase === 3) {
+                         localStorage.setItem('make24_tutorial_done', 'true');
+                         setGameState('tutorial_complete');
+                    }
+                    return;
+                }
+                const nextLv = level + 1;
+                // 다음 문제로 넘어갈 때는 행동력을 소모하지 않도록 true 플래그 전달
+                if (startLevel(nextLv, true)) {
+                    localStorage.setItem('make24_level', nextLv.toString());
+                }
+            };
+
+            const retryLevel = () => {
+                if (startLevel(level)) {
+                    setStreak(0);
+                    setComboFlash(null);
+                }
+            };
+
+            const useHint = () => {
+                if (hintsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    const answer = getBestSolution(sourceCards);
+                    setHintText(getPartialHint(answer));
+                    setHintsLeft(prev => prev - 1);
+                } else if (hintsLeft === 0) {
+                    setResultMessage("힌트가 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const useTimeItem = () => {
+                if (timeItemsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    setTimeItemsLeft(prev => prev - 1);
+                    setTimeLeft(prev => prev + 10);
+                    setShowTimePlusEffect(true);
+                    setTimeout(() => setShowTimePlusEffect(false), 800);
+                    setResultMessage("⏰ 시간 연장! (+10초)");
+                } else if (timeItemsLeft === 0) {
+                    setResultMessage("아이템이 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const usePassItem = () => {
+                if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
+                    setPassItemsLeft(prev => prev - 1);
+                    setResultMessage("⏩ PASS! 새로운 문제로 변경합니다.");
+                    setTimeout(() => startLevel(level, true), 500); // true flag to bypass energy cost
+                } else if (passItemsLeft === 0) {
+                    setResultMessage("패스 아이템이 없습니다!");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                }
+            };
+
+            const goToLobby = () => {
+                if (score > 0) saveRecord(score, level);
+                setIsPaused(false);
+                setGameState('start');
+            };
+
+            const buyItem = (type, cost) => {
+                if (gold >= cost) {
+                    setGold(prev => prev - cost);
+                    if (type === 'hint') setHintsLeft(prev => prev + 3);
+                    if (type === 'time') setTimeItemsLeft(prev => prev + 3);
+                    if (type === 'pass') setPassItemsLeft(prev => prev + 3);
+                }
+            };
+
+            const watchAd = (type) => {
+                const maxViews = type === 'energy' ? 5 : 3;
+                if (adState[type] >= maxViews) return;
+                if (adCooldowns[type] > 0) return;
+
+                setIsWatchingAd(true);
+                // 광고 시청 시뮬레이션 (1.5초)
+                setTimeout(() => {
+                    setIsWatchingAd(false);
+                    
+                    // 각 구좌별 1분 쿨타임 개별 설정
+                    const saved = localStorage.getItem('make24_ad_cooldowns');
+                    const cooldownEnds = saved ? JSON.parse(saved) : {};
+                    cooldownEnds[type] = Date.now() + 60 * 1000;
+                    localStorage.setItem('make24_ad_cooldowns', JSON.stringify(cooldownEnds));
+
+                    setAdState(prev => {
+                        const today = getKSTDateString();
+                        if (prev.date !== today) {
+                             return { date: today, hint: 0, time: 0, pass: 0, energy: 0, [type]: 1 };
+                        }
+                        return { ...prev, [type]: prev[type] + 1 };
+                    });
+                    
+                    if (type === 'hint') setHintsLeft(p => p + 3);
+                    if (type === 'time') setTimeItemsLeft(p => p + 3);
+                    if (type === 'pass') setPassItemsLeft(p => p + 3);
+                    if (type === 'energy') {
+                        setEnergy(p => {
+                            const newE = p + 3;
+                            localStorage.setItem('make24_energy', newE.toString());
+                            return newE;
+                        });
+                    }
+                }, 1500);
+            };
+
+            useEffect(() => {
+                let timer;
+                const isTutorialGuide = gameState === 'tutorial' && tutorialPhase === 0;
+                
+                if ((gameState === 'playing' || (gameState === 'tutorial' && !isTutorialGuide)) && !isPaused) {
+                    timer = setInterval(() => {
+                        setTimeLeft((prev) => {
+                            if (prev <= 1) {
+                                if (gameState === 'tutorial') return 999;
+                                const answer = getBestSolution(sourceCards);
+                                setSolutionStr(answer);
+                                setGameState('fail');
+                                setStreak(0);
+                                setComboFlash(null);
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(timer);
+            }, [gameState, isPaused, sourceCards, tutorialPhase]);
+
+            const handleSourceCardClick = (card) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                
+                const emptySlotIdx = slots.indexOf(null);
+                if (emptySlotIdx !== -1) {
+                    const newSlots = [...slots];
+                    newSlots[emptySlotIdx] = card;
+                    setSlots(newSlots);
+                } else {
+                    setResultMessage("슬롯이 꽉 찼어요!");
+                    setTimeout(() => setResultMessage(""), 1000);
+                }
+            };
+
+            const handleSlotCardClick = (index) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                
+                if (slots[index]) {
+                    const newSlots = [...slots];
+                    newSlots[index] = null;
+                    setSlots(newSlots);
+                }
+            };
+
+            const toggleStartBracket = (idx) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                const newBrackets = [...startBrackets];
+                newBrackets[idx] = (newBrackets[idx] + 1) % 3;
+                setStartBrackets(newBrackets);
+            };
+
+            const toggleEndBracket = (idx) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                const newBrackets = [...endBrackets];
+                newBrackets[idx] = (newBrackets[idx] + 1) % 3;
+                setEndBrackets(newBrackets);
+            };
+
+            const selectOperator = (idx, op) => {
+                if (gameState === 'tutorial' && tutorialPhase === 0) return;
+                if (gameState !== 'playing' && gameState !== 'tutorial') return;
+                if (isPaused) return;
+                const newOps = [...operators];
+                newOps[idx] = op;
+                setOperators(newOps);
+                setActiveOpSelector(null);
+            };
+
+            const triggerConfetti = () => {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            };
+
+            const calculateScore = (timeTaken, currentStreak) => {
+                let basePoints = timeTaken <= 10000 ? 3 : timeTaken <= 20000 ? 2 : 1;
+                let multiplier = currentStreak > 50 ? 10 : currentStreak >= 31 ? 8 : currentStreak >= 21 ? 4 : currentStreak >= 10 ? 2 : 1;
+                return { base: basePoints, multiplier, total: basePoints * multiplier };
+            };
+
+            const checkResult = () => {
+                if (slots.some(s => s === null)) {
+                    setResultMessage("카드를 모두 넣어주세요");
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                    return;
+                }
+                const cardOptions = slots.map(c => c.value === 1 ? [1, 10] : [c.value]); 
+                let possibleValueSets = [[]];
+                for (let options of cardOptions) {
+                    const next = [];
+                    for (let prev of possibleValueSets) {
+                        for (let opt of options) { next.push([...prev, opt]); }
+                    }
+                    possibleValueSets = next;
+                }
+                let solved = false;
+                let winningExpression = "";
+                let lastError = null;
+                for (let values of possibleValueSets) {
+                    let expression = "";
+                    for(let i=0; i<4; i++) {
+                        if (startBrackets[i] > 0) expression += "(".repeat(startBrackets[i]);
+                        expression += values[i];
+                        if (endBrackets[i] > 0) expression += ")".repeat(endBrackets[i]);
+                        if (i < 3) expression += ` ${operators[i]} `;
+                    }
+                    try {
+                        const result = new Function(`return ${expression}`)();
+                        if (Math.abs(result - 24) < 0.0001) {
+                            solved = true;
+                            let displayExp = "";
+                            for(let i=0; i<4; i++) {
+                                if (startBrackets[i] > 0) displayExp += "(".repeat(startBrackets[i]);
+                                displayExp += values[i];
+                                if (endBrackets[i] > 0) displayExp += ")".repeat(endBrackets[i]);
+                                if(i < 3) displayExp += ` ${OPERATOR_DISPLAY[operators[i]]} `;
+                            }
+                            winningExpression = displayExp;
+                            break;
+                        }
+                    } catch (e) { lastError = "괄호 짝 확인 필요"; }
+                }
+
+                if (solved) {
+                    const now = Date.now();
+                    const solveDuration = now - problemStartTime;
+                    
+                    if (gameState === 'tutorial') {
+                        setGameState('success');
+                        if (tutorialPhase === 1) setResultMessage("잘했어요! 다음 문제도 풀어보세요.");
+                        else if (tutorialPhase === 2) setResultMessage("잘했어요! 마지막 문제도 풀어보세요.");
+                        else setResultMessage("잘했어요! 이제 본격적으로 플레이 해보세요!");
+                        triggerConfetti();
+                        return;
+                    }
+
+                    const nextStreak = streak + 1;
+                    const scoreInfo = calculateScore(solveDuration, nextStreak);
+                    
+                    setScore(prev => prev + scoreInfo.total);
+                    setGold(prev => prev + 10 + Math.min(nextStreak, 5));
+
+                    setLastScoreGain(scoreInfo);
+                    setStreak(nextStreak);
+                    if (nextStreak > 1) {
+                        setComboFlash(nextStreak);
+                        setTimeout(() => setComboFlash(null), 1200);
+                    }
+
+                    setGameState('success');
+                    setResultMessage(`정답! (${winningExpression} = 24)`);
+                    triggerConfetti();
+                } else {
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                    setResultMessage(lastError || "틀렸습니다");
+                    setStreak(0);
+                    setComboFlash(null);
+                }
+            };
+
+            const tutorialTexts = [
+                { text: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.", focus: "deck", position: "bottom" },
+                { text: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.", focus: "slot", position: "top" },
+                { text: "연산자 버튼을 터치하여 사칙연산을 고를 수 있고,\n괄호를 터치하여 우선순위를 변경할 수 있습니다.", focus: "slot", position: "top" },
+                { text: "하단에는 유용한 아이템들이 있습니다.\n시간 연장, 힌트, 패스", focus: "items", position: "top" },
+                { text: "시간 연장은 제한 시간이 10초 연장됩니다.", focus: "item-time", position: "top" },
+                { text: "힌트는 정답 수식의 일부를 보여줍니다.", focus: "item-hint", position: "top" },
+                { text: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.", focus: "item-pass", position: "top" }
+            ];
+
+            const getGuideBoxStyle = (pos) => {
+                if (pos === 'top') return { top: '20%', left: '50%', transform: 'translate(-50%, 0)' };
+                if (pos === 'bottom') return { bottom: '5%', left: '50%', transform: 'translate(-50%, 0)' };
+                return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+            };
+
+            // vw 기반 반응형 카드 사이즈 (심플 디자인에 맞게 축소)
+            const deckCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
+            const slotCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
 
             return (
-                <div className="flex flex-col h-full bg-slate-900 overflow-hidden relative">
-                    {/* 닉네임 설정 오버레이 (최초 1회) */}
-                    {!isNicknameConfirmed && (
-                        <div className="absolute inset-0 z-[100] bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center">
-                            <div className="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl w-full max-w-sm animate-pop">
-                                <h2 className="text-2xl font-black mb-6 text-emerald-400">환영합니다!<br/>닉네임을 정해주세요</h2>
-                                <input 
-                                    type="text" 
-                                    value={nickname} 
-                                    onChange={(e) => setNickname(e.target.value)}
-                                    className="w-full bg-slate-900 border-2 border-slate-600 rounded-xl px-4 py-3 mb-6 text-center text-xl font-bold focus:border-blue-500 outline-none"
-                                    placeholder="최대 8자"
-                                    maxLength={8}
-                                />
-                                <button onClick={handleConfirmNickname} className="w-full py-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95">
-                                    <Play size={20} /> 게임 시작하기
+                <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
+                    {/* 상단 헤더 */}
+                    <div className="flex-none px-3 py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg h-[12vh] min-h-[60px]">
+                         <div className="flex items-center gap-2 sm:gap-3 w-auto min-w-[5rem] shrink-0">
+                            <div className="flex flex-col items-center justify-center">
+                                <span className="text-[9px] text-slate-400 font-bold tracking-widest">LEVEL</span>
+                                <span className="text-xl font-black text-blue-400 leading-none">{level.toString().startsWith('T') ? level : level}</span>
+                            </div>
+                            <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-lg px-2 py-1 border border-slate-700/50 shadow-inner min-w-[2.5rem]">
+                                <div className="flex items-center gap-1">
+                                    <Heart size={12} className="text-rose-500 fill-rose-500" />
+                                    <span className="text-[11px] font-black text-white leading-none">{energy}</span>
+                                </div>
+                                {energy < MAX_ENERGY && (
+                                    <span className="text-[8px] text-rose-300 font-mono mt-0.5 font-bold leading-none tracking-tighter">{formatTime(timeToNextEnergy)}</span>
+                                )}
+                            </div>
+                         </div>
+                        <div className="flex-1 flex justify-center items-center gap-3">
+                            <div className="flex flex-col items-end justify-center relative w-16">
+                                <span className="text-xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
+                                {lastScoreGain && <span className="text-[10px] font-bold text-emerald-400 animate-score absolute top-5 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
+                            </div>
+                            <div className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded-2xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
+                                <Timer size={16} />
+                                <span className="text-2xl font-black font-mono tracking-wider w-10 text-center leading-none">
+                                    {level.toString().startsWith('T') ? '∞' : timeLeft}
+                                </span>
+                                {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-lg animate-time-plus ml-12">+10s</span>}
+                            </div>
+                            <div className="flex flex-col items-start justify-center w-16">
+                                <div className={`flex items-baseline gap-0.5 font-black ${streak > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
+                                    <span className="text-xl leading-none">{streak}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center w-14 shrink-0">
+                            {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
+                                <button onClick={() => setIsPaused(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600">
+                                    <Pause size={18} />
+                                </button>
+                            ) : (
+                                <button onClick={() => setShowRanking(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600">
+                                    <Trophy size={18} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 백그라운드 클릭용 오버레이 (연산자 팝업 닫기 등) - z-index를 35로 낮춤 */}
+                    {(activeOpSelector !== null) && (
+                        <div className="fixed inset-0 z-[35]" onClick={() => setActiveOpSelector(null)} />
+                    )}
+
+                    {/* 게임 오버레이/팝업 영역 */}
+                    {/* 시간이 10초 이하일 때 뜨는 붉은색 경고 효과 (z-index 및 CSS 효과 대폭 상향 적용) */}
+                    {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
+                    
+                    {gameState === 'tutorial' && tutorialPhase === 0 && <div className="absolute inset-0 z-[60] bg-black/60" onClick={(e) => e.stopPropagation()} />}
+                    
+                    {gameState === 'tutorial_complete' && (
+                        <div className="absolute inset-0 z-[80] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-pop-scale">
+                            <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-sm shadow-2xl w-full">
+                                <h2 className="text-2xl font-black text-emerald-400 mb-4">튜토리얼 완료! 🎉</h2>
+                                <p className="text-base text-slate-200 mb-8 leading-relaxed">모든 준비가 끝났습니다.<br/><b>자유롭게 게임을 즐겨보세요!</b></p>
+                                <button onClick={() => { setGameState('start'); initGame(); }} className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                                    <Play size={20} fill="currentColor" /> 본 게임 시작하기
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* 상단바 (원본 UI 유지) */}
-                    <div className="flex-none px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg min-h-[80px]">
-                        <div className="flex items-center gap-3">
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase">Level</span>
-                                <span className="text-2xl font-black text-blue-400 leading-none">{level}</span>
+                    {isPaused && (
+                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
+                            <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">PAUSED</h2>
+                            <div className="flex flex-col gap-4 w-full max-w-xs">
+                                <button onClick={() => setIsPaused(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
+                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? '결과 보기' : '계속하기'}
+                                </button>
+                                <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 ${energy >= 1 ? 'bg-slate-700 hover:bg-slate-600 active:bg-slate-500' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}>
+                                    <RotateCcw size={20} /> {energy >= 1 ? '다시하기' : '행동력 부족'}
+                                </button>
+                                <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600">
+                                    <Home size={20} /> 로비로 나가기
+                                </button>
                             </div>
-                            <div className="bg-slate-900 rounded-xl px-3 py-1.5 border border-slate-700">
-                                <div className="flex items-center gap-1.5">
-                                    <Heart size={16} className="text-rose-500" />
-                                    <span className="text-sm font-black">{energy}</span>
+                        </div>
+                    )}
+
+                    {showShop && (
+                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                            {/* 상점 UI 유지 (생략 방지) */}
+                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                    <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">아이템 상점</h2></div>
+                                    <button onClick={() => setShowShop(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
+                                    <div className="flex items-center gap-2"><Coins className="text-yellow-400" size={18} /><span className="font-bold text-yellow-400">{gold.toLocaleString()}</span></div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
+                                            <div><div className="font-bold text-sm">행동력 x 3</div><div className="text-[10px] text-slate-400">광고 시청으로 획득</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}초 대기` : `${5 - adState.energy}/5`}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
+                                            <div><div className="font-bold text-sm">힌트 x 3</div><div className="text-[10px] text-slate-400">정답 일부 표시</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}초` : `${3 - adState.hint}/3`}
+                                            </button>
+                                            <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                <Coins size={12} className="text-yellow-400" /> 100
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
+                                            <div><div className="font-bold text-sm">시간 연장 x 3</div><div className="text-[10px] text-slate-400">제한시간 +10초</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                {adCooldowns.time > 0 ? `${adCooldowns.time}초` : `${3 - adState.time}/3`}
+                                            </button>
+                                            <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                <Coins size={12} className="text-yellow-400" /> 150
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
+                                            <div><div className="font-bold text-sm">패스 x 3</div><div className="text-[10px] text-slate-400">문제 교체 유지</div></div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}초` : `${3 - adState.pass}/3`}
+                                            </button>
+                                            <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                <Coins size={12} className="text-yellow-400" /> 200
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* 광고 시청 중 오버레이 - 애니메이션 분리 및 fixed 적용 */}
+                            {isWatchingAd && (
+                                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center text-white">
+                                    <div className="flex flex-col items-center justify-center animate-pop-scale">
+                                        <VideoIcon size={64} className="animate-pulse mb-6 text-blue-400" />
+                                        <div className="text-2xl font-black">광고 시청 중...</div>
+                                        <div className="text-base text-slate-400 mt-2 font-bold">잠시만 기다려주세요</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {showRanking && (
+                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setShowRanking(false)}>
+                            <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[70vh]" onClick={e => e.stopPropagation()}>
+                                <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
+                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">랭킹</h2></div>
+                                    <button onClick={() => setShowRanking(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                <div className="p-3 bg-slate-750 border-b border-slate-700">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <User size={18} className="text-blue-400" />
+                                            {isEditingName ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24" maxLength={8} />
+                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">저장</button>
+                                                </div>
+                                            ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
+                                        </div>
+                                        {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
+                                    </div>
+                                </div>
+                                <div className="flex border-b border-slate-700">
+                                    <div className="flex-1 py-2 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">🏆 종합 점수</div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">기록 없음</div> : rankingScores.map((rank, idx) => (
+                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${rank.nickname === nickname ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
+                                            <div className="flex items-center gap-2"><span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span><span className="text-xs font-medium text-slate-200">{rank.nickname}</span></div>
+                                            <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}점</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center">
-                             <span className="text-2xl font-black text-yellow-400 tracking-tight">{score.toLocaleString()}</span>
-                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{nickname}</span>
-                        </div>
-                        <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-700 rounded-full text-yellow-400 active:scale-95 transition-transform">
-                            <Trophy size={22} />
-                        </button>
-                    </div>
+                    )}
 
-                    {/* 중앙 게임 영역 (사장님의 원본 게임 코드가 들어가는 곳) */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-4">
+                    {comboFlash && (
+                        <div className="absolute top-1/2 left-1/2 z-[70] pointer-events-none animate-big-combo flex flex-col items-center justify-center whitespace-nowrap">
+                            <div className="text-[8rem] leading-none drop-shadow-2xl filter" style={{ textShadow: '0 0 30px rgba(251, 146, 60, 0.8)' }}>
+                                <Fire size={100} className="text-orange-500 inline-block mb-2 animate-pulse" fill="currentColor" />
+                            </div>
+                            <div className="text-5xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 drop-shadow-lg tracking-tighter" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.5)' }}>
+                                {comboFlash} COMBO!
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 메인 게임 영역 (종스크롤 전용 레이아웃) */}
+                    <div className="flex-1 flex flex-col relative overflow-hidden">
                         {gameState === 'start' ? (
-                            <div className="text-center space-y-6 animate-pop">
-                                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">24 만들기</h1>
-                                <button onClick={() => setGameState('playing')} className="px-16 py-4 bg-blue-600 rounded-2xl text-xl font-black shadow-xl">START</button>
+                            <div className="flex items-center justify-center w-full h-full p-4">
+                                <div className="w-full max-w-sm text-center space-y-5 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl relative z-10">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                        <div className="flex justify-center gap-3 mb-2">
+                                            <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform -rotate-12 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">2</span></div>
+                                            <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform rotate-6 z-10 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">4</span></div>
+                                        </div>
+                                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">24 만들기</h1>
+                                        
+                                        {/* Energy Display on Start Screen */}
+                                        <div className="flex items-center justify-center gap-2 mt-1 mb-1 bg-slate-900/60 py-1.5 px-4 rounded-full border border-slate-700/50 w-fit mx-auto">
+                                            <Heart size={16} className="text-rose-500 fill-rose-500" />
+                                            <span className="text-sm font-bold text-white">{energy} / {MAX_ENERGY}</span>
+                                            {energy < MAX_ENERGY && (
+                                                <span className="text-xs text-rose-300 font-mono ml-1 font-bold">{formatTime(timeToNextEnergy)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-slate-300 text-xs flex flex-col gap-1 px-4">
+                                        <span>주어진 4장의 카드와 사칙연산을 조합하여<br/>결과값 24를 완성하세요!</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">A 카드는 1 또는 10으로 사용 가능</span>
+                                    </p>
+                                    <div className="flex flex-col gap-3 w-full pt-1">
+                                        <button onClick={initGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${energy >= 1 ? 'bg-blue-600 active:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}>
+                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? '게임 시작' : '행동력 부족'}
+                                        </button>
+                                        <button onClick={startTutorial} className="w-full py-3 bg-emerald-700 active:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 border border-emerald-600">
+                                            <CheckCircle size={18} /> 게임 방법 배우기
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
+                                            <Trophy size={18} /> 랭킹
+                                        </button>
+                                        <button onClick={() => setShowShop(true)} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95 border border-indigo-600">
+                                            <ShoppingBag size={18} /> 상점
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         ) : (
-                            <div className="w-full text-center space-y-8">
-                                {/* 사장님의 카드 슬롯, 연산자 버튼 UI가 여기에 원본대로 배치됩니다. */}
-                                <div className="text-slate-500">정답을 맞추면 닉네임과 함께 랭킹에 기록됩니다.</div>
-                                <button onClick={() => solveSuccess(score + 100)} className="px-10 py-4 bg-emerald-600 rounded-2xl font-black shadow-lg">테스트: 정답 맞추기</button>
-                            </div>
+                            <>
+                                {/* 1. 사용할 카드(Deck) 영역 */}
+                                <div className={`flex flex-col items-center justify-center py-6 bg-emerald-900 border-b-4 border-emerald-800 relative shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)] ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'deck' ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`} style={{background: 'linear-gradient(to bottom, #064e3b, #065f46)'}}>
+                                    {!isPaused && (
+                                        <>
+                                            <div className="absolute top-2 left-4 text-[10px] text-emerald-200/60 font-bold uppercase tracking-wider flex items-center gap-2">
+                                                사용할 카드
+                                            </div>
+                                            
+                                            {/* 정답 예시 오버레이 */}
+                                            {gameState === 'fail' && solutionStr && (
+                                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                                                    <div className="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-5 text-center shadow-2xl max-w-sm w-full animate-pop-scale">
+                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">TIME OVER</div>
+                                                        <div className="text-sm text-slate-300 mb-3">아쉬워요! 정답은...</div>
+                                                        <div className="text-2xl font-mono font-black text-yellow-400 tracking-wider drop-shadow-lg mb-1">{solutionStr}</div>
+                                                        <div className="text-lg font-black text-white">= 24</div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-center gap-3 md:gap-4 w-full px-4">
+                                                {sourceCards.map((card, idx) => {
+                                                    const used = isCardUsed(card.id);
+                                                    return (
+                                                        <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 hover:scale-105 z-20'}`}>
+                                                            <Card card={card} className={deckCardClass} onClick={() => handleSourceCardClick(card)} />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            <div className="absolute -bottom-3 text-emerald-400/50 z-20 bg-emerald-900 border-2 border-emerald-800 rounded-full p-0.5"><ArrowDown size={16} /></div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* 2. 슬롯 및 연산 영역 (중단) */}
+                                <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative bg-emerald-900 shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)] ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'slot' ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`}>
+                                    {hintText && (
+                                        <div className="absolute -top-4 sm:-top-6 left-1/2 transform -translate-x-1/2 z-[60] animate-pop">
+                                            <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl">
+                                                <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">HINT</span>
+                                                <span className="text-xl font-black font-mono text-white tracking-widest">{hintText}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className={`flex items-center justify-center gap-1 sm:gap-2 w-full max-w-lg mx-auto ${shake ? 'animate-shake' : ''}`}>
+                                        {slots.map((slotCard, idx) => (
+                                            <React.Fragment key={idx}>
+                                                <div className="relative flex items-center justify-center">
+                                                    {/* 카드 공간 여유 확보로 괄호가 가려지지 않음 */}
+                                                    <div 
+                                                        onClick={() => toggleStartBracket(idx)} 
+                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'}`}
+                                                        style={{ textShadow: startBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                                    >
+                                                        {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
+                                                    </div>
+                                                    
+                                                    {slotCard ? <Card card={slotCard} className={slotCardClass} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} className={slotCardClass} />}
+
+                                                    <div 
+                                                        onClick={() => toggleEndBracket(idx)} 
+                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'}`}
+                                                        style={{ textShadow: endBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                                    >
+                                                        {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
+                                                    </div>
+                                                </div>
+
+                                                {/* 연산자 세로로 4개 배치 (가로폭 절약을 위해 크기 최적화) */}
+                                                {idx < 3 && (
+                                                    <div className="relative z-[40] flex flex-col items-center justify-center mx-1 sm:mx-1.5 gap-1">
+                                                        {OPERATORS.map(op => (
+                                                            <button 
+                                                                key={op}
+                                                                onClick={(e) => { 
+                                                                    e.stopPropagation(); 
+                                                                    selectOperator(idx, op); 
+                                                                }}
+                                                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 ${
+                                                                    operators[idx] === op 
+                                                                    ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
+                                                                    : OPERATOR_STYLES_INACTIVE[op] + ' hover:scale-105 opacity-60 hover:opacity-100'
+                                                                }`}
+                                                            >
+                                                                {OPERATOR_DISPLAY[op]}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="mt-6 flex flex-col items-center justify-center">
+                                        <div className={`text-center leading-tight h-5 mb-2 ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-emerald-200'}`}>
+                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">카드를 배치하고 확인을 누르세요</span>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. 하단 액션 & 아이템 바 */}
+                                <div className={`flex flex-col gap-4 p-4 pb-8 pt-4 bg-emerald-900 border-t border-emerald-800/50 ${gameState === 'tutorial' && tutorialPhase === 0 && (tutorialTexts[tutorialStep].focus.startsWith('item') || tutorialTexts[tutorialStep].focus === 'items') ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`}>
+                                    {/* 가로형 아이템 배치 */}
+                                    {(gameState === 'playing' || gameState === 'tutorial') && !isPaused && (
+                                        <div className="flex justify-center gap-6 sm:gap-8 w-full max-w-sm mx-auto mb-2">
+                                            <button onClick={useTimeItem} disabled={timeItemsLeft === 0} className="flex flex-col items-center group">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${timeItemsLeft > 0 ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                                    <ClockPlus size={28} />
+                                                </div>
+                                                <div className="mt-2 text-center leading-tight">
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">시간</span>
+                                                    <span className={`text-lg font-black ${timeItemsLeft > 0 ? 'text-indigo-300' : 'text-slate-500'}`}>{timeItemsLeft}</span>
+                                                </div>
+                                            </button>
+                                            <button onClick={useHint} disabled={hintsLeft === 0} className="flex flex-col items-center group">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${hintsLeft > 0 ? 'bg-yellow-600 border-yellow-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                                    <Lightbulb size={28} />
+                                                </div>
+                                                <div className="mt-2 text-center leading-tight">
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">힌트</span>
+                                                    <span className={`text-lg font-black ${hintsLeft > 0 ? 'text-yellow-300' : 'text-slate-500'}`}>{hintsLeft}</span>
+                                                </div>
+                                            </button>
+                                            <button onClick={usePassItem} disabled={passItemsLeft === 0} className="flex flex-col items-center group">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${passItemsLeft > 0 ? 'bg-rose-600 border-rose-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                                    <FastForward size={28} />
+                                                </div>
+                                                <div className="mt-2 text-center leading-tight">
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">패스</span>
+                                                    <span className={`text-lg font-black ${passItemsLeft > 0 ? 'text-rose-300' : 'text-slate-500'}`}>{passItemsLeft}</span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* 메인 확인/다음 버튼 */}
+                                    <div className="flex justify-center w-full max-w-sm mx-auto">
+                                        {(gameState === 'playing' || gameState === 'tutorial') ? (
+                                            <button onClick={checkResult} disabled={isPaused || (gameState === 'tutorial' && tutorialPhase === 0)} className="w-full py-3.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border border-emerald-400/30">
+                                                <CheckCircle size={20} /> 정답 확인
+                                            </button>
+                                        ) : null}
+                                        
+                                        {gameState === 'success' && (
+                                            <button onClick={nextLevel} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
+                                                {level === 'T' ? (tutorialPhase === 3 ? '본 게임 시작하기' : '다음 문제') : '다음 문제'} <Play size={20} fill="currentColor" />
+                                            </button>
+                                        )}
+                                        {gameState === 'fail' && (
+                                            <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
+                                                <RotateCcw size={20} /> {energy >= 1 ? '다시 도전' : '행동력 부족'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
 
-                    {/* 랭킹 팝업 (사장님 스타일 유지) */}
-                    {showRanking && (
-                        <div className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowRanking(false)}>
-                            <div className="bg-slate-800 w-full max-w-sm rounded-3xl border border-slate-700 overflow-hidden shadow-2xl animate-pop" onClick={e => e.stopPropagation()}>
-                                <div className="p-6 bg-slate-700 flex justify-between items-center">
-                                    <h2 className="text-xl font-black text-yellow-400 flex items-center gap-2"><Trophy size={18}/> GLOBAL RANKING</h2>
-                                    <button onClick={() => setShowRanking(false)} className="text-slate-400 text-2xl font-black">×</button>
+                    {/* 튜토리얼 팝업 박스 (가이드 단계) - 항상 최상단 분리 노출 */}
+                    {gameState === 'tutorial' && tutorialPhase === 0 && (
+                        <div
+                            className="absolute z-[100] w-full max-w-sm px-4 animate-pop pointer-events-auto"
+                            style={getGuideBoxStyle(tutorialTexts[tutorialStep].position)}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="bg-slate-800 border-2 border-indigo-500 rounded-2xl p-6 shadow-2xl relative">
+                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-black px-4 py-1 rounded-full shadow-lg border-2 border-slate-800">
+                                    GUIDE {tutorialStep + 1}/7
                                 </div>
-                                <div className="p-4 max-h-[60vh] overflow-y-auto space-y-2">
-                                    {rankingScores.map((r, i) => (
-                                        <div key={i} className={`flex justify-between p-4 rounded-xl ${r.nickname === nickname ? 'bg-blue-900/50 border border-blue-500' : 'bg-slate-900/50'}`}>
-                                            <span className="font-bold">{i+1}. {r.nickname}</span>
-                                            <span className="text-yellow-400 font-black">{r.score.toLocaleString()}</span>
-                                        </div>
-                                    ))}
+                                <p className="text-base font-bold text-white mb-6 whitespace-pre-wrap leading-relaxed mt-2 text-center">
+                                    {tutorialTexts[tutorialStep].text}
+                                </p>
+                                <div className="flex justify-between gap-3">
+                                    <button 
+                                        onClick={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
+                                        className={`px-4 py-2 rounded-lg font-bold text-sm ${tutorialStep === 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-600 text-white hover:bg-slate-500'}`}
+                                        disabled={tutorialStep === 0}
+                                    >
+                                        이전
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            if (tutorialStep < tutorialTexts.length - 1) {
+                                                setTutorialStep(tutorialStep + 1);
+                                            } else {
+                                                finishTutorialGuide();
+                                            }
+                                        }}
+                                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg text-sm"
+                                    >
+                                        {tutorialStep < tutorialTexts.length - 1 ? '다음' : '연습 시작하기'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
