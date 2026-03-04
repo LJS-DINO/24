@@ -10,10 +10,10 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&family=Noto+Sans:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
         
         body { 
-            font-family: 'Noto Sans KR', sans-serif; 
+            font-family: 'Noto Sans KR', 'Noto Sans', 'Noto Sans JP', 'Noto Sans TC', sans-serif; 
             overscroll-behavior: none;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
@@ -137,6 +137,311 @@
         const MAX_ENERGY = 10;
         const RECHARGE_TIME_MS = 20 * 60 * 1000;
         
+        // --- i18n Translations ---
+        const TRANSLATIONS = {
+            en: {
+                title: "Make 24",
+                subtitle1: "Use 4 cards and math operators",
+                subtitle2: "to make exactly 24!",
+                a_card_info: "A card can be 1 or 10",
+                game_start: "Start Game",
+                not_enough_energy: "Not Enough Energy",
+                tutorial_btn: "How to Play",
+                ranking: "Ranking",
+                shop: "Shop",
+                level: "LEVEL",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "CARDS TO USE",
+                time_over: "TIME OVER",
+                too_bad: "So close! The answer is...",
+                hint_upper: "HINT",
+                place_cards: "Place cards and check answer",
+                check_answer: "Check Answer",
+                next_problem: "Next Problem",
+                start_main_game: "Start Main Game",
+                retry: "Retry",
+                time: "Time",
+                hint: "Hint",
+                pass: "Pass",
+                item_shop: "Item Shop",
+                energy_x3: "Energy x 3",
+                energy_desc: "Game Play Ticket",
+                get_by_ad: "Watch Ad",
+                hint_x3: "Hint x 3",
+                hint_desc: "Show partial answer",
+                time_x3: "Time + x 3",
+                time_desc: "+10 sec",
+                pass_x3: "Pass x 3",
+                pass_desc: "Change problem",
+                watching_ad: "Watching Ad...",
+                please_wait: "Please wait a moment",
+                wait_sec: "s wait",
+                comprehensive_score: "🏆 Leaderboard",
+                no_record: "No records yet",
+                save: "Save",
+                paused: "PAUSED",
+                view_result: "View Result",
+                continue: "Continue",
+                exit_lobby: "Exit to Lobby",
+                tutorial_complete: "Tutorial Complete! 🎉",
+                tutorial_done_desc1: "You are all set.",
+                tutorial_done_desc2: "Enjoy the game freely!",
+                slots_full: "Slots are full!",
+                hint_empty: "No hints left!",
+                time_empty: "No time items left!",
+                time_added: "⏰ Time added! (+10s)",
+                pass_empty: "No pass items left!",
+                pass_used: "⏩ PASS! Changing problem.",
+                wrong_answer: "Incorrect",
+                check_brackets: "Check your brackets",
+                correct: "Correct!",
+                tut_msg_1: "Great! Try the next one.",
+                tut_msg_2: "Great! Try the last one.",
+                tut_msg_3: "Great! Now start the real game!",
+                tut_step_1: "Make 24 using 4 cards.\nScore points for correct answers.",
+                tut_step_2: "Tap cards to place them in slots.\nConsecutive answers build combos!",
+                tut_step_3: "Tap operators to choose math signs,\ntap brackets to change priority.",
+                tut_step_4: "Use items at the bottom:\nTime, Hint, Pass.",
+                tut_step_5: "Time: Adds 10 seconds.",
+                tut_step_6: "Hint: Shows part of the answer.",
+                tut_step_7: "Pass: Changes the problem.\nYour combo is kept.",
+                prev: "Prev",
+                next: "Next",
+                start_practice: "Start Practice",
+                loading: "Loading data..."
+            },
+            ko: {
+                title: "24 만들기",
+                subtitle1: "주어진 4장의 카드와 사칙연산을 조합하여",
+                subtitle2: "결과값 24를 완성하세요!",
+                a_card_info: "A 카드는 1 또는 10으로 사용 가능",
+                game_start: "게임 시작",
+                not_enough_energy: "행동력 부족",
+                tutorial_btn: "게임 방법 배우기",
+                ranking: "랭킹",
+                shop: "상점",
+                level: "LEVEL",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "사용할 카드",
+                time_over: "TIME OVER",
+                too_bad: "아쉬워요! 정답은...",
+                hint_upper: "HINT",
+                place_cards: "카드를 배치하고 확인을 누르세요",
+                check_answer: "정답 확인",
+                next_problem: "다음 문제",
+                start_main_game: "본 게임 시작하기",
+                retry: "다시 도전",
+                time: "시간",
+                hint: "힌트",
+                pass: "패스",
+                item_shop: "아이템 상점",
+                energy_x3: "행동력 x 3",
+                energy_desc: "게임 플레이 티켓",
+                get_by_ad: "광고 시청으로 획득",
+                hint_x3: "힌트 x 3",
+                hint_desc: "정답 일부 표시",
+                time_x3: "시간 연장 x 3",
+                time_desc: "제한시간 +10초",
+                pass_x3: "패스 x 3",
+                pass_desc: "문제 교체 유지",
+                watching_ad: "광고 시청 중...",
+                please_wait: "잠시만 기다려주세요",
+                wait_sec: "초 대기",
+                comprehensive_score: "🏆 종합 점수",
+                no_record: "기록 없음",
+                save: "저장",
+                paused: "PAUSED",
+                view_result: "결과 보기",
+                continue: "계속하기",
+                exit_lobby: "로비로 나가기",
+                tutorial_complete: "튜토리얼 완료! 🎉",
+                tutorial_done_desc1: "모든 준비가 끝났습니다.",
+                tutorial_done_desc2: "자유롭게 게임을 즐겨보세요!",
+                slots_full: "슬롯이 꽉 찼어요!",
+                hint_empty: "힌트가 없습니다!",
+                time_empty: "아이템이 없습니다!",
+                time_added: "⏰ 시간 연장! (+10초)",
+                pass_empty: "패스 아이템이 없습니다!",
+                pass_used: "⏩ PASS! 새로운 문제로 변경합니다.",
+                wrong_answer: "틀렸습니다",
+                check_brackets: "괄호 짝 확인 필요",
+                correct: "정답!",
+                tut_msg_1: "잘했어요! 다음 문제도 풀어보세요.",
+                tut_msg_2: "잘했어요! 마지막 문제도 풀어보세요.",
+                tut_msg_3: "잘했어요! 이제 본격적으로 플레이 해보세요!",
+                tut_step_1: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.",
+                tut_step_2: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.",
+                tut_step_3: "연산자 버튼을 터치하여 사칙연산을 고를 수 있고,\n괄호를 터치하여 우선순위를 변경할 수 있습니다.",
+                tut_step_4: "하단에는 유용한 아이템들이 있습니다.\n시간 연장, 힌트, 패스",
+                tut_step_5: "시간 연장은 제한 시간이 10초 연장됩니다.",
+                tut_step_6: "힌트는 정답 수식의 일부를 보여줍니다.",
+                tut_step_7: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.",
+                prev: "이전",
+                next: "다음",
+                start_practice: "연습 시작하기",
+                loading: "데이터 로딩중..."
+            },
+            ja: {
+                title: "24を作る",
+                subtitle1: "4枚のカードと四則演算を使って",
+                subtitle2: "答えを24にしてください！",
+                a_card_info: "Aカードは1または10として使用可能",
+                game_start: "ゲーム開始",
+                not_enough_energy: "スタミナ不足",
+                tutorial_btn: "遊び方",
+                ranking: "ランキング",
+                shop: "ショップ",
+                level: "LEVEL",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "使うカード",
+                time_over: "TIME OVER",
+                too_bad: "残念！正解は...",
+                hint_upper: "HINT",
+                place_cards: "カードを配置して確認を押してください",
+                check_answer: "正解確認",
+                next_problem: "次の問題",
+                start_main_game: "本番を始める",
+                retry: "もう一度",
+                time: "時間",
+                hint: "ヒント",
+                pass: "パス",
+                item_shop: "アイテムショップ",
+                energy_x3: "スタミナ x 3",
+                energy_desc: "プレイチケット",
+                get_by_ad: "広告を見て獲得",
+                hint_x3: "ヒント x 3",
+                hint_desc: "答えの一部を表示",
+                time_x3: "時間延長 x 3",
+                time_desc: "制限時間 +10秒",
+                pass_x3: "パス x 3",
+                pass_desc: "問題を入れ替え",
+                watching_ad: "広告視聴中...",
+                please_wait: "少々お待ちください",
+                wait_sec: "秒 待機",
+                comprehensive_score: "🏆 総合スコア",
+                no_record: "記録なし",
+                save: "保存",
+                paused: "PAUSED",
+                view_result: "結果を見る",
+                continue: "続ける",
+                exit_lobby: "ロビーへ",
+                tutorial_complete: "チュートリアル完了！ 🎉",
+                tutorial_done_desc1: "準備はすべて完了しました。",
+                tutorial_done_desc2: "ゲームをお楽しみください！",
+                slots_full: "スロットが満杯です！",
+                hint_empty: "ヒントがありません！",
+                time_empty: "アイテムがありません！",
+                time_added: "⏰ 時間延長！ (+10秒)",
+                pass_empty: "パスがありません！",
+                pass_used: "⏩ PASS! 問題を変更します。",
+                wrong_answer: "不正解",
+                check_brackets: "括弧を確認してください",
+                correct: "正解！",
+                tut_msg_1: "素晴らしい！次の問題も解いてみよう。",
+                tut_msg_2: "素晴らしい！最後の問題です。",
+                tut_msg_3: "完璧！本番を始めましょう！",
+                tut_step_1: "4枚のカードで24を作るゲームです。\n正解するとスコアが貯まります。",
+                tut_step_2: "タップすると下のスロットにカードが配置されます。\n連続正解でコンボ発生！スコアUP！",
+                tut_step_3: "演算子ボタンで四則演算を選び、\n括弧をタップして優先順位を変えられます。",
+                tut_step_4: "下部には便利なアイテムがあります。\n時間、ヒント、パス",
+                tut_step_5: "時間は制限時間を10秒延長します。",
+                tut_step_6: "ヒントは正解の式の一部を表示します。",
+                tut_step_7: "パスは問題を入れ替えます。\nコンボは維持されます。",
+                prev: "前へ",
+                next: "次へ",
+                start_practice: "練習開始",
+                loading: "データ読み込み中..."
+            },
+            'zh-TW': {
+                title: "挑戰24",
+                subtitle1: "使用4張卡片和四則運算",
+                subtitle2: "算出結果24！",
+                a_card_info: "A卡可以當作1或10",
+                game_start: "開始遊戲",
+                not_enough_energy: "體力不足",
+                tutorial_btn: "怎麼玩",
+                ranking: "排行榜",
+                shop: "商店",
+                level: "LEVEL",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "使用卡片",
+                time_over: "TIME OVER",
+                too_bad: "太可惜了！答案是...",
+                hint_upper: "HINT",
+                place_cards: "放置卡片並確認答案",
+                check_answer: "確認答案",
+                next_problem: "下一題",
+                start_main_game: "開始正式遊戲",
+                retry: "重試",
+                time: "時間",
+                hint: "提示",
+                pass: "跳過",
+                item_shop: "道具商店",
+                energy_x3: "體力 x 3",
+                energy_desc: "遊戲入場券",
+                get_by_ad: "觀看廣告獲得",
+                hint_x3: "提示 x 3",
+                hint_desc: "顯示部分答案",
+                time_x3: "時間增加 x 3",
+                time_desc: "限制時間 +10秒",
+                pass_x3: "跳過 x 3",
+                pass_desc: "更換題目維持連擊",
+                watching_ad: "觀看廣告中...",
+                please_wait: "請稍候",
+                wait_sec: "秒 等待",
+                comprehensive_score: "🏆 綜合分數",
+                no_record: "無紀錄",
+                save: "儲存",
+                paused: "PAUSED",
+                view_result: "查看結果",
+                continue: "繼續",
+                exit_lobby: "返回大廳",
+                tutorial_complete: "教學完成！ 🎉",
+                tutorial_done_desc1: "準備就緒。",
+                tutorial_done_desc2: "盡情享受遊戲吧！",
+                slots_full: "欄位已滿！",
+                hint_empty: "沒有提示了！",
+                time_empty: "沒有道具了！",
+                time_added: "⏰ 時間增加！ (+10秒)",
+                pass_empty: "沒有跳過道具了！",
+                pass_used: "⏩ PASS! 更換題目中。",
+                wrong_answer: "錯誤",
+                check_brackets: "請檢查括號",
+                correct: "答對了！",
+                tut_msg_1: "做得好！試試下一題。",
+                tut_msg_2: "做得好！這是最後一題。",
+                tut_msg_3: "完美！現在開始正式遊戲吧！",
+                tut_step_1: "使用4張卡片算出24的遊戲。\n答對即可獲得分數。",
+                tut_step_2: "點擊卡片放入下方欄位。\n連續答對會產生連擊並增加分數！",
+                tut_step_3: "點擊運算符號可更改四則運算，\n點擊括號可改變優先順序。",
+                tut_step_4: "下方有實用道具：\n時間、提示、跳過。",
+                tut_step_5: "時間：限制時間延長10秒。",
+                tut_step_6: "提示：顯示部分正確答案。",
+                tut_step_7: "跳過：更換題目。\n您將保留目前的連擊數。",
+                prev: "上一步",
+                next: "下一步",
+                start_practice: "開始練習",
+                loading: "載入資料中..."
+            }
+        };
+
+        const getLang = () => {
+            const lang = navigator.language || navigator.userLanguage;
+            if (lang.startsWith('ko')) return 'ko';
+            if (lang.startsWith('ja')) return 'ja';
+            if (lang.startsWith('zh-TW') || lang.startsWith('zh-HK') || lang === 'zh-Hant') return 'zh-TW';
+            return 'en'; // 기본 영어
+        };
+
+        const t = (key) => {
+            const lang = getLang();
+            return TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key] || key;
+        };
+
         const OPERATOR_STYLES = {
             '+': 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-white shadow-lg', 
             '-': 'bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white shadow-lg',     
@@ -639,13 +944,12 @@
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
                     let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
                     if (currentEnergy < 1) {
-                        setResultMessage("행동력이 부족합니다!");
+                        setResultMessage(t('not_enough_energy') + "!");
                         setShake(true);
                         setTimeout(() => setShake(false), 500);
                         return false;
                     }
                     const newEnergy = currentEnergy - 1;
-                    // 행동력이 MAX 미만으로 떨어지는 순간에만 20분 타이머를 새로 시작함 (초과일 때는 현재 시간 유지)
                     const newLastTime = currentEnergy >= MAX_ENERGY ? Date.now() : lastTime;
                     
                     setEnergy(newEnergy);
@@ -739,7 +1043,7 @@
                     setHintText(getPartialHint(answer));
                     setHintsLeft(prev => prev - 1);
                 } else if (hintsLeft === 0) {
-                    setResultMessage("힌트가 없습니다!");
+                    setResultMessage(t('hint_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
@@ -751,9 +1055,9 @@
                     setTimeLeft(prev => prev + 10);
                     setShowTimePlusEffect(true);
                     setTimeout(() => setShowTimePlusEffect(false), 800);
-                    setResultMessage("⏰ 시간 연장! (+10초)");
+                    setResultMessage(t('time_added'));
                 } else if (timeItemsLeft === 0) {
-                    setResultMessage("아이템이 없습니다!");
+                    setResultMessage(t('time_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
@@ -762,10 +1066,10 @@
             const usePassItem = () => {
                 if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
                     setPassItemsLeft(prev => prev - 1);
-                    setResultMessage("⏩ PASS! 새로운 문제로 변경합니다.");
-                    setTimeout(() => startLevel(level, true), 500); // true flag to bypass energy cost
+                    setResultMessage(t('pass_used'));
+                    setTimeout(() => startLevel(level, true), 500); 
                 } else if (passItemsLeft === 0) {
-                    setResultMessage("패스 아이템이 없습니다!");
+                    setResultMessage(t('pass_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
@@ -857,7 +1161,7 @@
                     newSlots[emptySlotIdx] = card;
                     setSlots(newSlots);
                 } else {
-                    setResultMessage("슬롯이 꽉 찼어요!");
+                    setResultMessage(t('slots_full'));
                     setTimeout(() => setResultMessage(""), 1000);
                 }
             };
@@ -916,7 +1220,7 @@
 
             const checkResult = () => {
                 if (slots.some(s => s === null)) {
-                    setResultMessage("카드를 모두 넣어주세요");
+                    setResultMessage(t('place_cards'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                     return;
@@ -955,7 +1259,7 @@
                             winningExpression = displayExp;
                             break;
                         }
-                    } catch (e) { lastError = "괄호 짝 확인 필요"; }
+                    } catch (e) { lastError = t('check_brackets'); }
                 }
 
                 if (solved) {
@@ -964,9 +1268,9 @@
                     
                     if (gameState === 'tutorial') {
                         setGameState('success');
-                        if (tutorialPhase === 1) setResultMessage("잘했어요! 다음 문제도 풀어보세요.");
-                        else if (tutorialPhase === 2) setResultMessage("잘했어요! 마지막 문제도 풀어보세요.");
-                        else setResultMessage("잘했어요! 이제 본격적으로 플레이 해보세요!");
+                        if (tutorialPhase === 1) setResultMessage(t('tut_msg_1'));
+                        else if (tutorialPhase === 2) setResultMessage(t('tut_msg_2'));
+                        else setResultMessage(t('tut_msg_3'));
                         triggerConfetti();
                         return;
                     }
@@ -978,7 +1282,6 @@
                     setScore(newTotalScore);
                     setGold(prev => prev + 10 + Math.min(nextStreak, 5));
                     
-                    // 정답을 맞출 때마다 실시간으로 클라우드에 랭킹 저장 반영
                     saveRecord(newTotalScore, level);
 
                     setLastScoreGain(scoreInfo);
@@ -989,25 +1292,25 @@
                     }
 
                     setGameState('success');
-                    setResultMessage(`정답! (${winningExpression} = 24)`);
+                    setResultMessage(`${t('correct')} (${winningExpression} = 24)`);
                     triggerConfetti();
                 } else {
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
-                    setResultMessage(lastError || "틀렸습니다");
+                    setResultMessage(lastError || t('wrong_answer'));
                     setStreak(0);
                     setComboFlash(null);
                 }
             };
 
             const tutorialTexts = [
-                { text: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.", focus: "deck", position: "bottom" },
-                { text: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.", focus: "slot", position: "top" },
-                { text: "연산자 버튼을 터치하여 사칙연산을 고를 수 있고,\n괄호를 터치하여 우선순위를 변경할 수 있습니다.", focus: "slot", position: "top" },
-                { text: "하단에는 유용한 아이템들이 있습니다.\n시간 연장, 힌트, 패스", focus: "items", position: "top" },
-                { text: "시간 연장은 제한 시간이 10초 연장됩니다.", focus: "item-time", position: "top" },
-                { text: "힌트는 정답 수식의 일부를 보여줍니다.", focus: "item-hint", position: "top" },
-                { text: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.", focus: "item-pass", position: "top" }
+                { text: t('tut_step_1'), focus: "deck", position: "bottom" },
+                { text: t('tut_step_2'), focus: "slot", position: "top" },
+                { text: t('tut_step_3'), focus: "slot", position: "top" },
+                { text: t('tut_step_4'), focus: "items", position: "top" },
+                { text: t('tut_step_5'), focus: "item-time", position: "top" },
+                { text: t('tut_step_6'), focus: "item-hint", position: "top" },
+                { text: t('tut_step_7'), focus: "item-pass", position: "top" }
             ];
 
             const getGuideBoxStyle = (pos) => {
@@ -1026,7 +1329,7 @@
                     <div className="flex-none px-3 sm:px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg min-h-[80px]">
                          <div className="flex items-center gap-3 shrink-0">
                             <div className="flex flex-col items-center justify-center">
-                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5">LEVEL</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5">{t('level')}</span>
                                 <span className="text-2xl sm:text-3xl font-black text-blue-400 leading-none">{level.toString().startsWith('T') ? level : level}</span>
                             </div>
                             <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-xl px-3 py-1.5 border border-slate-700/50 shadow-inner min-w-[3.5rem]">
@@ -1041,7 +1344,7 @@
                          </div>
                         <div className="flex-1 flex justify-center items-center gap-3 sm:gap-5">
                             <div className="flex flex-col items-end justify-center relative w-auto min-w-[2.5rem]">
-                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">SCORE</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">{t('score')}</span>
                                 <span className="text-2xl sm:text-3xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
                                 {lastScoreGain && <span className="text-xs font-bold text-emerald-400 animate-score absolute top-8 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
                             </div>
@@ -1053,7 +1356,7 @@
                                 {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-xl animate-time-plus ml-16">+10s</span>}
                             </div>
                             <div className="flex flex-col items-start justify-center w-auto min-w-[2.5rem]">
-                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">COMBO</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">{t('combo')}</span>
                                 <div className={`flex items-baseline gap-0.5 font-black ${streak > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
                                     <span className="text-2xl sm:text-3xl leading-none">{streak}</span>
                                 </div>
@@ -1086,10 +1389,10 @@
                     {gameState === 'tutorial_complete' && (
                         <div className="absolute inset-0 z-[80] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-pop-scale">
                             <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-sm shadow-2xl w-full">
-                                <h2 className="text-2xl font-black text-emerald-400 mb-4">튜토리얼 완료! 🎉</h2>
-                                <p className="text-base text-slate-200 mb-8 leading-relaxed">모든 준비가 끝났습니다.<br/><b>자유롭게 게임을 즐겨보세요!</b></p>
+                                <h2 className="text-2xl font-black text-emerald-400 mb-4">{t('tutorial_complete')}</h2>
+                                <p className="text-base text-slate-200 mb-8 leading-relaxed">{t('tutorial_done_desc1')}<br/><b>{t('tutorial_done_desc2')}</b></p>
                                 <button onClick={() => { setGameState('start'); initGame(); }} className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
-                                    <Play size={20} fill="currentColor" /> 본 게임 시작하기
+                                    <Play size={20} fill="currentColor" /> {t('start_main_game')}
                                 </button>
                             </div>
                         </div>
@@ -1097,16 +1400,16 @@
 
                     {isPaused && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
-                            <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">PAUSED</h2>
+                            <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
                                 <button onClick={() => setIsPaused(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
-                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? '결과 보기' : '계속하기'}
+                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? t('view_result') : t('continue')}
                                 </button>
                                 <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 ${energy >= 1 ? 'bg-slate-700 hover:bg-slate-600 active:bg-slate-500' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}>
-                                    <RotateCcw size={20} /> {energy >= 1 ? '다시하기' : '행동력 부족'}
+                                    <RotateCcw size={20} /> {energy >= 1 ? t('retry') : t('not_enough_energy')}
                                 </button>
                                 <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600">
-                                    <Home size={20} /> 로비로 나가기
+                                    <Home size={20} /> {t('exit_lobby')}
                                 </button>
                             </div>
                         </div>
@@ -1114,10 +1417,9 @@
 
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
-                            {/* 상점 UI 유지 (생략 방지) */}
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                                    <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">아이템 상점</h2></div>
+                                    <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
                                     <button onClick={() => setShowShop(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
@@ -1127,24 +1429,24 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
-                                            <div><div className="font-bold text-sm">행동력 x 3</div><div className="text-[10px] text-slate-400">광고 시청으로 획득</div></div>
+                                            <div><div className="font-bold text-sm">{t('energy_x3')}</div><div className="text-[10px] text-slate-400">{t('get_by_ad')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}초 대기` : `${5 - adState.energy}/5`}
+                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}${t('wait_sec')}` : `${5 - adState.energy}/5`}
                                             </button>
                                         </div>
                                     </div>
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">힌트 x 3</div><div className="text-[10px] text-slate-400">정답 일부 표시</div></div>
+                                            <div><div className="font-bold text-sm">{t('hint_x3')}</div><div className="text-[10px] text-slate-400">{t('hint_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}초` : `${3 - adState.hint}/3`}
+                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}s` : `${3 - adState.hint}/3`}
                                             </button>
                                             <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 100
@@ -1154,12 +1456,12 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">시간 연장 x 3</div><div className="text-[10px] text-slate-400">제한시간 +10초</div></div>
+                                            <div><div className="font-bold text-sm">{t('time_x3')}</div><div className="text-[10px] text-slate-400">{t('time_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.time > 0 ? `${adCooldowns.time}초` : `${3 - adState.time}/3`}
+                                                {adCooldowns.time > 0 ? `${adCooldowns.time}s` : `${3 - adState.time}/3`}
                                             </button>
                                             <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 150
@@ -1169,12 +1471,12 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">패스 x 3</div><div className="text-[10px] text-slate-400">문제 교체 유지</div></div>
+                                            <div><div className="font-bold text-sm">{t('pass_x3')}</div><div className="text-[10px] text-slate-400">{t('pass_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}초` : `${3 - adState.pass}/3`}
+                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}s` : `${3 - adState.pass}/3`}
                                             </button>
                                             <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 200
@@ -1184,13 +1486,13 @@
                                 </div>
                             </div>
                             
-                            {/* 광고 시청 중 오버레이 - 애니메이션 분리 및 fixed 적용 */}
+                            {/* 광고 시청 중 오버레이 */}
                             {isWatchingAd && (
                                 <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center text-white">
                                     <div className="flex flex-col items-center justify-center animate-pop-scale">
                                         <VideoIcon size={64} className="animate-pulse mb-6 text-blue-400" />
-                                        <div className="text-2xl font-black">광고 시청 중...</div>
-                                        <div className="text-base text-slate-400 mt-2 font-bold">잠시만 기다려주세요</div>
+                                        <div className="text-2xl font-black">{t('watching_ad')}</div>
+                                        <div className="text-base text-slate-400 mt-2 font-bold">{t('please_wait')}</div>
                                     </div>
                                 </div>
                             )}
@@ -1201,7 +1503,7 @@
                         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setShowRanking(false)}>
                             <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[70vh]" onClick={e => e.stopPropagation()}>
                                 <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
-                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">랭킹</h2></div>
+                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">{t('ranking')}</h2></div>
                                     <button onClick={() => setShowRanking(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-750 border-b border-slate-700">
@@ -1211,7 +1513,7 @@
                                             {isEditingName ? (
                                                 <div className="flex items-center gap-2">
                                                     <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24" maxLength={8} />
-                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">저장</button>
+                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">{t('save')}</button>
                                                 </div>
                                             ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
                                         </div>
@@ -1219,10 +1521,10 @@
                                     </div>
                                 </div>
                                 <div className="flex border-b border-slate-700">
-                                    <div className="flex-1 py-2 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">🏆 종합 점수</div>
+                                    <div className="flex-1 py-2 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">{t('comprehensive_score')}</div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">데이터 로딩중...</div> : rankingScores.map((rank, idx) => (
+                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">{t('loading')}</div> : rankingScores.map((rank, idx) => (
                                         <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${user && rank.userId === user.uid ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
                                             <div className="flex items-center gap-2">
                                                 <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
@@ -1231,7 +1533,7 @@
                                                     <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
                                                 </div>
                                             </div>
-                                            <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}점</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
+                                            <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
                                         </div>
                                     ))}
                                 </div>
@@ -1260,7 +1562,7 @@
                                             <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform -rotate-12 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">2</span></div>
                                             <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform rotate-6 z-10 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">4</span></div>
                                         </div>
-                                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">24 만들기</h1>
+                                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">{t('title')}</h1>
                                         
                                         {/* Energy Display on Start Screen */}
                                         <div className="flex items-center justify-center gap-2 mt-1 mb-1 bg-slate-900/60 py-1.5 px-4 rounded-full border border-slate-700/50 w-fit mx-auto">
@@ -1272,23 +1574,23 @@
                                         </div>
                                     </div>
                                     <p className="text-slate-300 text-xs flex flex-col gap-1 px-4">
-                                        <span>주어진 4장의 카드와 사칙연산을 조합하여<br/>결과값 24를 완성하세요!</span>
-                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">A 카드는 1 또는 10으로 사용 가능</span>
+                                        <span>{t('subtitle1')}<br/>{t('subtitle2')}</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">{t('a_card_info')}</span>
                                     </p>
                                     <div className="flex flex-col gap-3 w-full pt-1">
                                         <button onClick={initGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${energy >= 1 ? 'bg-blue-600 active:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}>
-                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? '게임 시작' : '행동력 부족'}
+                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? t('game_start') : t('not_enough_energy')}
                                         </button>
                                         <button onClick={startTutorial} className="w-full py-3 bg-emerald-700 active:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 border border-emerald-600">
-                                            <CheckCircle size={18} /> 게임 방법 배우기
+                                            <CheckCircle size={18} /> {t('tutorial_btn')}
                                         </button>
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
-                                            <Trophy size={18} /> 랭킹
+                                            <Trophy size={18} /> {t('ranking')}
                                         </button>
                                         <button onClick={() => setShowShop(true)} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95 border border-indigo-600">
-                                            <ShoppingBag size={18} /> 상점
+                                            <ShoppingBag size={18} /> {t('shop')}
                                         </button>
                                     </div>
                                 </div>
@@ -1300,15 +1602,15 @@
                                     {!isPaused && (
                                         <>
                                             <div className="absolute top-2 left-4 text-[10px] text-emerald-200/60 font-bold uppercase tracking-wider flex items-center gap-2">
-                                                사용할 카드
+                                                {t('cards_to_use')}
                                             </div>
                                             
                                             {/* 정답 예시 오버레이 */}
                                             {gameState === 'fail' && solutionStr && (
                                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
                                                     <div className="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-5 text-center shadow-2xl max-w-sm w-full animate-pop-scale">
-                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">TIME OVER</div>
-                                                        <div className="text-sm text-slate-300 mb-3">아쉬워요! 정답은...</div>
+                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">{t('time_over')}</div>
+                                                        <div className="text-sm text-slate-300 mb-3">{t('too_bad')}</div>
                                                         <div className="text-2xl font-mono font-black text-yellow-400 tracking-wider drop-shadow-lg mb-1">{solutionStr}</div>
                                                         <div className="text-lg font-black text-white">= 24</div>
                                                     </div>
@@ -1335,7 +1637,7 @@
                                     {hintText && (
                                         <div className="absolute -top-4 sm:-top-6 left-1/2 transform -translate-x-1/2 z-[60] animate-pop">
                                             <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl">
-                                                <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">HINT</span>
+                                                <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">{t('hint_upper')}</span>
                                                 <span className="text-xl font-black font-mono text-white tracking-widest">{hintText}</span>
                                             </div>
                                         </div>
@@ -1392,7 +1694,7 @@
                                     
                                     <div className="mt-6 flex flex-col items-center justify-center">
                                         <div className={`text-center leading-tight h-5 mb-2 ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-emerald-200'}`}>
-                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">카드를 배치하고 확인을 누르세요</span>}
+                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">{t('place_cards')}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -1407,7 +1709,7 @@
                                                     <ClockPlus size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">시간</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('time')}</span>
                                                     <span className={`text-lg font-black ${timeItemsLeft > 0 ? 'text-indigo-300' : 'text-slate-500'}`}>{timeItemsLeft}</span>
                                                 </div>
                                             </button>
@@ -1416,7 +1718,7 @@
                                                     <Lightbulb size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">힌트</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('hint')}</span>
                                                     <span className={`text-lg font-black ${hintsLeft > 0 ? 'text-yellow-300' : 'text-slate-500'}`}>{hintsLeft}</span>
                                                 </div>
                                             </button>
@@ -1425,7 +1727,7 @@
                                                     <FastForward size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">패스</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('pass')}</span>
                                                     <span className={`text-lg font-black ${passItemsLeft > 0 ? 'text-rose-300' : 'text-slate-500'}`}>{passItemsLeft}</span>
                                                 </div>
                                             </button>
@@ -1436,18 +1738,18 @@
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
                                         {(gameState === 'playing' || gameState === 'tutorial') ? (
                                             <button onClick={checkResult} disabled={isPaused || (gameState === 'tutorial' && tutorialPhase === 0)} className="w-full py-3.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border border-emerald-400/30">
-                                                <CheckCircle size={20} /> 정답 확인
+                                                <CheckCircle size={20} /> {t('check_answer')}
                                             </button>
                                         ) : null}
                                         
                                         {gameState === 'success' && (
                                             <button onClick={nextLevel} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
-                                                {level === 'T' ? (tutorialPhase === 3 ? '본 게임 시작하기' : '다음 문제') : '다음 문제'} <Play size={20} fill="currentColor" />
+                                                {level === 'T' ? (tutorialPhase === 3 ? t('start_main_game') : t('next_problem')) : t('next_problem')} <Play size={20} fill="currentColor" />
                                             </button>
                                         )}
                                         {gameState === 'fail' && (
                                             <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
-                                                <RotateCcw size={20} /> {energy >= 1 ? '다시 도전' : '행동력 부족'}
+                                                <RotateCcw size={20} /> {energy >= 1 ? t('retry') : t('not_enough_energy')}
                                             </button>
                                         )}
                                     </div>
@@ -1476,7 +1778,7 @@
                                         className={`px-4 py-2 rounded-lg font-bold text-sm ${tutorialStep === 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-600 text-white hover:bg-slate-500'}`}
                                         disabled={tutorialStep === 0}
                                     >
-                                        이전
+                                        {t('prev')}
                                     </button>
                                     <button 
                                         onClick={() => {
@@ -1488,7 +1790,7 @@
                                         }}
                                         className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg text-sm"
                                     >
-                                        {tutorialStep < tutorialTexts.length - 1 ? '다음' : '연습 시작하기'}
+                                        {tutorialStep < tutorialTexts.length - 1 ? t('next') : t('start_practice')}
                                     </button>
                                 </div>
                             </div>
