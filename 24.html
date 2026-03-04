@@ -1022,49 +1022,51 @@
 
             return (
                 <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
-                    {/* 상단 헤더 */}
-                    <div className="flex-none px-3 py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg h-[12vh] min-h-[60px]">
-                         <div className="flex items-center gap-2 sm:gap-3 w-auto min-w-[5rem] shrink-0">
+                    {/* 상단 헤더 - 글씨 크기 및 여백 대폭 확대 */}
+                    <div className="flex-none px-3 sm:px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg min-h-[80px]">
+                         <div className="flex items-center gap-3 shrink-0">
                             <div className="flex flex-col items-center justify-center">
-                                <span className="text-[9px] text-slate-400 font-bold tracking-widest">LEVEL</span>
-                                <span className="text-xl font-black text-blue-400 leading-none">{level.toString().startsWith('T') ? level : level}</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5">LEVEL</span>
+                                <span className="text-2xl sm:text-3xl font-black text-blue-400 leading-none">{level.toString().startsWith('T') ? level : level}</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-lg px-2 py-1 border border-slate-700/50 shadow-inner min-w-[2.5rem]">
-                                <div className="flex items-center gap-1">
-                                    <Heart size={12} className="text-rose-500 fill-rose-500" />
-                                    <span className="text-[11px] font-black text-white leading-none">{energy}</span>
+                            <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-xl px-3 py-1.5 border border-slate-700/50 shadow-inner min-w-[3.5rem]">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart size={16} className="text-rose-500 fill-rose-500" />
+                                    <span className="text-sm sm:text-base font-black text-white leading-none mt-0.5">{energy}</span>
                                 </div>
                                 {energy < MAX_ENERGY && (
-                                    <span className="text-[8px] text-rose-300 font-mono mt-0.5 font-bold leading-none tracking-tighter">{formatTime(timeToNextEnergy)}</span>
+                                    <span className="text-[10px] sm:text-xs text-rose-300 font-mono mt-1 font-bold leading-none tracking-tighter">{formatTime(timeToNextEnergy)}</span>
                                 )}
                             </div>
                          </div>
-                        <div className="flex-1 flex justify-center items-center gap-3">
-                            <div className="flex flex-col items-end justify-center relative w-16">
-                                <span className="text-xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
-                                {lastScoreGain && <span className="text-[10px] font-bold text-emerald-400 animate-score absolute top-5 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
+                        <div className="flex-1 flex justify-center items-center gap-3 sm:gap-5">
+                            <div className="flex flex-col items-end justify-center relative w-auto min-w-[2.5rem]">
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">SCORE</span>
+                                <span className="text-2xl sm:text-3xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
+                                {lastScoreGain && <span className="text-xs font-bold text-emerald-400 animate-score absolute top-8 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
                             </div>
-                            <div className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded-2xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
-                                <Timer size={16} />
-                                <span className="text-2xl font-black font-mono tracking-wider w-10 text-center leading-none">
+                            <div className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-4 rounded-3xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
+                                <Timer size={20} />
+                                <span className="text-3xl sm:text-4xl font-black font-mono tracking-wider w-12 sm:w-16 text-center leading-none mt-0.5">
                                     {level.toString().startsWith('T') ? '∞' : timeLeft}
                                 </span>
-                                {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-lg animate-time-plus ml-12">+10s</span>}
+                                {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-xl animate-time-plus ml-16">+10s</span>}
                             </div>
-                            <div className="flex flex-col items-start justify-center w-16">
+                            <div className="flex flex-col items-start justify-center w-auto min-w-[2.5rem]">
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">COMBO</span>
                                 <div className={`flex items-baseline gap-0.5 font-black ${streak > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
-                                    <span className="text-xl leading-none">{streak}</span>
+                                    <span className="text-2xl sm:text-3xl leading-none">{streak}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-center w-14 shrink-0">
+                        <div className="flex items-center justify-end shrink-0">
                             {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
-                                <button onClick={() => setIsPaused(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600">
-                                    <Pause size={18} />
+                                <button onClick={() => setIsPaused(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                    <Pause size={22} />
                                 </button>
                             ) : (
-                                <button onClick={() => setShowRanking(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600">
-                                    <Trophy size={18} />
+                                <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                    <Trophy size={22} />
                                 </button>
                             )}
                         </div>
