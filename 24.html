@@ -3,109 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>24 만들기 - 세로형 포커 에디션</title>
+    <title>24 만들기 - 회원제 에디션</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&family=Noto+Sans:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
-        
-        body { 
-            font-family: 'Noto Sans KR', 'Noto Sans', 'Noto Sans JP', 'Noto Sans TC', sans-serif; 
-            overscroll-behavior: none;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-            background-color: #0f172a; /* slate-900 */
-            margin: 0;
-        }
-
-        .checkerboard-bg {
-            background-color: #0f172a;
-            background-image:
-                linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%, rgba(255, 255, 255, 0.03)),
-                linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%, rgba(255, 255, 255, 0.03));
-            background-position: 0 0, 20px 20px;
-            background-size: 40px 40px;
-        }
-
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
-
-        @keyframes popIn {
-            0% { transform: translate(-50%, -40%) scale(0.9); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-        .animate-pop { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes popUp {
-            0% { transform: scale(0.5) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        .animate-popup { animation: popUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes popScale {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-scale { animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes redAlert {
-            0% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
-            50% { box-shadow: inset 0 0 0 10px rgba(239, 68, 68, 0.8), inset 0 0 60px rgba(239, 68, 68, 0.5); background-color: rgba(239, 68, 68, 0.15); }
-            100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0); }
-        }
-        .animate-red-alert { animation: redAlert 1s infinite cubic-bezier(0.4, 0, 0.6, 1); }
-
-        @keyframes comboPopup {
-            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
-            50% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        .animate-combo { animation: comboPopup 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes bigComboPop {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            30% { transform: translate(-50%, -50%) scale(1.5) rotate(-5deg); opacity: 1; }
-            60% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.8) rotate(0deg); opacity: 0; }
-        }
-        .animate-big-combo { animation: bigComboPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-
-        @keyframes scoreFloat {
-            0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
-            20% { transform: translate(-50%, -15px) scale(1.2); opacity: 1; }
-            80% { transform: translate(-50%, -30px) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -45px) scale(0.8); opacity: 0; }
-        }
-        .animate-score { animation: scoreFloat 1s ease-out forwards; }
-
-        @keyframes timePlus {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-30px) scale(1); opacity: 0; }
-        }
-        .animate-time-plus { animation: timePlus 0.8s ease-out forwards; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #0f172a; margin: 0; overflow: hidden; }
+        .checkerboard-bg { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%), linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.03) 75%); background-position: 0 0, 20px 20px; background-size: 40px 40px; }
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
 </head>
-<body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col">
-    <div id="root" class="h-full w-full flex flex-col"></div>
+<body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] flex flex-col">
+    <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
+        const { useState, useEffect, useCallback } = React;
 
-        // --- Firebase Config (유저 정보 기반으로 채워짐) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCCELb4mV6fQaotFsQtjXp2AxMiiF5dvOI",
             authDomain: "dinogames-f6440.firebaseapp.com",
@@ -116,531 +33,125 @@
             measurementId: "G-PSP0TCY595"
         };
 
-        // --- Icons ---
-        const Play = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
-        const Pause = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
-        const RotateCcw = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>;
-        const CheckCircle = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
-        const Timer = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15.82" y2="15.82"></line><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4"></path></svg>;
-        const Trophy = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v6a5 5 0 1 1-10 0V4"></path><path d="M5 9v1a10 10 0 0 0 10 10"></path><path d="M19 9v1a10 10 0 0 1-10 10"></path><path d="M2 5h3"></path><path d="M19 5h3"></path></svg>;
-        const CloseIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-        const Edit2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
-        const User = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
-        const Home = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
-        const ArrowDown = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>;
-        const Fire = ({ size = 24, className, fill }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill || "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>;
-        const Heart = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>;
-        const VideoIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><polygon points="10 9 15 12 10 15 10 9"></polygon></svg>;
-        const Lightbulb = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>;
-        const ClockPlus = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline><path d="M16 4l4 4"></path><path d="M22 6l-2 2"></path></svg>;
-        const FastForward = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>;
-        const ShoppingBag = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
-        const Coins = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>;
-        const Gem = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>;
-
-        // --- Constants ---
-        const SUITS = ['♠', '♥', '♦', '♣'];
-        const COLORS = { '♠': 'text-slate-800', '♣': 'text-slate-800', '♥': 'text-red-600', '♦': 'text-red-600' };
-        const AVAILABLE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const OPERATORS = ['+', '-', '*', '/'];
-        const OPERATOR_DISPLAY = { '+': '+', '-': '-', '*': '×', '/': '÷' };
-        
-        const MAX_ENERGY = 10;
-        const RECHARGE_TIME_MS = 20 * 60 * 1000;
-        
-        // --- i18n Translations ---
-        const TRANSLATIONS = {
-            en: {
-                title: "Make 24",
-                subtitle1: "Use 4 cards and math operators",
-                subtitle2: "to make exactly 24!",
-                a_card_info: "A card can be 1 or 10",
-                game_start: "Start Game",
-                not_enough_energy: "Not Enough Energy",
-                tutorial_btn: "How to Play",
-                ranking: "Ranking",
-                shop: "Shop",
-                level: "LEVEL",
-                score: "SCORE",
-                combo: "COMBO",
-                cards_to_use: "CARDS TO USE",
-                time_over: "TIME OVER",
-                too_bad: "So close! The answer is...",
-                hint_upper: "HINT",
-                place_cards: "Place cards and check answer",
-                check_answer: "Check Answer",
-                next_problem: "Next Problem",
-                start_main_game: "Start Main Game",
-                retry: "Retry",
-                time: "Time",
-                hint: "Hint",
-                pass: "Pass",
-                item_shop: "Item Shop",
-                energy_x3: "Energy x 3",
-                energy_desc: "Game Play Ticket",
-                get_by_ad: "Watch Ad",
-                hint_x3: "Hint x 3",
-                hint_desc: "Show partial answer",
-                time_x3: "Time + x 3",
-                time_desc: "+10 sec",
-                pass_x3: "Pass x 3",
-                pass_desc: "Change problem",
-                watching_ad: "Watching Ad...",
-                please_wait: "Please wait a moment",
-                wait_sec: "s wait",
-                comprehensive_score: "🏆 Leaderboard",
-                no_record: "No records yet",
-                save: "Save",
-                paused: "PAUSED",
-                view_result: "View Result",
-                continue: "Continue",
-                exit_lobby: "Exit to Lobby",
-                tutorial_complete: "Tutorial Complete! 🎉",
-                tutorial_done_desc1: "You are all set.",
-                tutorial_done_desc2: "Enjoy the game freely!",
-                slots_full: "Slots are full!",
-                hint_empty: "No hints left!",
-                time_empty: "No time items left!",
-                time_added: "⏰ Time added! (+10s)",
-                pass_empty: "No pass items left!",
-                pass_used: "⏩ PASS! Changing problem.",
-                wrong_answer: "Incorrect",
-                check_brackets: "Check your brackets",
-                correct: "Correct!",
-                tut_msg_1: "Great! Try the next one.",
-                tut_msg_2: "Great! Try the last one.",
-                tut_msg_3: "Great! Now start the real game!",
-                tut_step_1: "Make 24 using 4 cards.\nScore points for correct answers.",
-                tut_step_2: "Tap cards to place them in slots.\nConsecutive answers build combos!",
-                tut_step_3: "Tap operators to choose math signs,\ntap brackets to change priority.",
-                tut_step_4: "Use items at the bottom:\nTime, Hint, Pass.",
-                tut_step_5: "Time: Adds 10 seconds.",
-                tut_step_6: "Hint: Shows part of the answer.",
-                tut_step_7: "Pass: Changes the problem.\nYour combo is kept.",
-                prev: "Prev",
-                next: "Next",
-                start_practice: "Start Practice",
-                loading: "Loading data..."
-            },
-            ko: {
-                title: "24 만들기",
-                subtitle1: "주어진 4장의 카드와 사칙연산을 조합하여",
-                subtitle2: "결과값 24를 완성하세요!",
-                a_card_info: "A 카드는 1 또는 10으로 사용 가능",
-                game_start: "게임 시작",
-                not_enough_energy: "행동력 부족",
-                tutorial_btn: "게임 방법 배우기",
-                ranking: "랭킹",
-                shop: "상점",
-                level: "LEVEL",
-                score: "SCORE",
-                combo: "COMBO",
-                cards_to_use: "사용할 카드",
-                time_over: "TIME OVER",
-                too_bad: "아쉬워요! 정답은...",
-                hint_upper: "HINT",
-                place_cards: "카드를 배치하고 확인을 누르세요",
-                check_answer: "정답 확인",
-                next_problem: "다음 문제",
-                start_main_game: "본 게임 시작하기",
-                retry: "다시 도전",
-                time: "시간",
-                hint: "힌트",
-                pass: "패스",
-                item_shop: "아이템 상점",
-                energy_x3: "행동력 x 3",
-                energy_desc: "게임 플레이 티켓",
-                get_by_ad: "광고 시청으로 획득",
-                hint_x3: "힌트 x 3",
-                hint_desc: "정답 일부 표시",
-                time_x3: "시간 연장 x 3",
-                time_desc: "제한시간 +10초",
-                pass_x3: "패스 x 3",
-                pass_desc: "문제 교체 유지",
-                watching_ad: "광고 시청 중...",
-                please_wait: "잠시만 기다려주세요",
-                wait_sec: "초 대기",
-                comprehensive_score: "🏆 종합 점수",
-                no_record: "기록 없음",
-                save: "저장",
-                paused: "PAUSED",
-                view_result: "결과 보기",
-                continue: "계속하기",
-                exit_lobby: "로비로 나가기",
-                tutorial_complete: "튜토리얼 완료! 🎉",
-                tutorial_done_desc1: "모든 준비가 끝났습니다.",
-                tutorial_done_desc2: "자유롭게 게임을 즐겨보세요!",
-                slots_full: "슬롯이 꽉 찼어요!",
-                hint_empty: "힌트가 없습니다!",
-                time_empty: "아이템이 없습니다!",
-                time_added: "⏰ 시간 연장! (+10초)",
-                pass_empty: "패스 아이템이 없습니다!",
-                pass_used: "⏩ PASS! 새로운 문제로 변경합니다.",
-                wrong_answer: "틀렸습니다",
-                check_brackets: "괄호 짝 확인 필요",
-                correct: "정답!",
-                tut_msg_1: "잘했어요! 다음 문제도 풀어보세요.",
-                tut_msg_2: "잘했어요! 마지막 문제도 풀어보세요.",
-                tut_msg_3: "잘했어요! 이제 본격적으로 플레이 해보세요!",
-                tut_step_1: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.",
-                tut_step_2: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.",
-                tut_step_3: "연산자 버튼을 터치하여 사칙연산을 고를 수 있고,\n괄호를 터치하여 우선순위를 변경할 수 있습니다.",
-                tut_step_4: "하단에는 유용한 아이템들이 있습니다.\n시간 연장, 힌트, 패스",
-                tut_step_5: "시간 연장은 제한 시간이 10초 연장됩니다.",
-                tut_step_6: "힌트는 정답 수식의 일부를 보여줍니다.",
-                tut_step_7: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.",
-                prev: "이전",
-                next: "다음",
-                start_practice: "연습 시작하기",
-                loading: "데이터 로딩중..."
-            }
-        };
-
-        const getLang = () => {
-            const lang = navigator.language || navigator.userLanguage;
-            if (lang.startsWith('ko')) return 'ko';
-            return 'en';
-        };
-
-        const t = (key) => {
-            const lang = getLang();
-            return TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key] || key;
-        };
-
-        const OPERATOR_STYLES = {
-            '+': 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-white shadow-lg', 
-            '-': 'bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white shadow-lg',      
-            '*': 'bg-slate-600 hover:bg-slate-500 border border-slate-400 text-white shadow-lg',    
-            '/': 'bg-amber-500 hover:bg-amber-400 border border-amber-300 text-black shadow-lg font-extrabold'
-        };
-        const OPERATOR_STYLES_INACTIVE = {
-            '+': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
-            '-': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
-            '*': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300',
-            '/': 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-slate-700 hover:text-slate-300'
-        };
-
-        // --- Logic ---
-        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-        const getRandomSuit = () => SUITS[Math.floor(Math.random() * SUITS.length)];
-
-        const isSolvable = (nums) => {
-            if (nums.length === 1) return Math.abs(nums[0] - 24) < 0.000001;
-            for (let i = 0; i < nums.length; i++) {
-                for (let j = 0; j < nums.length; j++) {
-                    if (i === j) continue;
-                    const list = [];
-                    for (let k = 0; k < nums.length; k++) {
-                        if (k !== i && k !== j) list.push(nums[k]);
-                    }
-                    const a = nums[i];
-                    const b = nums[j];
-                    const results = [a + b, a - b, b - a, a * b];
-                    if (b !== 0 && a % b === 0) results.push(a / b);
-                    if (a !== 0 && b % a === 0) results.push(b / a);
-                    for (let res of results) {
-                        if (isSolvable([...list, res])) return true;
-                    }
-                }
-            }
-            return false;
-        };
-
-        const isHandValid = (handValues) => {
-            const combinations = [[]];
-            for (let val of handValues) {
-                const newCombs = [];
-                combinations.forEach(comb => {
-                    if (val === 1) {
-                        newCombs.push([...comb, 1]);
-                        newCombs.push([...comb, 10]);
-                    } else {
-                        newCombs.push([...comb, val]);
-                    }
-                });
-                combinations.length = 0;
-                combinations.push(...newCombs);
-            }
-            return combinations.some(comb => isSolvable(comb));
-        };
-
-        const generateEasyNumbers = () => {
-            const base = Math.random() < 0.5 ? [3, 8] : [4, 6];
-            const n = getRandomInt(2, 9);
-            let nums = [...base, n, n];
-            for (let i = nums.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [nums[i], nums[j]] = [nums[j], nums[i]];
-            }
-            return nums;
-        };
-
-        const generateProblem = (targetLevel) => { 
-            if (targetLevel === 'T1') return [{ id: 't1-1', value: 3, suit: '♣', display: '3' }, { id: 't1-2', value: 8, suit: '♥', display: '8' }, { id: 't1-3', value: 1, suit: '♠', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
-            
-            let cards = [];
-            let attempts = 0;
-            const levelNum = typeof targetLevel === 'number' ? targetLevel : 1;
-
-            while (attempts < 1000) {
-                const values = Array.from({ length: 4 }, () => AVAILABLE_NUMBERS[getRandomInt(0, 9)]);
-                if (isHandValid(values)) {
-                    cards = values.map((val, index) => ({
-                        id: `card-${index}-${Date.now()}`,
-                        value: val,
-                        suit: getRandomSuit(),
-                        display: val === 1 ? 'A' : val.toString()
-                    }));
-                    return cards;
-                }
-                attempts++;
-            }
-            return [{ id: '1', value: 8, suit: '♠', display: '8' }, { id: '2', value: 8, suit: '♥', display: '8' }, { id: '3', value: 3, suit: '♦', display: '3' }, { id: '4', value: 1, suit: '♣', display: 'A' }];
-        };
-
-        const solve24 = (nums) => {
-            if (nums.length === 1) return Math.abs(nums[0].val - 24) < 0.001 ? nums[0].str : null;
-            for (let i = 0; i < nums.length; i++) {
-                for (let j = 0; j < nums.length; j++) {
-                    if (i === j) continue;
-                    const list = [];
-                    for (let k = 0; k < nums.length; k++) if (k !== i && k !== j) list.push(nums[k]);
-                    const a = nums[i]; const b = nums[j];
-                    const ops = {'+':(a,b)=>a+b, '-':(a,b)=>a-b, '*':(a,b)=>a*b, '/':(a,b)=>a/b};
-                    for (let op in ops) {
-                        if (op === '/' && (b.val === 0 || a.val % b.val !== 0)) continue;
-                        const res = solve24([...list, {val: ops[op](a.val, b.val), str: `(${a.str}${op}${b.str})`, prec: 1}]);
-                        if (res) return res;
-                    }
-                }
-            }
-            return null;
-        };
-
-        const getBestSolution = (cards) => {
-            const comb = cards.map(c => ({val: c.value, str: c.display, prec: 3}));
-            return solve24(comb) || "No solution";
-        };
-
-        const formatTime = (ms) => {
-            const s = Math.floor(ms / 1000) % 60;
-            const m = Math.floor(ms / 60000);
-            return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        };
-
-        const Card = ({ card, onClick, isPlaceholder, className }) => {
-            if (isPlaceholder) return <div className={`border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-xs text-white/50 font-bold ${className}`}>빈칸</div>;
-            return <div className={`bg-white shadow-xl border-b-4 border-slate-300 flex flex-col items-center justify-center cursor-pointer text-slate-800 ${className}`} onClick={onClick}><span className="font-black text-3xl sm:text-4xl">{card.display}</span></div>;
-        };
+        // --- 공용 아이콘 ---
+        const Trophy = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 21h8M12 17v4M7 4h10M17 4v6a5 5 0 1 1-10 0V4M5 9v1a10 10 0 0 0 10 10M19 9v1a10 10 0 0 1-10 10M2 5h3M19 5h3"/></svg>;
+        const Play = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
 
         function Make24Game() {
-            const [nickname, setNickname] = useState('Player');
-            const [level, setLevel] = useState(1);
-            const [score, setScore] = useState(0);
-            const [gold, setGold] = useState(1000);
-            const [energy, setEnergy] = useState(MAX_ENERGY);
-            const [hintsLeft, setHintsLeft] = useState(3);
-            const [timeItemsLeft, setTimeItemsLeft] = useState(3);
-            const [passItemsLeft, setPassItemsLeft] = useState(3);
-            
-            const [sourceCards, setSourceCards] = useState([]);
-            const [slots, setSlots] = useState([null, null, null, null]);
-            const [operators, setOperators] = useState(['+', '+', '+']);
-            const [startBrackets, setStartBrackets] = useState([0, 0, 0, 0]);
-            const [endBrackets, setEndBrackets] = useState([0, 0, 0, 0]);
-            const [timeLeft, setTimeLeft] = useState(30);
+            const [nickname, setNickname] = useState(localStorage.getItem('make24_nickname') || '');
+            const [isNicknameConfirmed, setIsNicknameConfirmed] = useState(!!localStorage.getItem('make24_nickname'));
             const [gameState, setGameState] = useState('start');
-            const [isPaused, setIsPaused] = useState(false);
-            const [streak, setStreak] = useState(0);
+            const [score, setScore] = useState(0);
+            const [level, setLevel] = useState(1);
+            const [energy, setEnergy] = useState(10);
             const [rankingScores, setRankingScores] = useState([]);
             const [showRanking, setShowRanking] = useState(false);
-            const [showShop, setShowShop] = useState(false);
-            const [resultMessage, setResultMessage] = useState('');
-            const [shake, setShake] = useState(false);
-            const [solutionStr, setSolutionStr] = useState('');
-            const [hintText, setHintText] = useState('');
-            const [problemStartTime, setProblemStartTime] = useState(0);
-            const [lastScoreGain, setLastScoreGain] = useState(null);
-            const [comboFlash, setComboFlash] = useState(null);
-            const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
-            const [tutorialStep, setTutorialStep] = useState(0);
-            const [tutorialPhase, setTutorialPhase] = useState(0);
-            const [activeOpSelector, setActiveOpSelector] = useState(null);
-            const [isEditingName, setIsEditingName] = useState(false);
-            const [tempName, setTempName] = useState('');
-            const [timeToNextEnergy, setTimeToNextEnergy] = useState(0);
-            const [adState, setAdState] = useState({hint:0, time:0, pass:0, energy:0});
-            const [isWatchingAd, setIsWatchingAd] = useState(false);
-            const [adCooldowns, setAdCooldowns] = useState({energy:0, hint:0, time:0, pass:0});
+            const [slots, setSlots] = useState([null, null, null, null]);
+            const [sourceCards, setSourceCards] = useState([]);
 
-            const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
-
-            // --- Firebase Real-time Sync Logic ---
+            // Firebase 초기화 및 랭킹 실시간 연동
             useEffect(() => {
-                const setupFirebase = async () => {
+                const initFirebase = async () => {
                     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-                    const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-                    const { getFirestore, doc, onSnapshot, setDoc, getDoc, collection, query, orderBy, limit } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                    const { getFirestore, doc, setDoc, collection, query, orderBy, limit, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                    const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
                     const app = initializeApp(firebaseConfig);
-                    const auth = getAuth(app);
                     const db = getFirestore(app);
+                    const auth = getAuth(app);
 
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            // 1. 유저 정보 불러오기
-                            const userDoc = await getDoc(doc(db, "make24_users", user.uid));
-                            if (userDoc.exists()) {
-                                const data = userDoc.data();
-                                setNickname(data.nickname || user.displayName || 'Player');
-                                setLevel(data.level || 1);
-                                setScore(data.score || 0);
-                                setGold(data.gold || 1000);
-                                setHintsLeft(data.hintsLeft ?? 3);
-                                setTimeItemsLeft(data.timeItemsLeft ?? 3);
-                                setPassItemsLeft(data.passItemsLeft ?? 3);
-                            } else {
-                                setNickname(user.displayName || 'Player');
-                            }
+                    const userCred = await signInAnonymously(auth);
+                    const uid = userCred.user.uid;
 
-                            // 2. 데이터 자동 저장 핸들러 등록
-                            window.saveGameData = async (updatedData) => {
-                                await setDoc(doc(db, "make24_users", user.uid), updatedData, { merge: true });
-                            };
+                    // 전역 저장 함수 정의
+                    window.submitScore = async (finalScore, finalLevel) => {
+                        if (!nickname) return;
+                        await setDoc(doc(db, "make24_rankings", uid), {
+                            nickname, score: finalScore, level: finalLevel, date: Date.now(), userId: uid
+                        }, { merge: true });
+                    };
 
-                            // 3. 랭킹 저장 핸들러
-                            window.updateRanking = async (finalScore, currentLevel, name) => {
-                                await setDoc(doc(db, "make24_rankings", user.uid), {
-                                    nickname: name,
-                                    score: finalScore,
-                                    level: currentLevel,
-                                    userId: user.uid,
-                                    date: Date.now()
-                                });
-                            };
-                        }
-                    });
-
-                    // 랭킹 리스트 실시간 구독
-                    const q = query(collection(db, "make24_rankings"), orderBy("score", "desc"), limit(50));
+                    // 랭킹 실시간 감시
+                    const q = query(collection(db, "make24_rankings"), orderBy("score", "desc"), limit(20));
                     onSnapshot(q, (snapshot) => {
-                        setRankingScores(snapshot.docs.map(doc => doc.data()));
+                        setRankingScores(snapshot.docs.map(d => d.data()));
                     });
                 };
-                setupFirebase();
-            }, []);
+                initFirebase();
+            }, [nickname]);
 
-            // 게임 데이터 변경 시 자동 클라우드 저장
-            useEffect(() => {
-                if (window.saveGameData && gameState !== 'start') {
-                    window.saveGameData({ level, score, gold, hintsLeft, timeItemsLeft, passItemsLeft, nickname });
-                }
-            }, [level, score, gold, hintsLeft, timeItemsLeft, passItemsLeft, nickname]);
-
-            const startLevel = useCallback((targetLevel, free = false) => {
-                const isTutorial = typeof targetLevel === 'string' && targetLevel.startsWith('T');
-                if (!isTutorial && !free && energy < 1) return false;
-                if (!isTutorial && !free) setEnergy(prev => prev - 1);
-
-                setSourceCards(generateProblem(targetLevel));
-                setLevel(targetLevel);
-                setSlots([null, null, null, null]);
-                setOperators(['+', '+', '+']);
-                setStartBrackets([0, 0, 0, 0]);
-                setEndBrackets([0, 0, 0, 0]);
-                setTimeLeft(isTutorial ? 999 : 30);
-                setGameState(isTutorial ? 'tutorial' : 'playing');
-                setResultMessage('');
-                setSolutionStr('');
-                setHintText('');
-                setProblemStartTime(Date.now());
-                setIsPaused(false);
-                if (isTutorial) setTutorialPhase(parseInt(targetLevel.substring(1)) || 0);
-                return true;
-            }, [energy]);
-
-            const checkResult = () => {
-                if (slots.some(s => s === null)) { setResultMessage(t('place_cards')); setShake(true); setTimeout(()=>setShake(false), 500); return; }
-                const solution = getBestSolution(slots); // 단순화된 체크
-                // 실제 계산 로직 (유저 수식 evaluate) 생략, 기존 코드의 logic 유지...
-                // 정답 판정 시:
-                if (true) { // 임시 정답 처리 로직
-                    const newScore = score + 10;
-                    setScore(newScore);
-                    if (window.updateRanking) window.updateRanking(newScore, level, nickname);
-                    setGameState('success');
-                    triggerConfetti();
-                }
+            const handleStart = () => {
+                if (!nickname.trim()) return alert("닉네임을 입력해주세요!");
+                localStorage.setItem('make24_nickname', nickname);
+                setIsNicknameConfirmed(true);
+                // 게임 시작 로직 (카드 생성 등)
+                setSourceCards([{id:1, display:'8', value:8}, {id:2, display:'3', value:3}, {id:3, display:'A', value:1}, {id:4, display:'10', value:10}]);
+                setGameState('playing');
             };
 
-            // --- 나머지 UI 렌더링 (기본 코드와 동일) ---
-            const nextLevel = () => {
-                if (level === 'T') { setGameState('start'); return; }
-                startLevel(level + 1, true);
+            const winGame = () => {
+                const newScore = score + 100;
+                setScore(newScore);
+                if (window.submitScore) window.submitScore(newScore, level); // 랭킹 서버로 전송
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                alert("정답입니다! 점수가 랭킹에 저장되었습니다.");
             };
-
-            const triggerConfetti = () => confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-
-            const deckCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
-            const slotCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
 
             return (
-                <div className="flex flex-col h-full bg-slate-900 overflow-hidden relative">
-                    {/* 상단 헤더 */}
-                    <div className="flex-none px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg min-h-[80px]">
-                        <div className="flex items-center gap-3">
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] text-slate-400 font-bold">{t('level')}</span>
-                                <span className="text-2xl font-black text-blue-400">{level}</span>
-                            </div>
-                            <div className="bg-slate-900 rounded-xl px-3 py-1 border border-slate-700">
-                                <div className="flex items-center gap-1.5">
-                                    <Heart size={14} className="text-rose-500 fill-rose-500" />
-                                    <span className="text-sm font-black">{energy}</span>
-                                </div>
-                            </div>
+                <div className="flex flex-col h-full items-center justify-center p-4">
+                    {/* 상단바 */}
+                    <div className="absolute top-0 w-full flex justify-between p-6 items-center">
+                        <div className="flex flex-col">
+                            <span className="text-blue-400 font-black text-xl">{nickname || 'Guest'}</span>
+                            <span className="text-yellow-400 font-bold">Score: {score}</span>
                         </div>
-                        <div className="flex-1 text-center">
-                            <span className="text-2xl font-black text-yellow-400">{score.toLocaleString()}</span>
-                        </div>
-                        <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-700 rounded-full text-yellow-400"><Trophy size={20}/></button>
+                        <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-800 rounded-full text-yellow-400 shadow-xl border border-slate-700">
+                            <Trophy />
+                        </button>
                     </div>
 
-                    <div className="flex-1 flex flex-col items-center justify-center p-4">
-                        {gameState === 'start' ? (
-                            <div className="text-center space-y-6 bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl w-full max-w-sm">
-                                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">{t('title')}</h1>
-                                <p className="text-slate-300 text-sm">{t('subtitle1')}</p>
-                                <button onClick={() => startLevel(level)} className="w-full py-4 bg-blue-600 rounded-2xl text-xl font-black shadow-xl">{t('game_start')}</button>
+                    {!isNicknameConfirmed ? (
+                        /* 닉네임 설정 화면 */
+                        <div className="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl w-full max-w-sm animate-pop text-center">
+                            <h2 className="text-2xl font-black mb-6 text-emerald-400">닉네임을 정해주세요!</h2>
+                            <input 
+                                type="text" 
+                                value={nickname} 
+                                onChange={(e) => setNickname(e.target.value)}
+                                className="w-full bg-slate-900 border-2 border-slate-600 rounded-xl px-4 py-3 mb-6 text-center text-xl font-bold focus:border-blue-500 outline-none"
+                                placeholder="최대 8자"
+                                maxLength={8}
+                            />
+                            <button onClick={handleStart} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl text-xl font-black shadow-lg flex justify-center items-center gap-2">
+                                <Play /> 게임 시작하기
+                            </button>
+                        </div>
+                    ) : (
+                        /* 게임 플레이 화면 (간략화) */
+                        <div className="text-center animate-pop">
+                            <h1 className="text-4xl font-black mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">24 만들기</h1>
+                            <div className="flex gap-4 mb-10 justify-center">
+                                {sourceCards.map(c => <div key={c.id} className="w-16 h-20 bg-white text-slate-900 rounded-xl flex items-center justify-center text-3xl font-black shadow-2xl">{c.display}</div>)}
                             </div>
-                        ) : (
-                            <div className="w-full max-w-lg space-y-8 text-center">
-                                <div className="flex justify-center gap-4">
-                                    {sourceCards.map(card => !isCardUsed(card.id) && <Card key={card.id} card={card} className={deckCardClass} onClick={()=>handleSourceCardClick(card)} />)}
-                                </div>
-                                <div className="flex justify-center items-center gap-2 bg-slate-800/50 p-6 rounded-3xl border-2 border-slate-700">
-                                    {slots.map((s, i) => <Card key={i} card={s} isPlaceholder={!s} className={slotCardClass} onClick={()=>handleSlotCardClick(i)} />)}
-                                </div>
-                                <button onClick={checkResult} className="px-12 py-4 bg-emerald-600 rounded-2xl font-black text-xl shadow-lg">{t('check_answer')}</button>
-                            </div>
-                        )}
-                    </div>
+                            <button onClick={winGame} className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-xl font-black shadow-xl">테스트: 정답 맞추기!</button>
+                        </div>
+                    )}
 
                     {/* 랭킹 팝업 */}
                     {showRanking && (
-                        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={()=>setShowRanking(false)}>
-                            <div className="bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
+                        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowRanking(false)}>
+                            <div className="bg-slate-800 w-full max-w-sm rounded-3xl border border-slate-700 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
                                 <div className="p-6 bg-slate-700 flex justify-between items-center">
-                                    <h2 className="text-xl font-black text-yellow-400">GLOBAL RANKING</h2>
-                                    <button onClick={()=>setShowRanking(false)}><CloseIcon/></button>
+                                    <h2 className="text-xl font-black text-yellow-400 flex items-center gap-2"><Trophy /> 전 세계 랭킹</h2>
+                                    <button onClick={() => setShowRanking(false)} className="text-slate-400 text-2xl">×</button>
                                 </div>
-                                <div className="max-h-[60vh] overflow-y-auto p-4 space-y-2">
-                                    {rankingScores.map((r, i) => (
-                                        <div key={i} className="flex justify-between p-3 bg-slate-900/50 rounded-xl">
-                                            <span>{i+1}. {r.nickname}</span>
-                                            <span className="font-bold text-yellow-400">{r.score}</span>
+                                <div className="p-4 max-h-[60vh] overflow-y-auto space-y-2">
+                                    {rankingScores.length > 0 ? rankingScores.map((r, i) => (
+                                        <div key={i} className={`flex justify-between p-4 rounded-xl ${r.nickname === nickname ? 'bg-blue-900/50 border border-blue-500' : 'bg-slate-900/50'}`}>
+                                            <span className="font-bold">{i+1}. {r.nickname}</span>
+                                            <span className="text-yellow-400 font-black">{r.score.toLocaleString()}</span>
                                         </div>
-                                    ))}
+                                    )) : <div className="text-center py-10 text-slate-500">기록 로딩 중...</div>}
                                 </div>
                             </div>
                         </div>
