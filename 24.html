@@ -10,10 +10,10 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&family=Noto+Sans:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
         
         body { 
-            font-family: 'Noto Sans KR', sans-serif; 
+            font-family: 'Noto Sans KR', 'Noto Sans', 'Noto Sans JP', 'Noto Sans TC', sans-serif; 
             overscroll-behavior: none;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
@@ -137,6 +137,327 @@
         const MAX_ENERGY = 10;
         const RECHARGE_TIME_MS = 20 * 60 * 1000;
         
+        // --- i18n Translations ---
+        const TRANSLATIONS = {
+            en: {
+                title: "Make 24",
+                subtitle1: "Use 4 cards and math operators",
+                subtitle2: "to make exactly 24!",
+                a_card_info: "A card can be 1 or 10",
+                game_start: "Start Game",
+                not_enough_energy: "Not Enough Energy",
+                tutorial_btn: "How to Play",
+                ranking: "Ranking",
+                shop: "Shop",
+                solved: "SOLVED",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "CARDS TO USE",
+                time_over: "TIME OVER",
+                too_bad: "So close! The answer is...",
+                hint_upper: "HINT",
+                place_cards: "Place cards and check answer",
+                check_answer: "Check Answer",
+                next_problem: "Next Problem",
+                restart: "Restart",
+                time: "Time",
+                hint: "Hint",
+                pass: "Pass",
+                item_shop: "Item Shop",
+                energy_x3: "Energy x 3",
+                energy_desc: "Game Play Ticket",
+                get_by_ad: "Watch Ad",
+                hint_x3: "Hint x 3",
+                hint_desc: "Show partial answer",
+                time_x3: "Time + x 3",
+                time_desc: "+10 sec",
+                pass_x3: "Pass x 3",
+                pass_desc: "Change problem",
+                watching_ad: "Watching Ad...",
+                please_wait: "Please wait a moment",
+                wait_sec: "s wait",
+                tab_score: "Score",
+                tab_combo: "Combo",
+                tab_solved: "Max Solved",
+                no_record: "No records yet",
+                save: "Save",
+                paused: "PAUSED",
+                view_result: "View Result",
+                continue: "Continue",
+                exit_lobby: "Exit to Lobby",
+                tutorial_complete: "Tutorial Complete! 🎉",
+                tutorial_done_desc1: "You are all set.",
+                tutorial_done_desc2: "Enjoy the game freely!",
+                slots_full: "Slots are full!",
+                hint_empty: "No hints left!",
+                time_empty: "No time items left!",
+                time_added: "⏰ Time added! (+10s)",
+                pass_empty: "No pass items left!",
+                pass_used: "⏩ PASS! Changing problem.",
+                wrong_answer: "Incorrect",
+                check_brackets: "Check your brackets",
+                correct: "Correct!",
+                create_nickname_title: "Set Nickname",
+                create_nickname_desc: "Enter a cool nickname to use in the game.\n(This will be shown on the leaderboard)",
+                confirm: "Confirm",
+                nickname_placeholder: "Nickname (Max 8 chars)",
+                pts: "PTS",
+                tut_goal_1: "Step 1: Make 8 x 3",
+                tut_goal_2: "Step 2: Make 6 x 4",
+                tut_goal_3: "Step 3: Add all to make 24",
+                tut_goal_4: "Step 4: Tap brackets to use them",
+                tut_goal_5: "Step 5: Tap twice for double brackets",
+                tut_hint_1: "Hint: Try 8 × 3 × 1 × 1 = 24",
+                tut_hint_2: "Hint: Try 6 × 4 × 1 × 1 = 24",
+                tut_hint_3: "Hint: Try 5 + 7 + 8 + 4 = 24",
+                tut_hint_4: "Hint: Try (3 + 5) × 3 × 1 = 24",
+                tut_hint_5: "Hint: Try ((2 + 2) × 3) × 2 = 24",
+                goto_lobby: "Go to Lobby",
+                a_card_toast: "A card can be used as 1 or 10!"
+            },
+            ko: {
+                title: "24 만들기",
+                subtitle1: "주어진 4장의 카드와 사칙연산을 조합하여",
+                subtitle2: "결과값 24를 완성하세요!",
+                a_card_info: "A 카드는 1 또는 10으로 사용 가능",
+                game_start: "게임 시작",
+                not_enough_energy: "행동력 부족",
+                tutorial_btn: "게임 방법 배우기",
+                ranking: "랭킹",
+                shop: "상점",
+                solved: "푼 문제",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "사용할 카드",
+                time_over: "TIME OVER",
+                too_bad: "아쉬워요! 정답은...",
+                hint_upper: "HINT",
+                place_cards: "카드를 배치하고 확인을 누르세요",
+                check_answer: "정답 확인",
+                next_problem: "다음 문제",
+                restart: "처음부터 다시",
+                time: "시간",
+                hint: "힌트",
+                pass: "패스",
+                item_shop: "아이템 상점",
+                energy_x3: "행동력 x 3",
+                energy_desc: "게임 플레이 티켓",
+                get_by_ad: "광고 시청으로 획득",
+                hint_x3: "힌트 x 3",
+                hint_desc: "정답 일부 표시",
+                time_x3: "시간 연장 x 3",
+                time_desc: "제한시간 +10초",
+                pass_x3: "패스 x 3",
+                pass_desc: "문제 교체 유지",
+                watching_ad: "광고 시청 중...",
+                please_wait: "잠시만 기다려주세요",
+                wait_sec: "초 대기",
+                tab_score: "점수",
+                tab_combo: "최대 콤보",
+                tab_solved: "최다 풀이",
+                no_record: "기록 없음",
+                save: "저장",
+                paused: "PAUSED",
+                view_result: "결과 보기",
+                continue: "계속하기",
+                exit_lobby: "로비로 나가기",
+                tutorial_complete: "튜토리얼 완료! 🎉",
+                tutorial_done_desc1: "모든 준비가 끝났습니다.",
+                tutorial_done_desc2: "자유롭게 게임을 즐겨보세요!",
+                slots_full: "슬롯이 꽉 찼어요!",
+                hint_empty: "힌트가 없습니다!",
+                time_empty: "아이템이 없습니다!",
+                time_added: "⏰ 시간 연장! (+10초)",
+                pass_empty: "패스 아이템이 없습니다!",
+                pass_used: "⏩ PASS! 새로운 문제로 변경합니다.",
+                wrong_answer: "틀렸습니다",
+                check_brackets: "괄호 짝 확인 필요",
+                correct: "정답!",
+                create_nickname_title: "닉네임 설정",
+                create_nickname_desc: "게임에서 사용할 멋진 닉네임을 입력해주세요.\n(랭킹보드에 표시됩니다)",
+                confirm: "확인",
+                nickname_placeholder: "닉네임 입력 (최대 8자)",
+                pts: "점",
+                tut_goal_1: "1단계: 8 x 3 만들어 보기",
+                tut_goal_2: "2단계: 6 x 4 만들어 보기",
+                tut_goal_3: "3단계: 모두 더해서 24 만들어 보기",
+                tut_goal_4: "4단계: 괄호를 터치하여 활용해보기",
+                tut_goal_5: "5단계: 괄호를 두 번 터치해 이중괄호 쓰기",
+                tut_hint_1: "힌트: 8 × 3 × 1 × 1 = 24 처럼 해보세요!",
+                tut_hint_2: "힌트: 6 × 4 × 1 × 1 = 24 처럼 해보세요!",
+                tut_hint_3: "힌트: 5 + 7 + 8 + 4 = 24 처럼 모두 더해보세요!",
+                tut_hint_4: "힌트: (3 + 5) × 3 × 1 = 24 (괄호 터치!)",
+                tut_hint_5: "힌트: ((2 + 2) × 3) × 2 = 24 (괄호 두 번 터치!)",
+                goto_lobby: "로비로 이동",
+                a_card_toast: "A 카드는 1 또는 10으로 쓸 수 있습니다!"
+            },
+            ja: {
+                title: "24を作る",
+                subtitle1: "4枚のカードと四則演算を使って",
+                subtitle2: "答えを24にしてください！",
+                a_card_info: "Aカードは1または10として使用可能",
+                game_start: "ゲーム開始",
+                not_enough_energy: "スタミナ不足",
+                tutorial_btn: "遊び方",
+                ranking: "ランキング",
+                shop: "ショップ",
+                solved: "解決数",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "使うカード",
+                time_over: "TIME OVER",
+                too_bad: "残念！正解は...",
+                hint_upper: "HINT",
+                place_cards: "カードを配置して確認を押してください",
+                check_answer: "正解確認",
+                next_problem: "次の問題",
+                restart: "最初から",
+                time: "時間",
+                hint: "ヒント",
+                pass: "パス",
+                item_shop: "アイテムショップ",
+                energy_x3: "スタミナ x 3",
+                energy_desc: "プレイチケット",
+                get_by_ad: "広告を見て獲得",
+                hint_x3: "ヒント x 3",
+                hint_desc: "答えの一部を表示",
+                time_x3: "時間延長 x 3",
+                time_desc: "制限時間 +10秒",
+                pass_x3: "パス x 3",
+                pass_desc: "問題を入れ替え",
+                watching_ad: "広告視聴中...",
+                please_wait: "少々お待ちください",
+                wait_sec: "秒 待機",
+                tab_score: "スコア",
+                tab_combo: "最大コンボ",
+                tab_solved: "最多正解",
+                no_record: "記録なし",
+                save: "保存",
+                paused: "PAUSED",
+                view_result: "結果を見る",
+                continue: "続ける",
+                exit_lobby: "ロビーへ",
+                tutorial_complete: "チュートリアル完了！ 🎉",
+                tutorial_done_desc1: "準備はすべて完了しました。",
+                tutorial_done_desc2: "ゲームをお楽しみください！",
+                slots_full: "スロットが満杯です！",
+                hint_empty: "ヒントがありません！",
+                time_empty: "アイテムがありません！",
+                time_added: "⏰ 時間延長！ (+10秒)",
+                pass_empty: "パスがありません！",
+                pass_used: "⏩ PASS! 問題を変更します。",
+                wrong_answer: "不正解",
+                check_brackets: "括弧を確認してください",
+                correct: "正解！",
+                create_nickname_title: "ニックネーム設定",
+                create_nickname_desc: "ゲームで使用するニックネームを入力してください。\n（ランキングに表示されます）",
+                confirm: "確認",
+                nickname_placeholder: "ニックネーム（最大8文字）",
+                pts: "PT",
+                tut_goal_1: "ステップ1：8 x 3を作る",
+                tut_goal_2: "ステップ2：6 x 4を作る",
+                tut_goal_3: "ステップ3：全て足して24を作る",
+                tut_goal_4: "ステップ4：括弧をタップして使う",
+                tut_goal_5: "ステップ5：2回タップで二重括弧",
+                tut_hint_1: "ヒント: 8 × 3 × 1 × 1 = 24 にしよう",
+                tut_hint_2: "ヒント: 6 × 4 × 1 × 1 = 24 にしよう",
+                tut_hint_3: "ヒント: 5 + 7 + 8 + 4 = 24 にしよう",
+                tut_hint_4: "ヒント: (3 + 5) × 3 × 1 = 24 (括弧をタップ！)",
+                tut_hint_5: "ヒント: ((2 + 2) × 3) × 2 = 24 (2回タップ！)",
+                goto_lobby: "ロビーへ移動",
+                a_card_toast: "Aカードは1または10として使えます！"
+            },
+            'zh-TW': {
+                title: "挑戰24",
+                subtitle1: "使用4張卡片和四則運算",
+                subtitle2: "算出結果24！",
+                a_card_info: "A卡可以當作1或10",
+                game_start: "開始遊戲",
+                not_enough_energy: "體力不足",
+                tutorial_btn: "怎麼玩",
+                ranking: "排行榜",
+                shop: "商店",
+                solved: "已解",
+                score: "SCORE",
+                combo: "COMBO",
+                cards_to_use: "使用卡片",
+                time_over: "TIME OVER",
+                too_bad: "太可惜了！答案是...",
+                hint_upper: "HINT",
+                place_cards: "放置卡片並確認答案",
+                check_answer: "確認答案",
+                next_problem: "下一題",
+                restart: "重新開始",
+                time: "時間",
+                hint: "提示",
+                pass: "跳過",
+                item_shop: "道具商店",
+                energy_x3: "體力 x 3",
+                energy_desc: "遊戲入場券",
+                get_by_ad: "觀看廣告獲得",
+                hint_x3: "提示 x 3",
+                hint_desc: "顯示部分答案",
+                time_x3: "時間增加 x 3",
+                time_desc: "限制時間 +10秒",
+                pass_x3: "跳過 x 3",
+                pass_desc: "更換題目維持連擊",
+                watching_ad: "觀看廣告中...",
+                please_wait: "請稍候",
+                wait_sec: "秒 等待",
+                tab_score: "分數",
+                tab_combo: "最大連擊",
+                tab_solved: "最多解答",
+                no_record: "無紀錄",
+                save: "儲存",
+                paused: "PAUSED",
+                view_result: "查看結果",
+                continue: "繼續",
+                exit_lobby: "返回大廳",
+                tutorial_complete: "教學完成！ 🎉",
+                tutorial_done_desc1: "準備就緒。",
+                tutorial_done_desc2: "盡情享受遊戲吧！",
+                slots_full: "欄位已滿！",
+                hint_empty: "沒有提示了！",
+                time_empty: "沒有道具了！",
+                time_added: "⏰ 時間增加！ (+10秒)",
+                pass_empty: "沒有跳過道具了！",
+                pass_used: "⏩ PASS! 更換題目中。",
+                wrong_answer: "錯誤",
+                check_brackets: "請檢查括號",
+                correct: "答對了！",
+                create_nickname_title: "設定暱稱",
+                create_nickname_desc: "請輸入要在遊戲中使用的帥氣暱稱。\n（將顯示在排行榜上）",
+                confirm: "確認",
+                nickname_placeholder: "輸入暱稱（最多8個字）",
+                pts: "分",
+                tut_goal_1: "第一階段：挑戰 8 x 3",
+                tut_goal_2: "第二階段：挑戰 6 x 4",
+                tut_goal_3: "第三階段：全部相加等於 24",
+                tut_goal_4: "第四階段：點擊使用括號",
+                tut_goal_5: "第五階段：點擊兩次使用雙重括號",
+                tut_hint_1: "提示：試試 8 × 3 × 1 × 1 = 24",
+                tut_hint_2: "提示：試試 6 × 4 × 1 × 1 = 24",
+                tut_hint_3: "提示：試試 5 + 7 + 8 + 4 = 24",
+                tut_hint_4: "提示：試試 (3 + 5) × 3 × 1 = 24",
+                tut_hint_5: "提示：試試 ((2 + 2) × 3) × 2 = 24",
+                goto_lobby: "返回大廳",
+                a_card_toast: "A 卡可以當作 1 或 10 喔！"
+            }
+        };
+
+        const getLang = () => {
+            const lang = navigator.language || navigator.userLanguage;
+            if (lang.startsWith('ko')) return 'ko';
+            if (lang.startsWith('ja')) return 'ja';
+            if (lang.startsWith('zh-TW') || lang.startsWith('zh-HK') || lang === 'zh-Hant') return 'zh-TW';
+            return 'en'; // 기본 영어
+        };
+
+        const t = (key) => {
+            const lang = getLang();
+            return TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key] || key;
+        };
+
         const OPERATOR_STYLES = {
             '+': 'bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-white shadow-lg', 
             '-': 'bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white shadow-lg',     
@@ -222,16 +543,22 @@
             return nums;
         };
 
-        const generateProblem = (targetLevel) => { 
-            if (targetLevel === 'T1') return [{ id: 't1-1', value: 3, suit: '♣', display: '3' }, { id: 't1-2', value: 8, suit: '♥', display: '8' }, { id: 't1-3', value: 1, suit: '♠', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
-            if (targetLevel === 'T2') return [{ id: 't2-1', value: 4, suit: '♣', display: '4' }, { id: 't2-2', value: 6, suit: '♥', display: '6' }, { id: 't2-3', value: 2, suit: '♠', display: '2' }, { id: 't2-4', value: 2, suit: '♦', display: '2' }];
-            if (targetLevel === 'T3') return [{ id: 't3-1', value: 10, suit: '♣', display: '10' }, { id: 't3-2', value: 10, suit: '♥', display: '10' }, { id: 't3-3', value: 2, suit: '♠', display: '2' }, { id: 't3-4', value: 2, suit: '♦', display: '2' }];
-            
+        const generateProblem = (isTut, phase, currentSolved) => { 
+            if (isTut) {
+                // 실전 튜토리얼 5단계용 고정 카드덱
+                if (phase === 1) return [{ id: 't1-1', value: 8, suit: '♠', display: '8' }, { id: 't1-2', value: 3, suit: '♥', display: '3' }, { id: 't1-3', value: 1, suit: '♣', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
+                if (phase === 2) return [{ id: 't2-1', value: 6, suit: '♠', display: '6' }, { id: 't2-2', value: 4, suit: '♥', display: '4' }, { id: 't2-3', value: 1, suit: '♣', display: 'A' }, { id: 't2-4', value: 1, suit: '♦', display: 'A' }];
+                if (phase === 3) return [{ id: 't3-1', value: 5, suit: '♠', display: '5' }, { id: 't3-2', value: 7, suit: '♥', display: '7' }, { id: 't3-3', value: 8, suit: '♣', display: '8' }, { id: 't3-4', value: 4, suit: '♦', display: '4' }];
+                if (phase === 4) return [{ id: 't4-1', value: 3, suit: '♠', display: '3' }, { id: 't4-2', value: 5, suit: '♥', display: '5' }, { id: 't4-3', value: 3, suit: '♣', display: '3' }, { id: 't4-4', value: 1, suit: '♦', display: 'A' }];
+                if (phase === 5) return [{ id: 't5-1', value: 2, suit: '♠', display: '2' }, { id: 't5-2', value: 2, suit: '♥', display: '2' }, { id: 't5-3', value: 3, suit: '♣', display: '3' }, { id: 't5-4', value: 2, suit: '♦', display: '2' }];
+                
+                return [{ id: 't1-1', value: 8, suit: '♠', display: '8' }, { id: 't1-2', value: 3, suit: '♥', display: '3' }, { id: 't1-3', value: 1, suit: '♣', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
+            }
+
             let cards = [];
             let attempts = 0;
-            const levelNum = typeof targetLevel === 'number' ? targetLevel : 1;
 
-            if (levelNum <= 5) {
+            if (currentSolved <= 5) {
                 while (attempts < 100) {
                     const values = generateEasyNumbers();
                     if (isHandValid(values)) {
@@ -380,7 +707,7 @@
 
         function Make24Game() {
             const [nickname, setNickname] = useState('Player');
-            const [level, setLevel] = useState(1);
+            const [solvedCount, setSolvedCount] = useState(0);
             const [sourceCards, setSourceCards] = useState([]);
             const [slots, setSlots] = useState([null, null, null, null]);
             const [operators, setOperators] = useState(['+', '+', '+']);
@@ -406,15 +733,25 @@
             
             const [score, setScore] = useState(0);
             const [lastScoreGain, setLastScoreGain] = useState(null); 
-            const [rankingScores, setRankingScores] = useState([]); 
+            const [allRankings, setAllRankings] = useState([]); 
             const [showRanking, setShowRanking] = useState(false);
+            const [rankingTab, setRankingTab] = useState('score'); // 'score', 'combo', 'solved'
             const [isEditingName, setIsEditingName] = useState(false);
             const [tempName, setTempName] = useState('');
+            const [showNicknameModal, setShowNicknameModal] = useState(false);
             
-            const [tutorialStep, setTutorialStep] = useState(0); 
             const [tutorialPhase, setTutorialPhase] = useState(0); 
             const [hintText, setHintText] = useState('');
             const [problemStartTime, setProblemStartTime] = useState(0);
+
+            // A 카드 최초 안내 토스트 State
+            const [showACardToast, setShowACardToast] = useState(false);
+
+            // --- 클라우드 & 로그인 연동 State ---
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const [user, setUser] = useState(null);
+            const [db, setDb] = useState(null);
+            const [firebaseApi, setFirebaseApi] = useState(null);
 
             const [energy, setEnergy] = useState(() => parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10));
             const [lastEnergyTime, setLastEnergyTime] = useState(() => parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10));
@@ -439,8 +776,89 @@
             useEffect(() => {
                 const savedName = localStorage.getItem('make24_nickname');
                 if (savedName) setNickname(savedName);
-                loadRankings();
             }, []);
+
+            // 클라우드 프로필 로딩 및 닉네임 설정 체크
+            useEffect(() => {
+                if (!user || !db || !firebaseApi) return;
+                const fetchProfile = async () => {
+                    const { doc, getDoc, setDoc } = firebaseApi;
+                    const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', user.uid);
+                    try {
+                        const profileSnap = await getDoc(profileRef);
+                        if (profileSnap.exists() && profileSnap.data().nickname) {
+                            setNickname(profileSnap.data().nickname);
+                            localStorage.setItem('make24_nickname', profileSnap.data().nickname);
+                        } else {
+                            const localName = localStorage.getItem('make24_nickname');
+                            if (localName && localName !== 'Player') {
+                                setNickname(localName);
+                                await setDoc(profileRef, { nickname: localName }, { merge: true });
+                            } else {
+                                setShowNicknameModal(true);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Profile fetch error", e);
+                    }
+                };
+                fetchProfile();
+            }, [user, db, firebaseApi, appId]);
+
+            // 실시간 클라우드 데이터베이스 초기화 및 자동 로그인
+            useEffect(() => {
+                let unsubscribeAuth;
+                const setupFirebase = async () => {
+                    try {
+                        // Babel의 변환을 피하기 위해 우회하여 동적 import 실행
+                        const { initializeApp } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js")')();
+                        const { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
+                        const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
+                        
+                        setFirebaseApi({ collection, doc, setDoc, getDoc, onSnapshot });
+
+                        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                        const app = initializeApp(firebaseConfig);
+                        const auth = getAuth(app);
+                        const dbInstance = getFirestore(app);
+                        setDb(dbInstance);
+
+                        const initAuth = async () => {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        };
+                        await initAuth();
+
+                        unsubscribeAuth = onAuthStateChanged(auth, (u) => setUser(u));
+                    } catch (err) {
+                        console.error("Cloud DB Init Error", err);
+                    }
+                };
+                setupFirebase();
+                return () => { if (unsubscribeAuth) unsubscribeAuth(); };
+            }, []);
+
+            // 실시간 랭킹 구독 (Real-time Listener)
+            useEffect(() => {
+                if (!user || !db || !firebaseApi) return;
+                const { collection, onSnapshot } = firebaseApi;
+                
+                const rankingsRef = collection(db, 'artifacts', appId, 'public', 'data', 'rankings');
+                const unsubscribe = onSnapshot(rankingsRef, (snapshot) => {
+                    const fetched = [];
+                    snapshot.forEach(doc => {
+                        fetched.push({ id: doc.id, ...doc.data() });
+                    });
+                    setAllRankings(fetched);
+                }, (error) => {
+                    console.error("Ranking fetch error:", error);
+                });
+
+                return () => unsubscribe();
+            }, [user, db, firebaseApi]);
 
             useEffect(() => {
                 const checkAdCooldowns = () => {
@@ -526,38 +944,76 @@
                 localStorage.setItem('make24_passItems', passItemsLeft.toString());
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
-            const loadRankings = () => {
-                const savedRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
-                setRankingScores(savedRankings.sort((a, b) => b.score - a.score));
-            };
-
-            const saveRecord = (finalScore, currentLevel) => {
-                const date = Date.now();
-                const newRecord = { nickname, level: currentLevel, score: finalScore, date };
-                let currentRankings = JSON.parse(localStorage.getItem('make24_rankings') || '[]');
+            const saveRecord = async (currentScore, currentCombo, currentSolved) => {
+                if (!user || !db || !firebaseApi) return;
+                const { doc, setDoc, getDoc } = firebaseApi;
                 
-                currentRankings.push(newRecord);
-                const sortedRankings = currentRankings.sort((a, b) => b.score - a.score).slice(0, 50);
-                localStorage.setItem('make24_rankings', JSON.stringify(sortedRankings));
-                setRankingScores(sortedRankings);
-            };
+                const date = Date.now();
+                const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                
+                try {
+                    const docSnap = await getDoc(userRankRef);
+                    let newScore = currentScore;
+                    let newCombo = currentCombo;
+                    let newSolved = currentSolved;
 
-            const updateNickname = () => {
-                if (tempName.trim()) {
-                    setNickname(tempName.trim());
-                    localStorage.setItem('make24_nickname', tempName.trim());
-                    setIsEditingName(false);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        newScore = Math.max(data.score || 0, currentScore);
+                        newCombo = Math.max(data.combo || 0, currentCombo);
+                        newSolved = Math.max(data.solved || 0, currentSolved);
+                    }
+                    await setDoc(userRankRef, {
+                        nickname: nickname,
+                        score: newScore,
+                        combo: newCombo,
+                        solved: newSolved,
+                        date: date,
+                        userId: user.uid
+                    }, { merge: true });
+                } catch(e) {
+                    console.error("Save record error:", e);
                 }
             };
 
-            const startLevel = useCallback((targetLevel, free = false) => {
-                const isTutorial = typeof targetLevel === 'string' && targetLevel.startsWith('T');
-                
-                if (!isTutorial && !free) {
+            const updateNickname = async () => {
+                if (tempName.trim()) {
+                    const newName = tempName.trim();
+                    setNickname(newName);
+                    localStorage.setItem('make24_nickname', newName);
+                    setIsEditingName(false);
+                    setShowNicknameModal(false);
+
+                    // 온라인 랭킹 & 프로필 닉네임 즉시 업데이트 반영
+                    if (user && db && firebaseApi) {
+                        const { doc, setDoc, getDoc } = firebaseApi;
+                        
+                        // 프로필 업데이트
+                        const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', user.uid);
+                        try {
+                            await setDoc(profileRef, { nickname: newName }, { merge: true });
+                        } catch(e) { console.error("Profile update error:", e); }
+
+                        // 랭킹에 등록된 기존 닉네임 업데이트
+                        if (score > 0) {
+                            const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                            try {
+                                const docSnap = await getDoc(userRankRef);
+                                if (docSnap.exists()) {
+                                    await setDoc(userRankRef, { nickname: newName }, { merge: true });
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                }
+            };
+
+            const startProblem = useCallback((isTut = false, phase = 0, isNewRun = false, forceSolvedCount = null) => {
+                if (!isTut && isNewRun) {
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
                     let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
                     if (currentEnergy < 1) {
-                        setResultMessage("행동력이 부족합니다!");
+                        setResultMessage(t('not_enough_energy') + "!");
                         setShake(true);
                         setTimeout(() => setShake(false), 500);
                         return false;
@@ -576,14 +1032,17 @@
                     }
                 }
 
-                setSourceCards(generateProblem(targetLevel));
-                setLevel(targetLevel);
+                const activeSolvedCount = forceSolvedCount !== null ? forceSolvedCount : solvedCount;
+                if (forceSolvedCount !== null) setSolvedCount(forceSolvedCount);
+
+                const newCards = generateProblem(isTut, phase, activeSolvedCount);
+                setSourceCards(newCards);
                 setSlots([null, null, null, null]);
                 setOperators(['+', '+', '+']);
                 setStartBrackets([0, 0, 0, 0]);
                 setEndBrackets([0, 0, 0, 0]);
-                setTimeLeft(isTutorial ? 999 : 30);
-                setGameState(isTutorial ? 'tutorial' : 'playing');
+                setTimeLeft(isTut ? 999 : 30);
+                setGameState(isTut ? 'tutorial' : 'playing');
                 setResultMessage('');
                 setSolutionStr('');
                 setHintText('');
@@ -592,63 +1051,56 @@
                 setIsPaused(false);
                 setLastScoreGain(null);
                 
-                if (isTutorial) {
-                   const phaseStr = targetLevel.substring(1);
-                   if(phaseStr) setTutorialPhase(parseInt(phaseStr));
+                // A 카드가 포함되어 있고, 아직 한 번도 안내를 받은 적이 없다면 토스트 띄우기
+                const hasACard = newCards.some(c => c.value === 1);
+                const hasSeenToast = localStorage.getItem('make24_a_card_seen');
+                if (hasACard && !hasSeenToast && !isTut) {
+                    setShowACardToast(true);
+                    localStorage.setItem('make24_a_card_seen', 'true');
+                    setTimeout(() => setShowACardToast(false), 3500); // 3.5초 후 자동으로 사라짐
+                }
+                
+                if (isTut) {
+                   setTutorialPhase(phase);
+                } else {
+                   setTutorialPhase(0);
                 }
                 return true;
-            }, []);
+            }, [solvedCount]);
 
             const startTutorial = () => {
-                setGameState('tutorial');
-                setTutorialStep(0);
-                setTutorialPhase(0);
-                setSourceCards(generateProblem('T1')); 
-                setLevel('T');
-            };
-
-            const finishTutorialGuide = () => {
-                setTutorialStep(0);
-                setTutorialPhase(1); 
-                startLevel('T1');
+                setScore(0);
+                setStreak(0);
+                setComboFlash(null);
+                startProblem(true, 1, false); 
             };
 
             const initGame = useCallback(() => {
-                const hasCompleted = localStorage.getItem('make24_tutorial_done');
-                if (!hasCompleted) {
-                    startTutorial();
-                } else {
-                    const savedLevel = parseInt(localStorage.getItem('make24_level') || '1', 10);
-                    if (startLevel(savedLevel)) {
-                        setScore(0);
-                        setStreak(0);
-                        setComboFlash(null);
-                    }
-                }
-            }, [startLevel]);
-
-            const nextLevel = () => {
-                if (gameState === 'tutorial' || (typeof level === 'string' && level.startsWith('T'))) {
-                    if (tutorialPhase > 0 && tutorialPhase < 3) {
-                         startLevel(`T${tutorialPhase + 1}`);
-                    } else if (tutorialPhase === 3) {
-                         localStorage.setItem('make24_tutorial_done', 'true');
-                         setGameState('tutorial_complete');
-                    }
-                    return;
-                }
-                const nextLv = level + 1;
-                // 다음 문제로 넘어갈 때는 행동력을 소모하지 않도록 true 플래그 전달
-                if (startLevel(nextLv, true)) {
-                    localStorage.setItem('make24_level', nextLv.toString());
-                }
-            };
-
-            const retryLevel = () => {
-                if (startLevel(level)) {
+                if (startProblem(false, 0, true, 0)) {
+                    setScore(0);
                     setStreak(0);
                     setComboFlash(null);
                 }
+            }, [startProblem]);
+
+            const nextProblem = () => {
+                // gameState가 'success'로 변했더라도 tutorialPhase 상태를 통해 튜토리얼임을 정확히 인지
+                if (tutorialPhase > 0) {
+                    if (tutorialPhase < 5) {
+                         startProblem(true, tutorialPhase + 1, false);
+                    } else {
+                         localStorage.setItem('make24_tutorial_done', 'true');
+                         setGameState('tutorial_complete');
+                         setTutorialPhase(0);
+                    }
+                    return;
+                }
+                // 진행 중인 게임은 에너지 소모 없이 다음 문제 생성
+                startProblem(false, 0, false, solvedCount + 1);
+            };
+
+            const restartGame = () => {
+                initGame();
             };
 
             const useHint = () => {
@@ -657,7 +1109,7 @@
                     setHintText(getPartialHint(answer));
                     setHintsLeft(prev => prev - 1);
                 } else if (hintsLeft === 0) {
-                    setResultMessage("힌트가 없습니다!");
+                    setResultMessage(t('hint_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
@@ -669,9 +1121,9 @@
                     setTimeLeft(prev => prev + 10);
                     setShowTimePlusEffect(true);
                     setTimeout(() => setShowTimePlusEffect(false), 800);
-                    setResultMessage("⏰ 시간 연장! (+10초)");
+                    setResultMessage(t('time_added'));
                 } else if (timeItemsLeft === 0) {
-                    setResultMessage("아이템이 없습니다!");
+                    setResultMessage(t('time_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
@@ -680,19 +1132,23 @@
             const usePassItem = () => {
                 if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
                     setPassItemsLeft(prev => prev - 1);
-                    setResultMessage("⏩ PASS! 새로운 문제로 변경합니다.");
-                    setTimeout(() => startLevel(level, true), 500); // true flag to bypass energy cost
+                    setResultMessage(t('pass_used'));
+                    // 패스 아이템은 에너지 소모 없이, 기존 해결수 유지
+                    setTimeout(() => startProblem(false, 0, false, solvedCount), 500); 
                 } else if (passItemsLeft === 0) {
-                    setResultMessage("패스 아이템이 없습니다!");
+                    setResultMessage(t('pass_empty'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                 }
             };
 
             const goToLobby = () => {
-                if (score > 0) saveRecord(score, level);
+                if (score > 0 && tutorialPhase === 0) {
+                    saveRecord(score, streak, solvedCount);
+                }
                 setIsPaused(false);
                 setGameState('start');
+                setTutorialPhase(0);
             };
 
             const buyItem = (type, cost) => {
@@ -743,18 +1199,18 @@
 
             useEffect(() => {
                 let timer;
-                const isTutorialGuide = gameState === 'tutorial' && tutorialPhase === 0;
-                
-                if ((gameState === 'playing' || (gameState === 'tutorial' && !isTutorialGuide)) && !isPaused) {
+                // 튜토리얼일 때는 타이머가 동작하지 않고 멈춰있게 수정 (playing일 때만 실행)
+                if (gameState === 'playing' && !isPaused) {
                     timer = setInterval(() => {
                         setTimeLeft((prev) => {
                             if (prev <= 1) {
-                                if (gameState === 'tutorial') return 999;
                                 const answer = getBestSolution(sourceCards);
                                 setSolutionStr(answer);
                                 setGameState('fail');
                                 setStreak(0);
                                 setComboFlash(null);
+                                // 실패 시에도 마지막 상태를 저장
+                                saveRecord(score, streak, solvedCount);
                                 return 0;
                             }
                             return prev - 1;
@@ -762,10 +1218,9 @@
                     }, 1000);
                 }
                 return () => clearInterval(timer);
-            }, [gameState, isPaused, sourceCards, tutorialPhase]);
+            }, [gameState, isPaused, sourceCards, tutorialPhase, score, streak, solvedCount]);
 
             const handleSourceCardClick = (card) => {
-                if (gameState === 'tutorial' && tutorialPhase === 0) return;
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
                 
@@ -775,13 +1230,12 @@
                     newSlots[emptySlotIdx] = card;
                     setSlots(newSlots);
                 } else {
-                    setResultMessage("슬롯이 꽉 찼어요!");
+                    setResultMessage(t('slots_full'));
                     setTimeout(() => setResultMessage(""), 1000);
                 }
             };
 
             const handleSlotCardClick = (index) => {
-                if (gameState === 'tutorial' && tutorialPhase === 0) return;
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
                 
@@ -793,7 +1247,6 @@
             };
 
             const toggleStartBracket = (idx) => {
-                if (gameState === 'tutorial' && tutorialPhase === 0) return;
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
                 const newBrackets = [...startBrackets];
@@ -802,7 +1255,6 @@
             };
 
             const toggleEndBracket = (idx) => {
-                if (gameState === 'tutorial' && tutorialPhase === 0) return;
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
                 const newBrackets = [...endBrackets];
@@ -811,7 +1263,6 @@
             };
 
             const selectOperator = (idx, op) => {
-                if (gameState === 'tutorial' && tutorialPhase === 0) return;
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
                 const newOps = [...operators];
@@ -834,7 +1285,7 @@
 
             const checkResult = () => {
                 if (slots.some(s => s === null)) {
-                    setResultMessage("카드를 모두 넣어주세요");
+                    setResultMessage(t('place_cards'));
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                     return;
@@ -873,27 +1324,30 @@
                             winningExpression = displayExp;
                             break;
                         }
-                    } catch (e) { lastError = "괄호 짝 확인 필요"; }
+                    } catch (e) { lastError = t('check_brackets'); }
                 }
 
                 if (solved) {
                     const now = Date.now();
                     const solveDuration = now - problemStartTime;
                     
-                    if (gameState === 'tutorial') {
+                    if (tutorialPhase > 0) {
                         setGameState('success');
-                        if (tutorialPhase === 1) setResultMessage("잘했어요! 다음 문제도 풀어보세요.");
-                        else if (tutorialPhase === 2) setResultMessage("잘했어요! 마지막 문제도 풀어보세요.");
-                        else setResultMessage("잘했어요! 이제 본격적으로 플레이 해보세요!");
+                        setResultMessage(`${t('correct')} (${winningExpression} = 24)`);
                         triggerConfetti();
-                        return;
+                        return; // 튜토리얼 점수는 서버에 저장 안 함
                     }
 
                     const nextStreak = streak + 1;
                     const scoreInfo = calculateScore(solveDuration, nextStreak);
+                    const newTotalScore = score + scoreInfo.total;
+                    const newSolvedCount = solvedCount + 1;
                     
-                    setScore(prev => prev + scoreInfo.total);
+                    setScore(newTotalScore);
                     setGold(prev => prev + 10 + Math.min(nextStreak, 5));
+                    
+                    // 정답을 맞출 때마다 실시간으로 클라우드에 랭킹 저장 반영 (최고 기록 갱신)
+                    saveRecord(newTotalScore, nextStreak, newSolvedCount);
 
                     setLastScoreGain(scoreInfo);
                     setStreak(nextStreak);
@@ -903,105 +1357,119 @@
                     }
 
                     setGameState('success');
-                    setResultMessage(`정답! (${winningExpression} = 24)`);
+                    setResultMessage(`${t('correct')} (${winningExpression} = 24)`);
                     triggerConfetti();
                 } else {
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
-                    setResultMessage(lastError || "틀렸습니다");
+                    
+                    if (tutorialPhase > 0) {
+                        // 튜토리얼에서는 틀려도 게임오버 되지 않음, 각 단계별 맞춤 힌트 제공
+                        setResultMessage(t(`tut_hint_${tutorialPhase}`));
+                        return;
+                    }
+
+                    setResultMessage(lastError || t('wrong_answer'));
+                    // 오답 처리 시 게임 오버 및 기록 저장
+                    saveRecord(score, streak, solvedCount);
                     setStreak(0);
                     setComboFlash(null);
+                    setGameState('fail'); // 오답이면 바로 실패(게임오버) 처리
                 }
             };
 
-            const tutorialTexts = [
-                { text: "네 장의 카드를 활용하여 24를 만드는 게임입니다.\n정답을 맞추면 점수가 누적됩니다.", focus: "deck", position: "bottom" },
-                { text: "터치하면 아래 슬롯에 카드가 배치됩니다.\n연속으로 정답을 맞추면 콤보가 발생하며 점수가 증가합니다.", focus: "slot", position: "top" },
-                { text: "연산자 버튼을 터치하여 사칙연산을 고를 수 있고,\n괄호를 터치하여 우선순위를 변경할 수 있습니다.", focus: "slot", position: "top" },
-                { text: "하단에는 유용한 아이템들이 있습니다.\n시간 연장, 힌트, 패스", focus: "items", position: "top" },
-                { text: "시간 연장은 제한 시간이 10초 연장됩니다.", focus: "item-time", position: "top" },
-                { text: "힌트는 정답 수식의 일부를 보여줍니다.", focus: "item-hint", position: "top" },
-                { text: "패스는 문제를 변경합니다.\n현재 콤보는 유지됩니다.", focus: "item-pass", position: "top" }
-            ];
-
-            const getGuideBoxStyle = (pos) => {
-                if (pos === 'top') return { top: '20%', left: '50%', transform: 'translate(-50%, 0)' };
-                if (pos === 'bottom') return { bottom: '5%', left: '50%', transform: 'translate(-50%, 0)' };
-                return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-            };
-
-            // vw 기반 반응형 카드 사이즈 (심플 디자인에 맞게 축소)
             const deckCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
             const slotCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
+
+            const sortedRankings = [...allRankings].sort((a, b) => (b[rankingTab] || 0) - (a[rankingTab] || 0)).slice(0, 50);
+
+            const formatRankValue = (rank) => {
+                if (rankingTab === 'score') return rank.score ? rank.score.toLocaleString() : '0';
+                if (rankingTab === 'combo') return (rank.combo || 0);
+                if (rankingTab === 'solved') return (rank.solved || 0);
+            };
 
             return (
                 <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
                     {/* 상단 헤더 */}
-                    <div className="flex-none px-3 py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg h-[12vh] min-h-[60px]">
-                         <div className="flex items-center gap-2 sm:gap-3 w-auto min-w-[5rem] shrink-0">
+                    <div className="flex-none px-3 sm:px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg min-h-[80px]">
+                         <div className="flex items-center gap-3 shrink-0">
                             <div className="flex flex-col items-center justify-center">
-                                <span className="text-[9px] text-slate-400 font-bold tracking-widest">LEVEL</span>
-                                <span className="text-xl font-black text-blue-400 leading-none">{level.toString().startsWith('T') ? level : level}</span>
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5">{t('solved')}</span>
+                                <span className="text-2xl sm:text-3xl font-black text-blue-400 leading-none">{tutorialPhase > 0 ? `T${tutorialPhase}` : solvedCount}</span>
                             </div>
-                            <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-lg px-2 py-1 border border-slate-700/50 shadow-inner min-w-[2.5rem]">
-                                <div className="flex items-center gap-1">
-                                    <Heart size={12} className="text-rose-500 fill-rose-500" />
-                                    <span className="text-[11px] font-black text-white leading-none">{energy}</span>
+                            <div className="flex flex-col items-center justify-center bg-slate-900/80 rounded-xl px-3 py-1.5 border border-slate-700/50 shadow-inner min-w-[3.5rem]">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart size={16} className="text-rose-500 fill-rose-500" />
+                                    <span className="text-sm sm:text-base font-black text-white leading-none mt-0.5">{energy}</span>
                                 </div>
                                 {energy < MAX_ENERGY && (
-                                    <span className="text-[8px] text-rose-300 font-mono mt-0.5 font-bold leading-none tracking-tighter">{formatTime(timeToNextEnergy)}</span>
+                                    <span className="text-[10px] sm:text-xs text-rose-300 font-mono mt-1 font-bold leading-none tracking-tighter">{formatTime(timeToNextEnergy)}</span>
                                 )}
                             </div>
                          </div>
-                        <div className="flex-1 flex justify-center items-center gap-3">
-                            <div className="flex flex-col items-end justify-center relative w-16">
-                                <span className="text-xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
-                                {lastScoreGain && <span className="text-[10px] font-bold text-emerald-400 animate-score absolute top-5 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
+                        <div className="flex-1 flex justify-center items-center gap-3 sm:gap-5">
+                            <div className="flex flex-col items-end justify-center relative w-auto min-w-[2.5rem]">
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">{t('score')}</span>
+                                <span className="text-2xl sm:text-3xl font-black text-yellow-400 leading-none">{score.toLocaleString()}</span>
+                                {lastScoreGain && <span className="text-xs font-bold text-emerald-400 animate-score absolute top-8 right-0 pointer-events-none whitespace-nowrap">+{lastScoreGain.total}</span>}
                             </div>
-                            <div className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded-2xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
-                                <Timer size={16} />
-                                <span className="text-2xl font-black font-mono tracking-wider w-10 text-center leading-none">
-                                    {level.toString().startsWith('T') ? '∞' : timeLeft}
+                            <div className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-4 rounded-3xl bg-slate-900 border-2 transition-all duration-300 ${timeLeft <= 10 ? 'border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-slate-600 text-emerald-400 shadow-inner'}`}>
+                                <Timer size={20} />
+                                <span className="text-3xl sm:text-4xl font-black font-mono tracking-wider w-12 sm:w-16 text-center leading-none mt-0.5">
+                                    {tutorialPhase > 0 ? '∞' : timeLeft}
                                 </span>
-                                {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-lg animate-time-plus ml-12">+10s</span>}
+                                {showTimePlusEffect && <span className="absolute text-emerald-400 font-black text-xl animate-time-plus ml-16">+10s</span>}
                             </div>
-                            <div className="flex flex-col items-start justify-center w-16">
+                            <div className="flex flex-col items-start justify-center w-auto min-w-[2.5rem]">
+                                <span className="text-[10px] text-slate-400 font-bold tracking-widest mb-0.5 hidden sm:block">{t('combo')}</span>
                                 <div className={`flex items-baseline gap-0.5 font-black ${streak > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
-                                    <span className="text-xl leading-none">{streak}</span>
+                                    <span className="text-2xl sm:text-3xl leading-none">{streak}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-center w-14 shrink-0">
+                        <div className="flex items-center justify-end shrink-0">
                             {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
-                                <button onClick={() => setIsPaused(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600">
-                                    <Pause size={18} />
+                                <button onClick={() => setIsPaused(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                    <Pause size={22} />
                                 </button>
                             ) : (
-                                <button onClick={() => setShowRanking(true)} className="p-2.5 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600">
-                                    <Trophy size={18} />
+                                <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                    <Trophy size={22} />
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* 백그라운드 클릭용 오버레이 (연산자 팝업 닫기 등) - z-index를 35로 낮춤 */}
+                    {/* 백그라운드 클릭용 오버레이 (연산자 팝업 닫기 등) */}
                     {(activeOpSelector !== null) && (
                         <div className="fixed inset-0 z-[35]" onClick={() => setActiveOpSelector(null)} />
                     )}
 
                     {/* 게임 오버레이/팝업 영역 */}
-                    {/* 시간이 10초 이하일 때 뜨는 붉은색 경고 효과 (z-index 및 CSS 효과 대폭 상향 적용) */}
                     {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
                     
-                    {gameState === 'tutorial' && tutorialPhase === 0 && <div className="absolute inset-0 z-[60] bg-black/60" onClick={(e) => e.stopPropagation()} />}
+                    {/* A 카드 등장 알림 토스트 */}
+                    {showACardToast && (
+                        <div className="absolute top-[18%] left-1/2 transform -translate-x-1/2 z-[70] animate-popup pointer-events-none w-11/12 max-w-sm">
+                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center gap-3 backdrop-blur-md">
+                                <div className="bg-white text-emerald-900 rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner">
+                                    A
+                                </div>
+                                <div className="font-bold text-sm leading-snug">
+                                    {t('a_card_toast')}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     
                     {gameState === 'tutorial_complete' && (
                         <div className="absolute inset-0 z-[80] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-pop-scale">
                             <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-sm shadow-2xl w-full">
-                                <h2 className="text-2xl font-black text-emerald-400 mb-4">튜토리얼 완료! 🎉</h2>
-                                <p className="text-base text-slate-200 mb-8 leading-relaxed">모든 준비가 끝났습니다.<br/><b>자유롭게 게임을 즐겨보세요!</b></p>
-                                <button onClick={() => { setGameState('start'); initGame(); }} className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
-                                    <Play size={20} fill="currentColor" /> 본 게임 시작하기
+                                <h2 className="text-2xl font-black text-emerald-400 mb-4">{t('tutorial_complete')}</h2>
+                                <p className="text-base text-slate-200 mb-8 leading-relaxed">{t('tutorial_done_desc1')}<br/><b>{t('tutorial_done_desc2')}</b></p>
+                                <button onClick={goToLobby} className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                                    <Home size={20} fill="currentColor" /> {t('goto_lobby')}
                                 </button>
                             </div>
                         </div>
@@ -1009,16 +1477,16 @@
 
                     {isPaused && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
-                            <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">PAUSED</h2>
+                            <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
                                 <button onClick={() => setIsPaused(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
-                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? '결과 보기' : '계속하기'}
+                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? t('view_result') : t('continue')}
                                 </button>
-                                <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 ${energy >= 1 ? 'bg-slate-700 hover:bg-slate-600 active:bg-slate-500' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}>
-                                    <RotateCcw size={20} /> {energy >= 1 ? '다시하기' : '행동력 부족'}
+                                <button onClick={restartGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 ${energy >= 1 ? 'bg-slate-700 hover:bg-slate-600 active:bg-slate-500' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}>
+                                    <RotateCcw size={20} /> {energy >= 1 ? t('restart') : t('not_enough_energy')}
                                 </button>
                                 <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600">
-                                    <Home size={20} /> 로비로 나가기
+                                    <Home size={20} /> {t('exit_lobby')}
                                 </button>
                             </div>
                         </div>
@@ -1026,10 +1494,9 @@
 
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
-                            {/* 상점 UI 유지 (생략 방지) */}
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                                    <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">아이템 상점</h2></div>
+                                    <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
                                     <button onClick={() => setShowShop(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
@@ -1039,24 +1506,24 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
-                                            <div><div className="font-bold text-sm">행동력 x 3</div><div className="text-[10px] text-slate-400">광고 시청으로 획득</div></div>
+                                            <div><div className="font-bold text-sm">{t('energy_x3')}</div><div className="text-[10px] text-slate-400">{t('get_by_ad')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}초 대기` : `${5 - adState.energy}/5`}
+                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}${t('wait_sec')}` : `${5 - adState.energy}/5`}
                                             </button>
                                         </div>
                                     </div>
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">힌트 x 3</div><div className="text-[10px] text-slate-400">정답 일부 표시</div></div>
+                                            <div><div className="font-bold text-sm">{t('hint_x3')}</div><div className="text-[10px] text-slate-400">{t('hint_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}초` : `${3 - adState.hint}/3`}
+                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}s` : `${3 - adState.hint}/3`}
                                             </button>
                                             <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 100
@@ -1066,12 +1533,12 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">시간 연장 x 3</div><div className="text-[10px] text-slate-400">제한시간 +10초</div></div>
+                                            <div><div className="font-bold text-sm">{t('time_x3')}</div><div className="text-[10px] text-slate-400">{t('time_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.time > 0 ? `${adCooldowns.time}초` : `${3 - adState.time}/3`}
+                                                {adCooldowns.time > 0 ? `${adCooldowns.time}s` : `${3 - adState.time}/3`}
                                             </button>
                                             <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 150
@@ -1081,12 +1548,12 @@
                                     <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">패스 x 3</div><div className="text-[10px] text-slate-400">문제 교체 유지</div></div>
+                                            <div><div className="font-bold text-sm">{t('pass_x3')}</div><div className="text-[10px] text-slate-400">{t('pass_desc')}</div></div>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                             <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                 <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}초` : `${3 - adState.pass}/3`}
+                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}s` : `${3 - adState.pass}/3`}
                                             </button>
                                             <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
                                                 <Coins size={12} className="text-yellow-400" /> 200
@@ -1096,13 +1563,13 @@
                                 </div>
                             </div>
                             
-                            {/* 광고 시청 중 오버레이 - 애니메이션 분리 및 fixed 적용 */}
+                            {/* 광고 시청 중 오버레이 */}
                             {isWatchingAd && (
                                 <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center text-white">
                                     <div className="flex flex-col items-center justify-center animate-pop-scale">
                                         <VideoIcon size={64} className="animate-pulse mb-6 text-blue-400" />
-                                        <div className="text-2xl font-black">광고 시청 중...</div>
-                                        <div className="text-base text-slate-400 mt-2 font-bold">잠시만 기다려주세요</div>
+                                        <div className="text-2xl font-black">{t('watching_ad')}</div>
+                                        <div className="text-base text-slate-400 mt-2 font-bold">{t('please_wait')}</div>
                                     </div>
                                 </div>
                             )}
@@ -1111,9 +1578,9 @@
 
                     {showRanking && (
                         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => setShowRanking(false)}>
-                            <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[70vh]" onClick={e => e.stopPropagation()}>
+                            <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[75vh]" onClick={e => e.stopPropagation()}>
                                 <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
-                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">랭킹</h2></div>
+                                    <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">{t('ranking')}</h2></div>
                                     <button onClick={() => setShowRanking(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-750 border-b border-slate-700">
@@ -1123,24 +1590,71 @@
                                             {isEditingName ? (
                                                 <div className="flex items-center gap-2">
                                                     <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24" maxLength={8} />
-                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">저장</button>
+                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">{t('save')}</button>
                                                 </div>
                                             ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
                                         </div>
                                         {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
                                     </div>
                                 </div>
-                                <div className="flex border-b border-slate-700">
-                                    <div className="flex-1 py-2 text-xs font-bold text-center bg-slate-700 text-yellow-400 border-b-2 border-yellow-400">🏆 종합 점수</div>
+                                
+                                {/* 랭킹 탭 필터 */}
+                                <div className="flex border-b border-slate-700 bg-slate-800">
+                                    <button onClick={() => setRankingTab('score')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'score' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_score')}</button>
+                                    <button onClick={() => setRankingTab('combo')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'combo' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_combo')}</button>
+                                    <button onClick={() => setRankingTab('solved')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'solved' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_solved')}</button>
                                 </div>
+                                
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-                                    {rankingScores.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">기록 없음</div> : rankingScores.map((rank, idx) => (
-                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${rank.nickname === nickname ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
-                                            <div className="flex items-center gap-2"><span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span><span className="text-xs font-medium text-slate-200">{rank.nickname}</span></div>
-                                            <div className="text-right"><div className="font-bold text-xs text-yellow-400">{rank.score}점</div><div className="text-[10px] text-slate-400 font-mono">Lv.{rank.level}</div></div>
+                                    {sortedRankings.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">{t('loading')}</div> : sortedRankings.map((rank, idx) => (
+                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${user && rank.userId === user.uid ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
+                                                    <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-sm text-yellow-400">{formatRankValue(rank)}</div>
+                                                <div className="text-[9px] text-slate-400 font-mono tracking-wider mt-0.5">
+                                                    {rankingTab === 'score' ? t('pts') : rankingTab === 'combo' ? 'COMBO' : 'SOLVED'}
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 초기 닉네임 설정 모달 (필수) */}
+                    {showNicknameModal && (
+                        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+                            <div className="bg-slate-800 w-full max-w-xs rounded-3xl shadow-2xl border border-blue-500/50 p-6 flex flex-col items-center text-center animate-pop-scale">
+                                <div className="bg-blue-900/50 p-4 rounded-full mb-4 shadow-inner">
+                                    <User size={40} className="text-blue-400" />
+                                </div>
+                                <h2 className="text-2xl font-black text-white mb-2">{t('create_nickname_title')}</h2>
+                                <p className="text-xs text-slate-400 mb-6 leading-relaxed whitespace-pre-wrap">
+                                    {t('create_nickname_desc')}
+                                </p>
+                                <input 
+                                    type="text" 
+                                    value={tempName} 
+                                    onChange={(e) => setTempName(e.target.value)} 
+                                    placeholder={t('nickname_placeholder')}
+                                    className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-white font-bold mb-4 focus:outline-none focus:border-blue-500 text-center transition-colors"
+                                    maxLength={8} 
+                                    autoFocus
+                                />
+                                <button 
+                                    onClick={updateNickname}
+                                    disabled={tempName.trim().length === 0}
+                                    className={`w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 ${tempName.trim().length > 0 ? 'bg-blue-600 hover:bg-blue-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}
+                                >
+                                    <CheckCircle size={20} /> {t('confirm')}
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1166,7 +1680,7 @@
                                             <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform -rotate-12 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">2</span></div>
                                             <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform rotate-6 z-10 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">4</span></div>
                                         </div>
-                                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">24 만들기</h1>
+                                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">{t('title')}</h1>
                                         
                                         {/* Energy Display on Start Screen */}
                                         <div className="flex items-center justify-center gap-2 mt-1 mb-1 bg-slate-900/60 py-1.5 px-4 rounded-full border border-slate-700/50 w-fit mx-auto">
@@ -1178,23 +1692,23 @@
                                         </div>
                                     </div>
                                     <p className="text-slate-300 text-xs flex flex-col gap-1 px-4">
-                                        <span>주어진 4장의 카드와 사칙연산을 조합하여<br/>결과값 24를 완성하세요!</span>
-                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">A 카드는 1 또는 10으로 사용 가능</span>
+                                        <span>{t('subtitle1')}<br/>{t('subtitle2')}</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">{t('a_card_info')}</span>
                                     </p>
                                     <div className="flex flex-col gap-3 w-full pt-1">
                                         <button onClick={initGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${energy >= 1 ? 'bg-blue-600 active:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}>
-                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? '게임 시작' : '행동력 부족'}
+                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? t('game_start') : t('not_enough_energy')}
                                         </button>
                                         <button onClick={startTutorial} className="w-full py-3 bg-emerald-700 active:bg-emerald-600 text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 border border-emerald-600">
-                                            <CheckCircle size={18} /> 게임 방법 배우기
+                                            <CheckCircle size={18} /> {t('tutorial_btn')}
                                         </button>
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
-                                            <Trophy size={18} /> 랭킹
+                                            <Trophy size={18} /> {t('ranking')}
                                         </button>
                                         <button onClick={() => setShowShop(true)} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95 border border-indigo-600">
-                                            <ShoppingBag size={18} /> 상점
+                                            <ShoppingBag size={18} /> {t('shop')}
                                         </button>
                                     </div>
                                 </div>
@@ -1202,19 +1716,25 @@
                         ) : (
                             <>
                                 {/* 1. 사용할 카드(Deck) 영역 */}
-                                <div className={`flex flex-col items-center justify-center py-6 bg-emerald-900 border-b-4 border-emerald-800 relative shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)] ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'deck' ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`} style={{background: 'linear-gradient(to bottom, #064e3b, #065f46)'}}>
+                                <div className={`flex flex-col items-center justify-center py-6 bg-emerald-900 border-b-4 border-emerald-800 relative shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)]`} style={{background: 'linear-gradient(to bottom, #064e3b, #065f46)'}}>
                                     {!isPaused && (
                                         <>
-                                            <div className="absolute top-2 left-4 text-[10px] text-emerald-200/60 font-bold uppercase tracking-wider flex items-center gap-2">
-                                                사용할 카드
-                                            </div>
+                                            {tutorialPhase > 0 ? (
+                                                <div className="absolute top-3 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-slate-900 text-xs sm:text-sm font-black px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.5)] z-30 whitespace-nowrap border-2 border-yellow-300">
+                                                    {t(`tut_goal_${tutorialPhase}`)}
+                                                </div>
+                                            ) : (
+                                                <div className="absolute top-2 left-4 text-[10px] text-emerald-200/60 font-bold uppercase tracking-wider flex items-center gap-2">
+                                                    {t('cards_to_use')}
+                                                </div>
+                                            )}
                                             
                                             {/* 정답 예시 오버레이 */}
                                             {gameState === 'fail' && solutionStr && (
                                                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
                                                     <div className="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-5 text-center shadow-2xl max-w-sm w-full animate-pop-scale">
-                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">TIME OVER</div>
-                                                        <div className="text-sm text-slate-300 mb-3">아쉬워요! 정답은...</div>
+                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">{t('time_over')}</div>
+                                                        <div className="text-sm text-slate-300 mb-3">{t('too_bad')}</div>
                                                         <div className="text-2xl font-mono font-black text-yellow-400 tracking-wider drop-shadow-lg mb-1">{solutionStr}</div>
                                                         <div className="text-lg font-black text-white">= 24</div>
                                                     </div>
@@ -1237,11 +1757,11 @@
                                 </div>
 
                                 {/* 2. 슬롯 및 연산 영역 (중단) */}
-                                <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative bg-emerald-900 shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)] ${gameState === 'tutorial' && tutorialPhase === 0 && tutorialTexts[tutorialStep].focus === 'slot' ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`}>
+                                <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative bg-emerald-900 shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)]`}>
                                     {hintText && (
                                         <div className="absolute -top-4 sm:-top-6 left-1/2 transform -translate-x-1/2 z-[60] animate-pop">
                                             <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl">
-                                                <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">HINT</span>
+                                                <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">{t('hint_upper')}</span>
                                                 <span className="text-xl font-black font-mono text-white tracking-widest">{hintText}</span>
                                             </div>
                                         </div>
@@ -1296,15 +1816,16 @@
                                         ))}
                                     </div>
                                     
-                                    <div className="mt-6 flex flex-col items-center justify-center">
-                                        <div className={`text-center leading-tight h-5 mb-2 ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-emerald-200'}`}>
-                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">카드를 배치하고 확인을 누르세요</span>}
+                                    {/* 힌트 및 결과 메시지 출력 (긴 힌트를 위해 min-h 수정) */}
+                                    <div className="mt-6 flex flex-col items-center justify-center px-4">
+                                        <div className={`text-center leading-tight min-h-[1.25rem] h-auto mb-2 ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-emerald-200'}`}>
+                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md break-keep">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">{t('place_cards')}</span>}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* 3. 하단 액션 & 아이템 바 */}
-                                <div className={`flex flex-col gap-4 p-4 pb-8 pt-4 bg-emerald-900 border-t border-emerald-800/50 ${gameState === 'tutorial' && tutorialPhase === 0 && (tutorialTexts[tutorialStep].focus.startsWith('item') || tutorialTexts[tutorialStep].focus === 'items') ? 'z-[70] relative ring-4 ring-yellow-400' : ''}`}>
+                                <div className={`flex flex-col gap-4 p-4 pb-8 pt-4 bg-emerald-900 border-t border-emerald-800/50`}>
                                     {/* 가로형 아이템 배치 */}
                                     {(gameState === 'playing' || gameState === 'tutorial') && !isPaused && (
                                         <div className="flex justify-center gap-6 sm:gap-8 w-full max-w-sm mx-auto mb-2">
@@ -1313,7 +1834,7 @@
                                                     <ClockPlus size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">시간</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('time')}</span>
                                                     <span className={`text-lg font-black ${timeItemsLeft > 0 ? 'text-indigo-300' : 'text-slate-500'}`}>{timeItemsLeft}</span>
                                                 </div>
                                             </button>
@@ -1322,7 +1843,7 @@
                                                     <Lightbulb size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">힌트</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('hint')}</span>
                                                     <span className={`text-lg font-black ${hintsLeft > 0 ? 'text-yellow-300' : 'text-slate-500'}`}>{hintsLeft}</span>
                                                 </div>
                                             </button>
@@ -1331,7 +1852,7 @@
                                                     <FastForward size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
-                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">패스</span>
+                                                    <span className="text-xs font-bold text-slate-300 block mb-0.5">{t('pass')}</span>
                                                     <span className={`text-lg font-black ${passItemsLeft > 0 ? 'text-rose-300' : 'text-slate-500'}`}>{passItemsLeft}</span>
                                                 </div>
                                             </button>
@@ -1341,19 +1862,19 @@
                                     {/* 메인 확인/다음 버튼 */}
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
                                         {(gameState === 'playing' || gameState === 'tutorial') ? (
-                                            <button onClick={checkResult} disabled={isPaused || (gameState === 'tutorial' && tutorialPhase === 0)} className="w-full py-3.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border border-emerald-400/30">
-                                                <CheckCircle size={20} /> 정답 확인
+                                            <button onClick={checkResult} disabled={isPaused} className="w-full py-3.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border border-emerald-400/30">
+                                                <CheckCircle size={20} /> {t('check_answer')}
                                             </button>
                                         ) : null}
                                         
                                         {gameState === 'success' && (
-                                            <button onClick={nextLevel} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
-                                                {level === 'T' ? (tutorialPhase === 3 ? '본 게임 시작하기' : '다음 문제') : '다음 문제'} <Play size={20} fill="currentColor" />
+                                            <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
+                                                {tutorialPhase > 0 ? (tutorialPhase === 5 ? t('tutorial_complete') : t('next_problem')) : t('next_problem')} <Play size={20} fill="currentColor" />
                                             </button>
                                         )}
                                         {gameState === 'fail' && (
-                                            <button onClick={retryLevel} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
-                                                <RotateCcw size={20} /> {energy >= 1 ? '다시 도전' : '행동력 부족'}
+                                            <button onClick={restartGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
+                                                <RotateCcw size={20} /> {energy >= 1 ? t('restart') : t('not_enough_energy')}
                                             </button>
                                         )}
                                     </div>
@@ -1361,45 +1882,6 @@
                             </>
                         )}
                     </div>
-
-                    {/* 튜토리얼 팝업 박스 (가이드 단계) - 항상 최상단 분리 노출 */}
-                    {gameState === 'tutorial' && tutorialPhase === 0 && (
-                        <div
-                            className="absolute z-[100] w-full max-w-sm px-4 animate-pop pointer-events-auto"
-                            style={getGuideBoxStyle(tutorialTexts[tutorialStep].position)}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="bg-slate-800 border-2 border-indigo-500 rounded-2xl p-6 shadow-2xl relative">
-                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-black px-4 py-1 rounded-full shadow-lg border-2 border-slate-800">
-                                    GUIDE {tutorialStep + 1}/7
-                                </div>
-                                <p className="text-base font-bold text-white mb-6 whitespace-pre-wrap leading-relaxed mt-2 text-center">
-                                    {tutorialTexts[tutorialStep].text}
-                                </p>
-                                <div className="flex justify-between gap-3">
-                                    <button 
-                                        onClick={() => setTutorialStep(Math.max(0, tutorialStep - 1))}
-                                        className={`px-4 py-2 rounded-lg font-bold text-sm ${tutorialStep === 0 ? 'bg-slate-700 text-slate-500' : 'bg-slate-600 text-white hover:bg-slate-500'}`}
-                                        disabled={tutorialStep === 0}
-                                    >
-                                        이전
-                                    </button>
-                                    <button 
-                                        onClick={() => {
-                                            if (tutorialStep < tutorialTexts.length - 1) {
-                                                setTutorialStep(tutorialStep + 1);
-                                            } else {
-                                                finishTutorialGuide();
-                                            }
-                                        }}
-                                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg text-sm"
-                                    >
-                                        {tutorialStep < tutorialTexts.length - 1 ? '다음' : '연습 시작하기'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         }
