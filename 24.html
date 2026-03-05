@@ -113,7 +113,6 @@
         const Timer = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15.82" y2="15.82"></line><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4"></path></svg>;
         const Trophy = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v6a5 5 0 1 1-10 0V4"></path><path d="M5 9v1a10 10 0 0 0 10 10"></path><path d="M19 9v1a10 10 0 0 1-10 10"></path><path d="M2 5h3"></path><path d="M19 5h3"></path></svg>;
         const CloseIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-        const Edit2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
         const User = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
         const Home = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
         const ArrowDown = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>;
@@ -200,7 +199,7 @@
                 create_nickname_title: "Set Nickname",
                 create_nickname_desc: "Enter a cool nickname to use in the game.\n(This will be shown on the leaderboard)",
                 confirm: "Confirm",
-                nickname_placeholder: "English only (Max 8 chars)",
+                nickname_placeholder: "Alphanumeric only (Max 8 chars)",
                 nickname_duplicate: "This nickname is already taken.",
                 pts: "PTS",
                 tut_goal_1: "Step 1: Make 8 x 3",
@@ -278,7 +277,7 @@
                 create_nickname_title: "닉네임 설정",
                 create_nickname_desc: "게임에서 사용할 멋진 닉네임을 입력해주세요.\n(랭킹보드에 표시됩니다)",
                 confirm: "확인",
-                nickname_placeholder: "영어만 입력 가능 (최대 8자)",
+                nickname_placeholder: "영문/숫자만 입력 가능 (최대 8자)",
                 nickname_duplicate: "이미 누군가 사용중인 닉네임입니다.",
                 pts: "점",
                 tut_goal_1: "1단계: 8 x 3 만들어 보기",
@@ -356,7 +355,7 @@
                 create_nickname_title: "ニックネーム設定",
                 create_nickname_desc: "ゲームで使用するニックネームを入力してください。\n（ランキングに表示されます）",
                 confirm: "確認",
-                nickname_placeholder: "英語のみ（最大8文字）",
+                nickname_placeholder: "英数字のみ（最大8文字）",
                 nickname_duplicate: "既に使用されているニックネームです。",
                 pts: "PT",
                 tut_goal_1: "ステップ1：8 x 3を作る",
@@ -434,7 +433,7 @@
                 create_nickname_title: "設定暱稱",
                 create_nickname_desc: "請輸入要在遊戲中使用的帥氣暱稱。\n（將顯示在排行榜上）",
                 confirm: "確認",
-                nickname_placeholder: "僅限英文（最多8個字）",
+                nickname_placeholder: "僅限英數字母（最多8個字）",
                 nickname_duplicate: "此暱稱已被使用。",
                 pts: "分",
                 tut_goal_1: "第一階段：挑戰 8 x 3",
@@ -747,7 +746,6 @@
             const [allRankings, setAllRankings] = useState([]); 
             const [showRanking, setShowRanking] = useState(false);
             const [rankingTab, setRankingTab] = useState('score'); 
-            const [isEditingName, setIsEditingName] = useState(false);
             const [tempName, setTempName] = useState('');
             const [showNicknameModal, setShowNicknameModal] = useState(false);
             const [nicknameError, setNicknameError] = useState(''); // 중복 에러 표시용
@@ -786,13 +784,13 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
-            // 파이어베이스 인증 및 초기화 (getDocs 추가됨)
+            // 파이어베이스 인증 및 초기화 (익명 로그인 제거됨)
             useEffect(() => {
                 let unsubscribeAuth;
                 const setupFirebase = async () => {
                     try {
                         const { initializeApp } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js")')();
-                        const { getAuth, signInAnonymously, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
+                        const { getAuth, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
                         const { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
                         
                         setFirebaseApi({ collection, doc, setDoc, getDoc, getDocs, onSnapshot });
@@ -813,38 +811,34 @@
 
                         unsubscribeAuth = onAuthStateChanged(auth, (u) => {
                             if (u) setUser(u);
+                            else setUser(null); // 로그아웃 상태
                         });
 
                         const initAuth = async () => {
                             await auth.authStateReady();
-                            if (!auth.currentUser) {
-                                try {
-                                    await signInAnonymously(auth);
-                                } catch (e) {
-                                    console.error("익명 로그인 실패:", e);
-                                    setUser({ uid: 'guest-' + Date.now() });
-                                }
-                            }
+                            // 익명 로그인(signInAnonymously) 완전 삭제
                         };
                         await initAuth();
 
                     } catch (err) {
                         console.error("Cloud DB Init Error", err);
-                        setUser({ uid: 'offline-user-' + Date.now() });
                     }
                 };
                 setupFirebase();
                 return () => { if (unsubscribeAuth) unsubscribeAuth(); };
             }, []);
 
-            // 닉네임 로딩 로직
+            // 닉네임 로딩 로직: 비로그인이면 닉네임 설정 X
             useEffect(() => {
-                if (!user) return;
+                if (!user) {
+                    setNickname('Guest'); // 비로그인 유저는 게스트로 고정
+                    return;
+                }
                 
                 const localKey = `make24_nickname_${user.uid}`;
                 const localName = localStorage.getItem(localKey);
 
-                if (!db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) {
+                if (!db || !firebaseApi) {
                     if (!localName) {
                         setShowNicknameModal(true);
                     } else {
@@ -877,7 +871,7 @@
                 fetchProfile();
             }, [user, db, firebaseApi]);
 
-            // 실시간 랭킹 구독
+            // 실시간 랭킹 구독 
             useEffect(() => {
                 if (!db || !firebaseApi) return; 
                 const { collection, onSnapshot } = firebaseApi;
@@ -980,7 +974,7 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
-                if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
+                if (!user || !db || !firebaseApi) return; 
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
                 const date = Date.now();
@@ -1017,8 +1011,7 @@
 
                 setNicknameError(''); // 에러 메시지 초기화
 
-                // 오프라인 모드가 아닐 때 클라우드 저장 및 중복 검사
-                if (user && !user.uid.startsWith('guest-') && !user.uid.startsWith('offline-') && db && firebaseApi) {
+                if (user && db && firebaseApi) {
                     const { collection, getDocs, doc, setDoc, getDoc } = firebaseApi;
                     
                     try {
@@ -1042,12 +1035,20 @@
                         const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
                         await setDoc(profileRef, { nickname: newName }, { merge: true });
 
-                        if (score > 0) {
-                            const userRankRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'rankings', user.uid);
-                            const docSnap = await getDoc(userRankRef);
-                            if (docSnap.exists()) {
-                                await setDoc(userRankRef, { nickname: newName }, { merge: true });
-                            }
+                        // 점수가 없더라도(처음 닉네임 생성 시) 랭킹 DB에 기본값(0점)으로 즉시 등록되도록 수정
+                        const userRankRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'rankings', user.uid);
+                        const docSnap = await getDoc(userRankRef);
+                        if (docSnap.exists()) {
+                            await setDoc(userRankRef, { nickname: newName }, { merge: true });
+                        } else {
+                            await setDoc(userRankRef, {
+                                nickname: newName,
+                                score: score || 0,
+                                combo: streak || 0,
+                                solved: solvedCount || 0,
+                                date: Date.now(),
+                                userId: user.uid
+                            });
                         }
                     } catch(e) { 
                         console.error("Profile update error:", e); 
@@ -1062,7 +1063,6 @@
                     localStorage.setItem(localKey, newName);
                 }
                 
-                setIsEditingName(false);
                 setShowNicknameModal(false);
 
                 if (!localStorage.getItem('make24_welcome_seen')) {
@@ -1166,7 +1166,12 @@
             };
 
             const restartGame = () => {
-                initGame();
+                if (tutorialPhase > 0) {
+                    startTutorial(); // 튜토리얼 중이라면 1단계로 되돌아감
+                } else {
+                    initGame();      // 본게임이라면 본게임 처음부터 시작
+                }
+                setIsPaused(false);
             };
 
             const useHint = () => {
@@ -1645,26 +1650,8 @@
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <User size={18} className="text-blue-400" />
-                                            {isEditingName ? (
-                                                <div className="flex flex-col items-start gap-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <input 
-                                                            type="text" 
-                                                            value={tempName} 
-                                                            onChange={(e) => {
-                                                                setTempName(e.target.value.replace(/[^a-zA-Z]/g, ''));
-                                                                setNicknameError('');
-                                                            }} 
-                                                            className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24 focus:outline-none focus:border-blue-500" 
-                                                            maxLength={8} 
-                                                        />
-                                                        <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">{t('save')}</button>
-                                                    </div>
-                                                    {nicknameError && <span className="text-[10px] text-red-400 font-bold">{nicknameError}</span>}
-                                                </div>
-                                            ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
+                                            <span className="font-bold text-sm text-slate-200">{nickname}</span>
                                         </div>
-                                        {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); setNicknameError(''); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
                                     </div>
                                 </div>
                                 
@@ -1684,7 +1671,6 @@
                                                     <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
-                                                        <span className="hidden">{rank.userId}</span>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -1716,8 +1702,8 @@
                                     type="text" 
                                     value={tempName} 
                                     onChange={(e) => {
-                                        // 영문자 이외의 입력은 즉시 제거
-                                        setTempName(e.target.value.replace(/[^a-zA-Z]/g, ''));
+                                        // 영문자 및 숫자 이외의 입력은 즉시 제거
+                                        setTempName(e.target.value.replace(/[^a-zA-Z0-9]/g, ''));
                                         setNicknameError('');
                                     }} 
                                     placeholder={t('nickname_placeholder')}
@@ -1967,8 +1953,8 @@
                                             </button>
                                         )}
                                         {gameState === 'fail' && (
-                                            <button onClick={restartGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
-                                                <RotateCcw size={20} /> {energy >= 1 ? t('restart') : t('not_enough_energy')}
+                                            <button onClick={restartGame} disabled={energy < 1 && tutorialPhase === 0} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 || tutorialPhase > 0 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
+                                                <RotateCcw size={20} /> {(energy >= 1 || tutorialPhase > 0) ? t('restart') : t('not_enough_energy')}
                                             </button>
                                         )}
                                     </div>
