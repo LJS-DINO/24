@@ -757,10 +757,13 @@
             const [showACardToast, setShowACardToast] = useState(false);
 
             // --- 클라우드 & 로그인 연동 State ---
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'make24-game-app'; // 기본 앱 ID 설정
             const [user, setUser] = useState(null);
             const [db, setDb] = useState(null);
             const [firebaseApi, setFirebaseApi] = useState(null);
+
+            // --- 추가: 외부(홈페이지)에서 전달받은 유저 정보 저장용 State ---
+            const [externalUser, setExternalUser] = useState(null);
 
             const [energy, setEnergy] = useState(() => parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10));
             const [lastEnergyTime, setLastEnergyTime] = useState(() => parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10));
@@ -785,7 +788,126 @@
             useEffect(() => {
                 const savedName = localStorage.getItem('make24_nickname');
                 if (savedName) setNickname(savedName);
+
+                // --- 추가: 홈페이지(부모 창)로부터 메시지 수신 리스너 ---
+                const handleMessage = (event) => {
+                    // 보안을 위해 event.origin을 확인하는 것이 좋습니다. (예: if(event.origin !== 'https://ljs-dino.github.io') return;)
+                    if (event.data && event.data.type === 'AUTH_DATA') {
+                        const { uid, displayName } = event.data.payload;
+                        setExternalUser({ uid, displayName });
+                        
+                        // 홈페이지에서 받은 이름이 있고, 아직 닉네임을 설정하지 않았다면 임시로 설정
+                        if (displayName && !localStorage.getItem('make24_nickname')) {
+                             setNickname(displayName);
+                        }
+                    }
+                };
+                window.addEventListener('message', handleMessage);
+                
+                // 게임이 로드되었음을 부모 창에 알림
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'GAME_LOADED' }, '*');
+                }
+
+                return () => window.removeEventListener('message', handleMessage);
             }, []);
+
+            // 클라우드 프로필 로딩 및 닉네임 설정 체크 (externalUser 적용)
+            useEffect(() => {
+                // firebaseApi와 db가 준비되었고, (기본 user 또는 외부 externalUser)가 있을 때 실행
+                const activeUser = externalUser || user;
+                if (!activeUser || !db || !firebaseApi) return;
+
+                const fetchProfile = async () => {
+                    const { doc, getDoc, setDoc } = firebaseApi;
+                    const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', activeUser.uid);
+                    try {
+                        const profileSnap = await getDoc(profileRef);
+                        if (profileSnap.exists() && profileSnap.data().nickname) {
+                            setNickname(profileSnap.data().nickname);
+                            localStorage.setItem('make24_nickname', profileSnap.data().nickname);
+                        } else {
+                            const localName = localStorage.getItem('make24_nickname');
+                            if (localName && localName !== 'Player') {
+                                setNickname(localName);
+                                await setDoc(profileRef, { nickname: localName }, { merge: true });
+                            } else if (!activeUser.displayName) {
+                                // 구글 이름도 없고 로컬 저장소 이름도 없으면 모달 띄움
+                                setShowNicknameModal(true);
+                            } else {
+                                // 홈페이지에서 구글 이름을 넘겨받았다면 바로 저장
+                                await setDoc(profileRef, { nickname: activeUser.displayName }, { merge: true });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Profile fetch error", e);
+                    }
+                };
+                fetchProfile();
+            }, [user, externalUser, db, firebaseApi, appId]);
+
+            // 실시간 클라우드 데이터베이스 초기화 (기본 로그인 로직 유지, 단 externalUser 우선 사용)
+            useEffect(() => {
+                let unsubscribeAuth;
+                const setupFirebase = async () => {
+                    try {
+                        const { initializeApp } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js")')();
+                        const { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
+                        const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
+                        
+                        setFirebaseApi({ collection, doc, setDoc, getDoc, onSnapshot });
+
+                        // 홈페이지와 동일한 Firebase 프로젝트 설정값을 사용해야 합니다.
+                        // 이 값이 없으면 게임 독자적인 DB를 사용하게 됩니다.
+                        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                            /* 여기에 ljs-dino.github.io에서 사용하는 Firebase 설정(apiKey, projectId 등)을 하드코딩으로 넣는 것을 권장합니다. */
+                            /* 예시: apiKey: "...", authDomain: "...", projectId: "..." */
+                        };
+                        const app = initializeApp(firebaseConfig);
+                        const auth = getAuth(app);
+                        const dbInstance = getFirestore(app);
+                        setDb(dbInstance);
+
+                        // externalUser(홈페이지 로그인 정보)가 없다면 기존처럼 익명 로그인 시도
+                        if (!externalUser) {
+                            const initAuth = async () => {
+                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                    await signInWithCustomToken(auth, __initial_auth_token);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                            };
+                            await initAuth();
+                            unsubscribeAuth = onAuthStateChanged(auth, (u) => setUser(u));
+                        }
+                    } catch (err) {
+                        console.error("Cloud DB Init Error", err);
+                    }
+                };
+                setupFirebase();
+                return () => { if (unsubscribeAuth) unsubscribeAuth(); };
+            }, [externalUser]); // externalUser 상태가 변할 때 재초기화될 수 있도록 의존성 추가
+
+            // 실시간 랭킹 구독 (Real-time Listener) (externalUser 적용)
+            useEffect(() => {
+                const activeUser = externalUser || user;
+                if (!activeUser || !db || !firebaseApi) return;
+                const { collection, onSnapshot } = firebaseApi;
+                
+                const rankingsRef = collection(db, 'artifacts', appId, 'public', 'data', 'rankings');
+                const unsubscribe = onSnapshot(rankingsRef, (snapshot) => {
+                    const fetched = [];
+                    snapshot.forEach(doc => {
+                        fetched.push({ id: doc.id, ...doc.data() });
+                    });
+                    setAllRankings(fetched);
+                }, (error) => {
+                    console.error("Ranking fetch error:", error);
+                });
+
+                return () => unsubscribe();
+            }, [user, externalUser, db, firebaseApi]);
+
 
             // 클라우드 프로필 로딩 및 닉네임 설정 체크
             useEffect(() => {
@@ -954,11 +1076,12 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
-                if (!user || !db || !firebaseApi) return;
+                const activeUser = externalUser || user;
+                if (!activeUser || !db || !firebaseApi) return;
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
                 const date = Date.now();
-                const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', activeUser.uid);
                 
                 try {
                     const docSnap = await getDoc(userRankRef);
@@ -978,7 +1101,7 @@
                         combo: newCombo,
                         solved: newSolved,
                         date: date,
-                        userId: user.uid
+                        userId: activeUser.uid // 홈페이지에서 넘겨준 uid가 저장됨
                     }, { merge: true });
                 } catch(e) {
                     console.error("Save record error:", e);
@@ -986,6 +1109,7 @@
             };
 
             const updateNickname = async () => {
+                const activeUser = externalUser || user;
                 if (tempName.trim()) {
                     const newName = tempName.trim();
                     setNickname(newName);
@@ -993,24 +1117,20 @@
                     setIsEditingName(false);
                     setShowNicknameModal(false);
 
-                    // 첫 닉네임 설정 후 환영 모드 활성화 (단, 이미 본 적 있으면 제외)
                     if (!localStorage.getItem('make24_welcome_seen')) {
                         setShowWelcomeTutorialHook(true);
                     }
 
-                    // 온라인 랭킹 & 프로필 닉네임 즉시 업데이트 반영
-                    if (user && db && firebaseApi) {
+                    if (activeUser && db && firebaseApi) {
                         const { doc, setDoc, getDoc } = firebaseApi;
                         
-                        // 프로필 업데이트
-                        const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', user.uid);
+                        const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', activeUser.uid);
                         try {
                             await setDoc(profileRef, { nickname: newName }, { merge: true });
                         } catch(e) { console.error("Profile update error:", e); }
 
-                        // 랭킹에 등록된 기존 닉네임 업데이트
                         if (score > 0) {
-                            const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', user.uid);
+                            const userRankRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', activeUser.uid);
                             try {
                                 const docSnap = await getDoc(userRankRef);
                                 if (docSnap.exists()) {
@@ -1630,23 +1750,27 @@
                                 </div>
                                 
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-                                    {sortedRankings.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">{t('loading')}</div> : sortedRankings.map((rank, idx) => (
-                                        <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${user && rank.userId === user.uid ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
-                                                    <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
+                                    {sortedRankings.length === 0 ? <div className="text-center text-xs text-slate-500 py-4">{t('loading')}</div> : sortedRankings.map((rank, idx) => {
+                                        // 랭킹 하이라이트 조건에 externalUser.uid 추가
+                                        const isActiveUser = (user && rank.userId === user.uid) || (externalUser && rank.userId === externalUser.uid);
+                                        return (
+                                            <div key={idx} className={`flex justify-between items-center p-2 rounded-lg ${isActiveUser ? 'bg-blue-900/40 border border-blue-500/30' : 'bg-slate-700/30'}`}>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
+                                                        <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-bold text-sm text-yellow-400">{formatRankValue(rank)}</div>
+                                                    <div className="text-[9px] text-slate-400 font-mono tracking-wider mt-0.5">
+                                                        {rankingTab === 'score' ? t('pts') : rankingTab === 'combo' ? 'COMBO' : 'SOLVED'}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="font-bold text-sm text-yellow-400">{formatRankValue(rank)}</div>
-                                                <div className="text-[9px] text-slate-400 font-mono tracking-wider mt-0.5">
-                                                    {rankingTab === 'score' ? t('pts') : rankingTab === 'combo' ? 'COMBO' : 'SOLVED'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
