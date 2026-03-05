@@ -743,7 +743,7 @@
             const [lastScoreGain, setLastScoreGain] = useState(null); 
             const [allRankings, setAllRankings] = useState([]); 
             const [showRanking, setShowRanking] = useState(false);
-            const [rankingTab, setRankingTab] = useState('score'); // 'score', 'combo', 'solved'
+            const [rankingTab, setRankingTab] = useState('score'); 
             const [isEditingName, setIsEditingName] = useState(false);
             const [tempName, setTempName] = useState('');
             const [showNicknameModal, setShowNicknameModal] = useState(false);
@@ -756,7 +756,7 @@
             const [showACardToast, setShowACardToast] = useState(false);
 
             // 동일 도메인 환경에서 Firestore 경로 일치를 위한 고정 App ID
-            const safeAppId = typeof __app_id !== 'undefined' ? __app_id : 'make24-game-app';
+            const safeAppId = 'make24-game';
             
             const [user, setUser] = useState(null);
             const [db, setDb] = useState(null);
@@ -782,12 +782,7 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
-            useEffect(() => {
-                const savedName = localStorage.getItem('make24_nickname');
-                if (savedName) setNickname(savedName);
-            }, []);
-
-            // 실시간 클라우드 데이터베이스 초기화 및 자동 로그인 (홈페이지와 설정 공유)
+            // 파이어베이스 인증 및 초기화
             useEffect(() => {
                 let unsubscribeAuth;
                 const setupFirebase = async () => {
@@ -798,7 +793,6 @@
                         
                         setFirebaseApi({ collection, doc, setDoc, getDoc, onSnapshot });
 
-                        // 홈페이지(index.html)와 완벽히 동일한 파이어베이스 설정 적용!
                         const firebaseConfig = {
                             apiKey: "AIzaSyCCELb4mV6fQaotFsQtjXp2AxMiiF5dvOI",
                             authDomain: "dinogames-f6440.firebaseapp.com",
@@ -813,61 +807,81 @@
                         const dbInstance = getFirestore(app);
                         setDb(dbInstance);
 
+                        // 상태 리스너를 먼저 등록
+                        unsubscribeAuth = onAuthStateChanged(auth, (u) => {
+                            if (u) setUser(u);
+                        });
+
                         const initAuth = async () => {
-                            // 홈페이지에서 로그인한 구글 세션이 불러와질 때까지 잠시 대기
                             await auth.authStateReady();
-                            
-                            // 로그인된 구글 세션이 없을 때만 익명 로그인 진행
                             if (!auth.currentUser) {
                                 try {
                                     await signInAnonymously(auth);
-                                } catch (err) {
-                                    console.warn("Firebase 익명 로그인이 비활성화되어 있습니다. 랭킹 저장이 불가한 오프라인 모드로 실행됩니다.", err);
+                                } catch (e) {
+                                    console.error("익명 로그인 실패:", e);
+                                    // 로그인 실패 시 오프라인 방어 모드
+                                    setUser({ uid: 'guest-' + Date.now() });
                                 }
                             }
                         };
                         await initAuth();
 
-                        unsubscribeAuth = onAuthStateChanged(auth, (u) => setUser(u));
                     } catch (err) {
                         console.error("Cloud DB Init Error", err);
+                        setUser({ uid: 'offline-user-' + Date.now() });
                     }
                 };
                 setupFirebase();
                 return () => { if (unsubscribeAuth) unsubscribeAuth(); };
             }, []);
 
-            // 클라우드 프로필 로딩 및 닉네임 설정 체크 (구글 이름 자동 저장 제거)
+            // 닉네임 로딩 로직: 계정 고유 ID(user.uid)에 따라 철저히 분리
             useEffect(() => {
-                if (!user || !db || !firebaseApi) return;
+                if (!user) return; // 로그인 정보가 확인될 때까지 대기
+                
+                // 해당 계정 ID에 맞는 로컬 저장소 키값 생성 (이래야 다른 계정으로 로그인 시 닉네임이 섞이지 않음)
+                const localKey = `make24_nickname_${user.uid}`;
+                const localName = localStorage.getItem(localKey);
+
+                // 오프라인 모드일 때의 예외 처리
+                if (!db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) {
+                    if (!localName) {
+                        setShowNicknameModal(true);
+                    } else {
+                        setNickname(localName);
+                    }
+                    return;
+                }
+
                 const fetchProfile = async () => {
-                    const { doc, getDoc, setDoc } = firebaseApi;
+                    const { doc, getDoc } = firebaseApi;
                     const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
                     try {
                         const profileSnap = await getDoc(profileRef);
                         if (profileSnap.exists() && profileSnap.data().nickname) {
-                            setNickname(profileSnap.data().nickname);
-                            localStorage.setItem('make24_nickname', profileSnap.data().nickname);
+                            // 클라우드에 닉네임이 있으면 가져옴
+                            const fetchedName = profileSnap.data().nickname;
+                            setNickname(fetchedName);
+                            localStorage.setItem(localKey, fetchedName); 
                         } else {
-                            // 구글 프로필 이름을 무시하고, 무조건 유저가 직접 닉네임을 설정하도록 모달 호출
-                            const localName = localStorage.getItem('make24_nickname');
-                            if (localName && localName !== 'Player') {
-                                setNickname(localName);
-                                await setDoc(profileRef, { nickname: localName }, { merge: true });
-                            } else {
-                                setShowNicknameModal(true);
-                            }
+                            // 클라우드에 닉네임이 없으면 무조건 새로 만들게 함 (기존의 공용 localStorage.getItem 무시)
+                            setShowNicknameModal(true);
                         }
                     } catch (e) {
-                        console.error("Profile fetch error", e);
+                        console.error("Firestore 접근 에러:", e);
+                        if (!localName) {
+                            setShowNicknameModal(true);
+                        } else {
+                            setNickname(localName);
+                        }
                     }
                 };
                 fetchProfile();
             }, [user, db, firebaseApi]);
 
-            // 실시간 랭킹 구독 (수정: user가 없어도 다른 사람들의 랭킹은 볼 수 있게 개선)
+            // 실시간 랭킹 구독 (user 객체 검사 제거하여 비로그인/에러시에도 랭킹 구경은 가능하게)
             useEffect(() => {
-                if (!db || !firebaseApi) return; // user 확인 조건 제거
+                if (!db || !firebaseApi) return; 
                 const { collection, onSnapshot } = firebaseApi;
                 
                 const rankingsRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'rankings');
@@ -882,7 +896,7 @@
                 });
 
                 return () => unsubscribe();
-            }, [user, db, firebaseApi]);
+            }, [db, firebaseApi]);
 
             useEffect(() => {
                 const checkAdCooldowns = () => {
@@ -968,7 +982,7 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
-                if (!user || !db || !firebaseApi) return;
+                if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
                 const date = Date.now();
@@ -1003,7 +1017,13 @@
                 if (tempName.trim()) {
                     const newName = tempName.trim();
                     setNickname(newName);
-                    localStorage.setItem('make24_nickname', newName);
+                    
+                    // 해당 계정 전용 로컬 스토리지 키에 이름 저장
+                    if (user) {
+                        const localKey = `make24_nickname_${user.uid}`;
+                        localStorage.setItem(localKey, newName);
+                    }
+                    
                     setIsEditingName(false);
                     setShowNicknameModal(false);
 
@@ -1011,7 +1031,8 @@
                         setShowWelcomeTutorialHook(true);
                     }
 
-                    if (user && db && firebaseApi) {
+                    // 오프라인 모드가 아닐 때 클라우드 저장
+                    if (user && !user.uid.startsWith('guest-') && !user.uid.startsWith('offline-') && db && firebaseApi) {
                         const { doc, setDoc, getDoc } = firebaseApi;
                         
                         const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
