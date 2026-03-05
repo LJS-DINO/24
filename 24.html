@@ -214,7 +214,10 @@
                 tut_hint_5: "Hint: Try ((2 + 2) × 3) × 2 = 24",
                 goto_lobby: "Go to Lobby",
                 a_card_toast: "A card can be used as 1 or 10!",
-                welcome_msg: "Welcome, {name}! Try learning how to play first."
+                welcome_msg: "Welcome, {name}! Try learning how to play first.",
+                revive_ad: "Revive (Watch Ad)",
+                energy_shortage_toast: "Not enough energy.",
+                game_over: "GAME OVER"
             },
             ko: {
                 title: "24 만들기",
@@ -292,7 +295,10 @@
                 tut_hint_5: "힌트: ((2 + 2) × 3) × 2 = 24 (괄호 두 번 터치!)",
                 goto_lobby: "로비로 이동",
                 a_card_toast: "A 카드는 1 또는 10으로 쓸 수 있습니다!",
-                welcome_msg: "{name}님 환영합니다! 먼저 게임 방법을 배워보세요."
+                welcome_msg: "{name}님 환영합니다! 먼저 게임 방법을 배워보세요.",
+                revive_ad: "광고보고 부활하기",
+                energy_shortage_toast: "행동력이 부족합니다.",
+                game_over: "게임 오버"
             },
             ja: {
                 title: "24を作る",
@@ -370,7 +376,10 @@
                 tut_hint_5: "ヒント: ((2 + 2) × 3) × 2 = 24 (2回タップ！)",
                 goto_lobby: "ロビーへ移動",
                 a_card_toast: "Aカードは1または10として使えます！",
-                welcome_msg: "ようこそ、{name}さん！まずは遊び方を学んでみましょう。"
+                welcome_msg: "ようこそ、{name}さん！まずは遊び方を学んでみましょう。",
+                revive_ad: "広告を見て復活",
+                energy_shortage_toast: "スタミナが不足しています。",
+                game_over: "ゲームオーバー"
             },
             'zh-TW': {
                 title: "挑戰24",
@@ -448,7 +457,10 @@
                 tut_hint_5: "提示：試試 ((2 + 2) × 3) × 2 = 24",
                 goto_lobby: "返回大廳",
                 a_card_toast: "A 卡可以當作 1 或 10 喔！",
-                welcome_msg: "歡迎，{name}！請先學習怎麼玩吧。"
+                welcome_msg: "歡迎，{name}！請先學習怎麼玩吧。",
+                revive_ad: "觀看廣告復活",
+                energy_shortage_toast: "體力不足。",
+                game_over: "遊戲結束"
             }
         };
 
@@ -748,8 +760,9 @@
             const [rankingTab, setRankingTab] = useState('score'); 
             const [tempName, setTempName] = useState('');
             const [showNicknameModal, setShowNicknameModal] = useState(false);
-            const [nicknameError, setNicknameError] = useState(''); // 중복 에러 표시용
+            const [nicknameError, setNicknameError] = useState(''); 
             const [showWelcomeTutorialHook, setShowWelcomeTutorialHook] = useState(false);
+            const [showEnergyToast, setShowEnergyToast] = useState(false); // 에너지 부족 토스트 상태 추가
             
             const [tutorialPhase, setTutorialPhase] = useState(0); 
             const [hintText, setHintText] = useState('');
@@ -784,7 +797,7 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
-            // 파이어베이스 인증 및 초기화 (익명 로그인 제거됨)
+            // 파이어베이스 인증 및 초기화 (익명 로그인 완전 제거됨)
             useEffect(() => {
                 let unsubscribeAuth;
                 const setupFirebase = async () => {
@@ -811,14 +824,10 @@
 
                         unsubscribeAuth = onAuthStateChanged(auth, (u) => {
                             if (u) setUser(u);
-                            else setUser(null); // 로그아웃 상태
+                            else setUser(null); // 구글 비로그인 상태 (게스트)
                         });
 
-                        const initAuth = async () => {
-                            await auth.authStateReady();
-                            // 익명 로그인(signInAnonymously) 완전 삭제
-                        };
-                        await initAuth();
+                        await auth.authStateReady();
 
                     } catch (err) {
                         console.error("Cloud DB Init Error", err);
@@ -828,10 +837,10 @@
                 return () => { if (unsubscribeAuth) unsubscribeAuth(); };
             }, []);
 
-            // 닉네임 로딩 로직: 비로그인이면 닉네임 설정 X
+            // 닉네임 로딩 로직: 비로그인이면 닉네임 설정 X (Guest 고정)
             useEffect(() => {
                 if (!user) {
-                    setNickname('Guest'); // 비로그인 유저는 게스트로 고정
+                    setNickname('Guest'); 
                     return;
                 }
                 
@@ -974,6 +983,7 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
+                // 비로그인(게스트) 유저는 랭킹에 저장하지 않음
                 if (!user || !db || !firebaseApi) return; 
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
@@ -1009,7 +1019,7 @@
                 const newName = tempName.trim();
                 if (!newName) return;
 
-                setNicknameError(''); // 에러 메시지 초기화
+                setNicknameError('');
 
                 if (user && db && firebaseApi) {
                     const { collection, getDocs, doc, setDoc, getDoc } = firebaseApi;
@@ -1028,14 +1038,14 @@
 
                         if (isDuplicate) {
                             setNicknameError(t('nickname_duplicate'));
-                            return; // 중복이면 저장 안 하고 함수 종료
+                            return; 
                         }
 
                         // 중복이 아니면 저장
                         const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
                         await setDoc(profileRef, { nickname: newName }, { merge: true });
 
-                        // 점수가 없더라도(처음 닉네임 생성 시) 랭킹 DB에 기본값(0점)으로 즉시 등록되도록 수정
+                        // 닉네임 생성 시점에 바로 랭킹판에 0점짜리로 등록되도록 처리
                         const userRankRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'rankings', user.uid);
                         const docSnap = await getDoc(userRankRef);
                         if (docSnap.exists()) {
@@ -1167,11 +1177,36 @@
 
             const restartGame = () => {
                 if (tutorialPhase > 0) {
-                    startTutorial(); // 튜토리얼 중이라면 1단계로 되돌아감
+                    startTutorial(); // 튜토리얼 T1부터 다시 시작
+                    setIsPaused(false);
                 } else {
-                    initGame();      // 본게임이라면 본게임 처음부터 시작
+                    let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
+                    if (currentEnergy < 1) {
+                        setShowEnergyToast(true);
+                        setTimeout(() => setShowEnergyToast(false), 2000);
+                        return; // 행동력이 없으면 토스트를 띄우고 본게임을 실행하지 않음
+                    }
+                    initGame();
+                    setIsPaused(false);
                 }
-                setIsPaused(false);
+            };
+            
+            const reviveGame = () => {
+                setIsWatchingAd(true);
+                // 광고 시청 후 이어하기
+                setTimeout(() => {
+                    setIsWatchingAd(false);
+                    setGameState('playing');
+                    setTimeLeft(30);
+                    setResultMessage('');
+                    setSolutionStr('');
+                    // 카드는 그대로 두고 슬롯들만 비워줌
+                    setSlots([null, null, null, null]);
+                    setStartBrackets([0, 0, 0, 0]);
+                    setEndBrackets([0, 0, 0, 0]);
+                    setOperators(['+', '+', '+']);
+                    setProblemStartTime(Date.now());
+                }, 1500);
             };
 
             const useHint = () => {
@@ -1273,10 +1308,8 @@
                             if (prev <= 1) {
                                 const answer = getBestSolution(sourceCards);
                                 setSolutionStr(answer);
-                                setGameState('fail');
-                                setStreak(0);
-                                setComboFlash(null);
                                 saveRecord(score, streak, solvedCount);
+                                setGameState('fail'); // 실패 시점에는 콤보나 점수를 초기화하지 않고 살려둠
                                 return 0;
                             }
                             return prev - 1;
@@ -1435,9 +1468,7 @@
 
                     setResultMessage(lastError || t('wrong_answer'));
                     saveRecord(score, streak, solvedCount);
-                    setStreak(0);
-                    setComboFlash(null);
-                    setGameState('fail'); 
+                    setGameState('fail'); // 실패 시 상태만 변경 (스트릭 초기화 X)
                 }
             };
 
@@ -1525,6 +1556,18 @@
                             </div>
                         </div>
                     )}
+
+                    {/* 행동력 부족 토스트 */}
+                    {showEnergyToast && (
+                        <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 z-[100] animate-popup pointer-events-none w-11/12 max-w-sm">
+                            <div className="bg-rose-600/95 border-2 border-rose-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
+                                <Heart size={24} className="fill-white animate-pulse" />
+                                <div className="font-bold text-sm leading-snug text-center">
+                                    {t('energy_shortage_toast')}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     
                     {gameState === 'tutorial_complete' && (
                         <div className="absolute inset-0 z-[80] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center animate-pop-scale">
@@ -1538,15 +1581,50 @@
                         </div>
                     )}
 
+                    {/* 실패 팝업 오버레이 */}
+                    {gameState === 'fail' && (
+                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                            <div className="bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl border-2 border-red-500/50 p-6 flex flex-col gap-5 items-center text-center">
+                                <h2 className="text-3xl font-black text-red-400 drop-shadow-lg uppercase tracking-widest">{t('game_over')}</h2>
+                                
+                                {solutionStr ? (
+                                    <div className="w-full bg-slate-900/80 rounded-2xl p-4 shadow-inner border border-slate-700">
+                                        <div className="text-xs text-slate-400 mb-2 font-bold">{t('too_bad')}</div>
+                                        <div className="text-2xl font-mono font-black text-yellow-400 tracking-wider mb-1 drop-shadow-md">{solutionStr}</div>
+                                        <div className="text-lg font-black text-white">= 24</div>
+                                    </div>
+                                ) : (
+                                    <div className="w-full bg-slate-900/80 rounded-2xl p-4 shadow-inner text-slate-300 font-bold border border-slate-700">
+                                        {resultMessage || t('wrong_answer')}
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col gap-3 w-full mt-2">
+                                    <button onClick={reviveGame} className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                                        <VideoIcon size={20} className="text-indigo-200" /> {t('revive_ad')}
+                                    </button>
+                                    <div className="flex gap-2 w-full">
+                                        <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600">
+                                            <RotateCcw size={18} /> {t('restart')}
+                                        </button>
+                                        <button onClick={goToLobby} className="flex-1 py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-rose-600">
+                                            <Home size={18} /> {t('exit_lobby')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {isPaused && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
                             <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
                                 <button onClick={() => setIsPaused(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
-                                    <Play size={20} fill="currentColor" /> {gameState === 'fail' ? t('view_result') : t('continue')}
+                                    <Play size={20} fill="currentColor" /> {t('continue')}
                                 </button>
-                                <button onClick={restartGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 ${energy >= 1 ? 'bg-slate-700 hover:bg-slate-600 active:bg-slate-500' : 'bg-slate-800 opacity-50 cursor-not-allowed'}`}>
-                                    <RotateCcw size={20} /> {energy >= 1 ? t('restart') : t('not_enough_energy')}
+                                <button onClick={restartGame} className={`w-full py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600`}>
+                                    <RotateCcw size={20} /> {t('restart')}
                                 </button>
                                 <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600">
                                     <Home size={20} /> {t('exit_lobby')}
@@ -1702,7 +1780,7 @@
                                     type="text" 
                                     value={tempName} 
                                     onChange={(e) => {
-                                        // 영문자 및 숫자 이외의 입력은 즉시 제거
+                                        // 영문자 및 숫자 이외의 입력은 즉시 제거 (a-zA-Z0-9 적용)
                                         setTempName(e.target.value.replace(/[^a-zA-Z0-9]/g, ''));
                                         setNicknameError('');
                                     }} 
@@ -1777,8 +1855,8 @@
                                         <button onClick={startTutorial} className={`w-full py-3 bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 border border-emerald-600 relative ${showWelcomeTutorialHook ? 'animate-pulse ring-4 ring-yellow-400 z-50' : 'hover:bg-emerald-600'}`}>
                                             <CheckCircle size={18} /> {t('tutorial_btn')}
                                         </button>
-                                        <button onClick={initGame} disabled={energy < 1} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${energy >= 1 ? 'bg-blue-600 active:bg-blue-700' : 'bg-slate-600 opacity-50 cursor-not-allowed'}`}>
-                                            <Play size={20} fill="currentColor" /> {energy >= 1 ? t('game_start') : t('not_enough_energy')}
+                                        <button onClick={initGame} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 bg-blue-600 active:bg-blue-700`}>
+                                            <Play size={20} fill="currentColor" /> {t('game_start')}
                                         </button>
                                     </div>
                                     <div className="flex gap-2">
@@ -1809,18 +1887,6 @@
                                                 </div>
                                             )}
                                             
-                                            {/* 정답 예시 오버레이 */}
-                                            {gameState === 'fail' && solutionStr && (
-                                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                                                    <div className="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-5 text-center shadow-2xl max-w-sm w-full animate-pop-scale">
-                                                        <div className="text-xs text-yellow-500/80 font-bold mb-1 uppercase tracking-widest">{t('time_over')}</div>
-                                                        <div className="text-sm text-slate-300 mb-3">{t('too_bad')}</div>
-                                                        <div className="text-2xl font-mono font-black text-yellow-400 tracking-wider drop-shadow-lg mb-1">{solutionStr}</div>
-                                                        <div className="text-lg font-black text-white">= 24</div>
-                                                    </div>
-                                                </div>
-                                            )}
-
                                             <div className="flex items-center justify-center gap-3 md:gap-4 w-full px-4">
                                                 {sourceCards.map((card, idx) => {
                                                     const used = isCardUsed(card.id);
@@ -1950,11 +2016,6 @@
                                         {gameState === 'success' && (
                                             <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
                                                 {tutorialPhase > 0 ? (tutorialPhase === 5 ? t('tutorial_complete') : t('next_problem')) : t('next_problem')} <Play size={20} fill="currentColor" />
-                                            </button>
-                                        )}
-                                        {gameState === 'fail' && (
-                                            <button onClick={restartGame} disabled={energy < 1 && tutorialPhase === 0} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 ${energy >= 1 || tutorialPhase > 0 ? 'bg-slate-600 active:bg-slate-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}>
-                                                <RotateCcw size={20} /> {(energy >= 1 || tutorialPhase > 0) ? t('restart') : t('not_enough_energy')}
                                             </button>
                                         )}
                                     </div>
