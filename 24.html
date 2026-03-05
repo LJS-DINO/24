@@ -200,7 +200,8 @@
                 create_nickname_title: "Set Nickname",
                 create_nickname_desc: "Enter a cool nickname to use in the game.\n(This will be shown on the leaderboard)",
                 confirm: "Confirm",
-                nickname_placeholder: "Nickname (Max 8 chars)",
+                nickname_placeholder: "English only (Max 8 chars)",
+                nickname_duplicate: "This nickname is already taken.",
                 pts: "PTS",
                 tut_goal_1: "Step 1: Make 8 x 3",
                 tut_goal_2: "Step 2: Make 6 x 4",
@@ -277,7 +278,8 @@
                 create_nickname_title: "닉네임 설정",
                 create_nickname_desc: "게임에서 사용할 멋진 닉네임을 입력해주세요.\n(랭킹보드에 표시됩니다)",
                 confirm: "확인",
-                nickname_placeholder: "닉네임 입력 (최대 8자)",
+                nickname_placeholder: "영어만 입력 가능 (최대 8자)",
+                nickname_duplicate: "이미 누군가 사용중인 닉네임입니다.",
                 pts: "점",
                 tut_goal_1: "1단계: 8 x 3 만들어 보기",
                 tut_goal_2: "2단계: 6 x 4 만들어 보기",
@@ -354,7 +356,8 @@
                 create_nickname_title: "ニックネーム設定",
                 create_nickname_desc: "ゲームで使用するニックネームを入力してください。\n（ランキングに表示されます）",
                 confirm: "確認",
-                nickname_placeholder: "ニックネーム（最大8文字）",
+                nickname_placeholder: "英語のみ（最大8文字）",
+                nickname_duplicate: "既に使用されているニックネームです。",
                 pts: "PT",
                 tut_goal_1: "ステップ1：8 x 3を作る",
                 tut_goal_2: "ステップ2：6 x 4を作る",
@@ -431,7 +434,8 @@
                 create_nickname_title: "設定暱稱",
                 create_nickname_desc: "請輸入要在遊戲中使用的帥氣暱稱。\n（將顯示在排行榜上）",
                 confirm: "確認",
-                nickname_placeholder: "輸入暱稱（最多8個字）",
+                nickname_placeholder: "僅限英文（最多8個字）",
+                nickname_duplicate: "此暱稱已被使用。",
                 pts: "分",
                 tut_goal_1: "第一階段：挑戰 8 x 3",
                 tut_goal_2: "第二階段：挑戰 6 x 4",
@@ -553,7 +557,6 @@
 
         const generateProblem = (isTut, phase, currentSolved) => { 
             if (isTut) {
-                // 실전 튜토리얼 5단계용 고정 카드덱
                 if (phase === 1) return [{ id: 't1-1', value: 8, suit: '♠', display: '8' }, { id: 't1-2', value: 3, suit: '♥', display: '3' }, { id: 't1-3', value: 1, suit: '♣', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
                 if (phase === 2) return [{ id: 't2-1', value: 6, suit: '♠', display: '6' }, { id: 't2-2', value: 4, suit: '♥', display: '4' }, { id: 't2-3', value: 1, suit: '♣', display: 'A' }, { id: 't2-4', value: 1, suit: '♦', display: 'A' }];
                 if (phase === 3) return [{ id: 't3-1', value: 5, suit: '♠', display: '5' }, { id: 't3-2', value: 7, suit: '♥', display: '7' }, { id: 't3-3', value: 8, suit: '♣', display: '8' }, { id: 't3-4', value: 4, suit: '♦', display: '4' }];
@@ -747,6 +750,7 @@
             const [isEditingName, setIsEditingName] = useState(false);
             const [tempName, setTempName] = useState('');
             const [showNicknameModal, setShowNicknameModal] = useState(false);
+            const [nicknameError, setNicknameError] = useState(''); // 중복 에러 표시용
             const [showWelcomeTutorialHook, setShowWelcomeTutorialHook] = useState(false);
             
             const [tutorialPhase, setTutorialPhase] = useState(0); 
@@ -782,16 +786,16 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
-            // 파이어베이스 인증 및 초기화
+            // 파이어베이스 인증 및 초기화 (getDocs 추가됨)
             useEffect(() => {
                 let unsubscribeAuth;
                 const setupFirebase = async () => {
                     try {
                         const { initializeApp } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js")')();
                         const { getAuth, signInAnonymously, onAuthStateChanged } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")')();
-                        const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
+                        const { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot } = await new Function('return import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")')();
                         
-                        setFirebaseApi({ collection, doc, setDoc, getDoc, onSnapshot });
+                        setFirebaseApi({ collection, doc, setDoc, getDoc, getDocs, onSnapshot });
 
                         const firebaseConfig = {
                             apiKey: "AIzaSyCCELb4mV6fQaotFsQtjXp2AxMiiF5dvOI",
@@ -807,7 +811,6 @@
                         const dbInstance = getFirestore(app);
                         setDb(dbInstance);
 
-                        // 상태 리스너를 먼저 등록
                         unsubscribeAuth = onAuthStateChanged(auth, (u) => {
                             if (u) setUser(u);
                         });
@@ -819,7 +822,6 @@
                                     await signInAnonymously(auth);
                                 } catch (e) {
                                     console.error("익명 로그인 실패:", e);
-                                    // 로그인 실패 시 오프라인 방어 모드
                                     setUser({ uid: 'guest-' + Date.now() });
                                 }
                             }
@@ -835,15 +837,13 @@
                 return () => { if (unsubscribeAuth) unsubscribeAuth(); };
             }, []);
 
-            // 닉네임 로딩 로직: 계정 고유 ID(user.uid)에 따라 철저히 분리
+            // 닉네임 로딩 로직
             useEffect(() => {
-                if (!user) return; // 로그인 정보가 확인될 때까지 대기
+                if (!user) return;
                 
-                // 해당 계정 ID에 맞는 로컬 저장소 키값 생성 (이래야 다른 계정으로 로그인 시 닉네임이 섞이지 않음)
                 const localKey = `make24_nickname_${user.uid}`;
                 const localName = localStorage.getItem(localKey);
 
-                // 오프라인 모드일 때의 예외 처리
                 if (!db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) {
                     if (!localName) {
                         setShowNicknameModal(true);
@@ -859,12 +859,10 @@
                     try {
                         const profileSnap = await getDoc(profileRef);
                         if (profileSnap.exists() && profileSnap.data().nickname) {
-                            // 클라우드에 닉네임이 있으면 가져옴
                             const fetchedName = profileSnap.data().nickname;
                             setNickname(fetchedName);
                             localStorage.setItem(localKey, fetchedName); 
                         } else {
-                            // 클라우드에 닉네임이 없으면 무조건 새로 만들게 함 (기존의 공용 localStorage.getItem 무시)
                             setShowNicknameModal(true);
                         }
                     } catch (e) {
@@ -879,7 +877,7 @@
                 fetchProfile();
             }, [user, db, firebaseApi]);
 
-            // 실시간 랭킹 구독 (user 객체 검사 제거하여 비로그인/에러시에도 랭킹 구경은 가능하게)
+            // 실시간 랭킹 구독
             useEffect(() => {
                 if (!db || !firebaseApi) return; 
                 const { collection, onSnapshot } = firebaseApi;
@@ -1014,42 +1012,61 @@
             };
 
             const updateNickname = async () => {
-                if (tempName.trim()) {
-                    const newName = tempName.trim();
-                    setNickname(newName);
-                    
-                    // 해당 계정 전용 로컬 스토리지 키에 이름 저장
-                    if (user) {
-                        const localKey = `make24_nickname_${user.uid}`;
-                        localStorage.setItem(localKey, newName);
-                    }
-                    
-                    setIsEditingName(false);
-                    setShowNicknameModal(false);
+                const newName = tempName.trim();
+                if (!newName) return;
 
-                    if (!localStorage.getItem('make24_welcome_seen')) {
-                        setShowWelcomeTutorialHook(true);
-                    }
+                setNicknameError(''); // 에러 메시지 초기화
 
-                    // 오프라인 모드가 아닐 때 클라우드 저장
-                    if (user && !user.uid.startsWith('guest-') && !user.uid.startsWith('offline-') && db && firebaseApi) {
-                        const { doc, setDoc, getDoc } = firebaseApi;
+                // 오프라인 모드가 아닐 때 클라우드 저장 및 중복 검사
+                if (user && !user.uid.startsWith('guest-') && !user.uid.startsWith('offline-') && db && firebaseApi) {
+                    const { collection, getDocs, doc, setDoc, getDoc } = firebaseApi;
+                    
+                    try {
+                        // 닉네임 중복 검사 로직 (전체 프로필 스캔)
+                        const profilesRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'profiles');
+                        const profilesSnap = await getDocs(profilesRef);
+                        let isDuplicate = false;
                         
+                        profilesSnap.forEach(d => {
+                            if (d.id !== user.uid && d.data().nickname && d.data().nickname.toLowerCase() === newName.toLowerCase()) {
+                                isDuplicate = true;
+                            }
+                        });
+
+                        if (isDuplicate) {
+                            setNicknameError(t('nickname_duplicate'));
+                            return; // 중복이면 저장 안 하고 함수 종료
+                        }
+
+                        // 중복이 아니면 저장
                         const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
-                        try {
-                            await setDoc(profileRef, { nickname: newName }, { merge: true });
-                        } catch(e) { console.error("Profile update error:", e); }
+                        await setDoc(profileRef, { nickname: newName }, { merge: true });
 
                         if (score > 0) {
                             const userRankRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'rankings', user.uid);
-                            try {
-                                const docSnap = await getDoc(userRankRef);
-                                if (docSnap.exists()) {
-                                    await setDoc(userRankRef, { nickname: newName }, { merge: true });
-                                }
-                            } catch(e) {}
+                            const docSnap = await getDoc(userRankRef);
+                            if (docSnap.exists()) {
+                                await setDoc(userRankRef, { nickname: newName }, { merge: true });
+                            }
                         }
+                    } catch(e) { 
+                        console.error("Profile update error:", e); 
                     }
+                }
+
+                // 문제없이 완료되면 로컬 상태 업데이트
+                setNickname(newName);
+                
+                if (user) {
+                    const localKey = `make24_nickname_${user.uid}`;
+                    localStorage.setItem(localKey, newName);
+                }
+                
+                setIsEditingName(false);
+                setShowNicknameModal(false);
+
+                if (!localStorage.getItem('make24_welcome_seen')) {
+                    setShowWelcomeTutorialHook(true);
                 }
             };
 
@@ -1629,13 +1646,25 @@
                                         <div className="flex items-center gap-2">
                                             <User size={18} className="text-blue-400" />
                                             {isEditingName ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24" maxLength={8} />
-                                                    <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">{t('save')}</button>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <input 
+                                                            type="text" 
+                                                            value={tempName} 
+                                                            onChange={(e) => {
+                                                                setTempName(e.target.value.replace(/[^a-zA-Z]/g, ''));
+                                                                setNicknameError('');
+                                                            }} 
+                                                            className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-24 focus:outline-none focus:border-blue-500" 
+                                                            maxLength={8} 
+                                                        />
+                                                        <button onClick={updateNickname} className="text-xs bg-blue-600 px-2 py-1 rounded font-bold">{t('save')}</button>
+                                                    </div>
+                                                    {nicknameError && <span className="text-[10px] text-red-400 font-bold">{nicknameError}</span>}
                                                 </div>
                                             ) : <span className="font-bold text-sm text-slate-200">{nickname}</span>}
                                         </div>
-                                        {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
+                                        {!isEditingName && <button onClick={() => { setTempName(nickname); setIsEditingName(true); setNicknameError(''); }} className="text-slate-400 p-1 hover:text-blue-400"><Edit2 size={16} /></button>}
                                     </div>
                                 </div>
                                 
@@ -1655,7 +1684,7 @@
                                                     <span className={`font-black w-5 text-center text-xs ${idx < 3 ? 'text-yellow-400' : 'text-slate-500'}`}>{idx + 1}</span>
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-medium text-slate-200">{rank.nickname}</span>
-                                                        <span className="text-[8px] text-slate-500 leading-none">{rank.userId}</span>
+                                                        <span className="hidden">{rank.userId}</span>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -1686,12 +1715,20 @@
                                 <input 
                                     type="text" 
                                     value={tempName} 
-                                    onChange={(e) => setTempName(e.target.value)} 
+                                    onChange={(e) => {
+                                        // 영문자 이외의 입력은 즉시 제거
+                                        setTempName(e.target.value.replace(/[^a-zA-Z]/g, ''));
+                                        setNicknameError('');
+                                    }} 
                                     placeholder={t('nickname_placeholder')}
-                                    className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-white font-bold mb-4 focus:outline-none focus:border-blue-500 text-center transition-colors"
+                                    className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-white font-bold mb-2 focus:outline-none focus:border-blue-500 text-center transition-colors"
                                     maxLength={8} 
                                     autoFocus
                                 />
+                                {nicknameError && (
+                                    <div className="text-red-400 text-xs font-bold mb-4 animate-shake">{nicknameError}</div>
+                                )}
+                                {!nicknameError && <div className="mb-4"></div>}
                                 <button 
                                     onClick={updateNickname}
                                     disabled={tempName.trim().length === 0}
