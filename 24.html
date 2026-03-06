@@ -50,10 +50,10 @@
         .animate-pop { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
         @keyframes popUp {
-            0% { transform: scale(0.5) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+            0% { transform: translateX(-50%) scale(0.5) translateY(20px); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
         }
-        .animate-popup { animation: popUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-popup { animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
         @keyframes popScale {
             0% { transform: scale(0.9); opacity: 0; }
@@ -113,6 +113,7 @@
         const Timer = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="14" x2="15.82" y2="15.82"></line><circle cx="12" cy="14" r="8"></circle><path d="M12 2v4"></path></svg>;
         const Trophy = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v6a5 5 0 1 1-10 0V4"></path><path d="M5 9v1a10 10 0 0 0 10 10"></path><path d="M19 9v1a10 10 0 0 1-10 10"></path><path d="M2 5h3"></path><path d="M19 5h3"></path></svg>;
         const CloseIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const Edit2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
         const User = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
         const Home = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
         const ArrowDown = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>;
@@ -762,7 +763,7 @@
             const [showNicknameModal, setShowNicknameModal] = useState(false);
             const [nicknameError, setNicknameError] = useState(''); 
             const [showWelcomeTutorialHook, setShowWelcomeTutorialHook] = useState(false);
-            const [showEnergyToast, setShowEnergyToast] = useState(false); // 에너지 부족 토스트 상태 추가
+            const [showEnergyToast, setShowEnergyToast] = useState(false); 
             
             const [tutorialPhase, setTutorialPhase] = useState(0); 
             const [hintText, setHintText] = useState('');
@@ -790,10 +791,10 @@
                         if (parsed.date === today) return parsed;
                     } catch(e) {}
                 }
-                return { date: today, hint: 0, time: 0, pass: 0, energy: 0 };
+                return { date: today, hint: 0, time: 0, pass: 0, energy: 0, revive: 0 };
             });
             const [isWatchingAd, setIsWatchingAd] = useState(false);
-            const [adCooldowns, setAdCooldowns] = useState({ energy: 0, hint: 0, time: 0, pass: 0 });
+            const [adCooldowns, setAdCooldowns] = useState({ energy: 0, hint: 0, time: 0, pass: 0, revive: 0 });
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
@@ -824,7 +825,7 @@
 
                         unsubscribeAuth = onAuthStateChanged(auth, (u) => {
                             if (u) setUser(u);
-                            else setUser(null); // 구글 비로그인 상태 (게스트)
+                            else setUser(null); 
                         });
 
                         await auth.authStateReady();
@@ -904,9 +905,9 @@
                     const saved = localStorage.getItem('make24_ad_cooldowns');
                     const cooldownEnds = saved ? JSON.parse(saved) : {};
                     const now = Date.now();
-                    const newCooldowns = { energy: 0, hint: 0, time: 0, pass: 0 };
+                    const newCooldowns = { energy: 0, hint: 0, time: 0, pass: 0, revive: 0 };
                     
-                    ['energy', 'hint', 'time', 'pass'].forEach(type => {
+                    ['energy', 'hint', 'time', 'pass', 'revive'].forEach(type => {
                         const end = cooldownEnds[type] || 0;
                         if (end > now) {
                             newCooldowns[type] = Math.ceil((end - now) / 1000);
@@ -914,7 +915,7 @@
                     });
 
                     setAdCooldowns(prev => {
-                        if (prev.energy === newCooldowns.energy && prev.hint === newCooldowns.hint && prev.time === newCooldowns.time && prev.pass === newCooldowns.pass) {
+                        if (prev.energy === newCooldowns.energy && prev.hint === newCooldowns.hint && prev.time === newCooldowns.time && prev.pass === newCooldowns.pass && prev.revive === newCooldowns.revive) {
                             return prev;
                         }
                         return newCooldowns;
@@ -933,7 +934,7 @@
                 const interval = setInterval(() => {
                     const today = getKSTDateString();
                     if (adState.date !== today) {
-                        setAdState({ date: today, hint: 0, time: 0, pass: 0, energy: 0 });
+                        setAdState({ date: today, hint: 0, time: 0, pass: 0, energy: 0, revive: 0 });
                     }
                 }, 10000);
                 return () => clearInterval(interval);
@@ -983,7 +984,6 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
-                // 비로그인(게스트) 유저는 랭킹에 저장하지 않음
                 if (!user || !db || !firebaseApi) return; 
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
@@ -1025,7 +1025,6 @@
                     const { collection, getDocs, doc, setDoc, getDoc } = firebaseApi;
                     
                     try {
-                        // 닉네임 중복 검사 로직 (전체 프로필 스캔)
                         const profilesRef = collection(db, 'artifacts', safeAppId, 'public', 'data', 'profiles');
                         const profilesSnap = await getDocs(profilesRef);
                         let isDuplicate = false;
@@ -1041,11 +1040,9 @@
                             return; 
                         }
 
-                        // 중복이 아니면 저장
                         const profileRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'profiles', user.uid);
                         await setDoc(profileRef, { nickname: newName }, { merge: true });
 
-                        // 닉네임 생성 시점에 바로 랭킹판에 0점짜리로 등록되도록 처리
                         const userRankRef = doc(db, 'artifacts', safeAppId, 'public', 'data', 'rankings', user.uid);
                         const docSnap = await getDoc(userRankRef);
                         if (docSnap.exists()) {
@@ -1065,7 +1062,6 @@
                     }
                 }
 
-                // 문제없이 완료되면 로컬 상태 업데이트
                 setNickname(newName);
                 
                 if (user) {
@@ -1177,14 +1173,14 @@
 
             const restartGame = () => {
                 if (tutorialPhase > 0) {
-                    startTutorial(); // 튜토리얼 T1부터 다시 시작
+                    startTutorial(); 
                     setIsPaused(false);
                 } else {
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
                     if (currentEnergy < 1) {
                         setShowEnergyToast(true);
                         setTimeout(() => setShowEnergyToast(false), 2000);
-                        return; // 행동력이 없으면 토스트를 띄우고 본게임을 실행하지 않음
+                        return; 
                     }
                     initGame();
                     setIsPaused(false);
@@ -1192,15 +1188,31 @@
             };
             
             const reviveGame = () => {
+                const maxViews = 3;
+                if ((adState.revive || 0) >= maxViews) return;
+                if (adCooldowns.revive > 0) return;
+
                 setIsWatchingAd(true);
-                // 광고 시청 후 이어하기
                 setTimeout(() => {
                     setIsWatchingAd(false);
+
+                    const saved = localStorage.getItem('make24_ad_cooldowns');
+                    const cooldownEnds = saved ? JSON.parse(saved) : {};
+                    cooldownEnds.revive = Date.now() + 60 * 1000;
+                    localStorage.setItem('make24_ad_cooldowns', JSON.stringify(cooldownEnds));
+
+                    setAdState(prev => {
+                        const today = getKSTDateString();
+                        if (prev.date !== today) {
+                             return { date: today, hint: 0, time: 0, pass: 0, energy: 0, revive: 1 };
+                        }
+                        return { ...prev, revive: (prev.revive || 0) + 1 };
+                    });
+
                     setGameState('playing');
                     setTimeLeft(30);
                     setResultMessage('');
                     setSolutionStr('');
-                    // 카드는 그대로 두고 슬롯들만 비워줌
                     setSlots([null, null, null, null]);
                     setStartBrackets([0, 0, 0, 0]);
                     setEndBrackets([0, 0, 0, 0]);
@@ -1282,7 +1294,7 @@
                     setAdState(prev => {
                         const today = getKSTDateString();
                         if (prev.date !== today) {
-                             return { date: today, hint: 0, time: 0, pass: 0, energy: 0, [type]: 1 };
+                             return { date: today, hint: 0, time: 0, pass: 0, energy: 0, revive: 0, [type]: 1 };
                         }
                         return { ...prev, [type]: prev[type] + 1 };
                     });
@@ -1309,7 +1321,7 @@
                                 const answer = getBestSolution(sourceCards);
                                 setSolutionStr(answer);
                                 saveRecord(score, streak, solvedCount);
-                                setGameState('fail'); // 실패 시점에는 콤보나 점수를 초기화하지 않고 살려둠
+                                setGameState('fail'); 
                                 return 0;
                             }
                             return prev - 1;
@@ -1468,7 +1480,7 @@
 
                     setResultMessage(lastError || t('wrong_answer'));
                     saveRecord(score, streak, solvedCount);
-                    setGameState('fail'); // 실패 시 상태만 변경 (스트릭 초기화 X)
+                    setGameState('fail'); 
                 }
             };
 
@@ -1543,26 +1555,26 @@
                     {/* 게임 오버레이/팝업 영역 */}
                     {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
                     
-                    {/* A 카드 등장 알림 토스트 */}
+                    {/* A 카드 등장 알림 토스트 (애니메이션 수정 반영) */}
                     {showACardToast && (
-                        <div className="absolute top-[18%] left-1/2 transform -translate-x-1/2 z-[70] animate-popup pointer-events-none w-11/12 max-w-sm">
-                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center gap-3 backdrop-blur-md">
+                        <div className="absolute top-[18%] left-1/2 transform -translate-x-1/2 z-[70] animate-popup pointer-events-none w-max max-w-[90vw]">
+                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
                                 <div className="bg-white text-emerald-900 rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner">
                                     A
                                 </div>
-                                <div className="font-bold text-sm leading-snug">
+                                <div className="font-bold text-sm leading-snug whitespace-nowrap">
                                     {t('a_card_toast')}
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* 행동력 부족 토스트 */}
+                    {/* 행동력 부족 토스트 (애니메이션 수정 반영) */}
                     {showEnergyToast && (
-                        <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 z-[100] animate-popup pointer-events-none w-11/12 max-w-sm">
-                            <div className="bg-rose-600/95 border-2 border-rose-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
-                                <Heart size={24} className="fill-white animate-pulse" />
-                                <div className="font-bold text-sm leading-snug text-center">
+                        <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 z-[100] animate-popup pointer-events-none w-max max-w-[90vw]">
+                            <div className="bg-rose-600/95 border-2 border-rose-400 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
+                                <Heart size={24} className="fill-white animate-pulse shrink-0" />
+                                <div className="font-bold text-sm leading-snug whitespace-nowrap">
                                     {t('energy_shortage_toast')}
                                 </div>
                             </div>
@@ -1600,8 +1612,13 @@
                                 )}
 
                                 <div className="flex flex-col gap-3 w-full mt-2">
-                                    <button onClick={reviveGame} className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
-                                        <VideoIcon size={20} className="text-indigo-200" /> {t('revive_ad')}
+                                    <button 
+                                        onClick={reviveGame} 
+                                        disabled={(adState.revive || 0) >= 3 || adCooldowns.revive > 0}
+                                        className={`w-full py-3.5 font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all ${((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white'}`}
+                                    >
+                                        <VideoIcon size={20} className={((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? "text-slate-500" : "text-indigo-200"} /> 
+                                        {t('revive_ad')} {adCooldowns.revive > 0 ? `(${adCooldowns.revive}s)` : `(${3 - (adState.revive || 0)}/3)`}
                                     </button>
                                     <div className="flex gap-2 w-full">
                                         <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600">
@@ -1780,7 +1797,6 @@
                                     type="text" 
                                     value={tempName} 
                                     onChange={(e) => {
-                                        // 영문자 및 숫자 이외의 입력은 즉시 제거 (a-zA-Z0-9 적용)
                                         setTempName(e.target.value.replace(/[^a-zA-Z0-9]/g, ''));
                                         setNicknameError('');
                                     }} 
@@ -1842,10 +1858,10 @@
                                     </p>
                                     <div className="flex flex-col gap-3 w-full pt-1 relative">
                                         
-                                        {/* 환영 안내 메시지 & 화살표 (닉네임 설정 직후에만 표시) */}
+                                        {/* 환영 안내 메시지 & 화살표 (애니메이션 수정 반영) */}
                                         {showWelcomeTutorialHook && (
-                                            <div className="absolute -top-[4.5rem] left-1/2 transform -translate-x-1/2 z-[80] w-full animate-popup pointer-events-none">
-                                                <div className="bg-yellow-500 text-slate-900 font-black text-sm py-2 px-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.6)] border-2 border-yellow-300 flex flex-col items-center">
+                                            <div className="absolute -top-[4.5rem] left-1/2 transform -translate-x-1/2 z-[80] w-max max-w-[90vw] animate-popup pointer-events-none">
+                                                <div className="bg-yellow-500 text-slate-900 font-black text-sm py-2 px-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.6)] border-2 border-yellow-300 flex flex-col items-center whitespace-normal break-keep text-center">
                                                     {t('welcome_msg', {name: nickname})}
                                                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-transparent border-t-yellow-500"></div>
                                                 </div>
