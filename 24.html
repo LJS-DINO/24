@@ -192,6 +192,7 @@
                 hint_empty: "No hints left!",
                 time_empty: "No time items left!",
                 time_added: "⏰ Time added! (+10s)",
+                time_bonus: "Time Bonus +{sec}s",
                 pass_empty: "No pass items left!",
                 pass_used: "⏩ PASS! Changing problem.",
                 wrong_answer: "Incorrect",
@@ -218,7 +219,9 @@
                 welcome_msg: "Welcome, {name}! Try learning how to play first.",
                 revive_ad: "Revive (Watch Ad)",
                 energy_shortage_toast: "Not enough energy.",
-                game_over: "GAME OVER"
+                game_over: "GAME OVER",
+                guest_login_prompt: "Log in with your Google account on the homepage to join the rankings!",
+                guest_ranking_notice: "(Log in on homepage to rank)"
             },
             ko: {
                 title: "24 만들기",
@@ -273,6 +276,7 @@
                 hint_empty: "힌트가 없습니다!",
                 time_empty: "아이템이 없습니다!",
                 time_added: "⏰ 시간 연장! (+10초)",
+                time_bonus: "시간 보너스 +{sec}초",
                 pass_empty: "패스 아이템이 없습니다!",
                 pass_used: "⏩ PASS! 새로운 문제로 변경합니다.",
                 wrong_answer: "틀렸습니다",
@@ -299,7 +303,9 @@
                 welcome_msg: "{name}님 환영합니다! 먼저 게임 방법을 배워보세요.",
                 revive_ad: "광고보고 부활하기",
                 energy_shortage_toast: "행동력이 부족합니다.",
-                game_over: "게임 오버"
+                game_over: "게임 오버",
+                guest_login_prompt: "홈페이지에서 구글 계정으로 로그인을 하고 랭킹에 진입해보세요",
+                guest_ranking_notice: "(홈페이지 로그인 시 랭킹 등록)"
             },
             ja: {
                 title: "24を作る",
@@ -354,6 +360,7 @@
                 hint_empty: "ヒントがありません！",
                 time_empty: "アイテムがありません！",
                 time_added: "⏰ 時間延長！ (+10秒)",
+                time_bonus: "時間ボーナス +{sec}秒",
                 pass_empty: "パスがありません！",
                 pass_used: "⏩ PASS! 問題を変更します。",
                 wrong_answer: "不正解",
@@ -380,7 +387,9 @@
                 welcome_msg: "ようこそ、{name}さん！まずは遊び方を学んでみましょう。",
                 revive_ad: "広告を見て復活",
                 energy_shortage_toast: "スタミナが不足しています。",
-                game_over: "ゲームオーバー"
+                game_over: "ゲームオーバー",
+                guest_login_prompt: "ホームページでGoogleログインをして、ランキングに参加しましょう！",
+                guest_ranking_notice: "(ログインするとランキングに登録されます)"
             },
             'zh-TW': {
                 title: "挑戰24",
@@ -435,6 +444,7 @@
                 hint_empty: "沒有提示了！",
                 time_empty: "沒有道具了！",
                 time_added: "⏰ 時間增加！ (+10秒)",
+                time_bonus: "時間獎勵 +{sec}秒",
                 pass_empty: "沒有跳過道具了！",
                 pass_used: "⏩ PASS! 更換題目中。",
                 wrong_answer: "錯誤",
@@ -461,7 +471,9 @@
                 welcome_msg: "歡迎，{name}！請先學習怎麼玩吧。",
                 revive_ad: "觀看廣告復活",
                 energy_shortage_toast: "體力不足。",
-                game_over: "遊戲結束"
+                game_over: "遊戲結束",
+                guest_login_prompt: "在首頁使用Google帳號登入，來挑戰排行榜吧！",
+                guest_ranking_notice: "(登入首頁即可參與排行)"
             }
         };
 
@@ -798,7 +810,7 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
 
-            // 파이어베이스 인증 및 초기화 (익명 로그인 완전 제거됨)
+            // 파이어베이스 인증 및 초기화 
             useEffect(() => {
                 let unsubscribeAuth;
                 const setupFirebase = async () => {
@@ -838,7 +850,7 @@
                 return () => { if (unsubscribeAuth) unsubscribeAuth(); };
             }, []);
 
-            // 닉네임 로딩 로직: 비로그인이면 닉네임 설정 X (Guest 고정)
+            // 닉네임 로딩 로직
             useEffect(() => {
                 if (!user) {
                     setNickname('Guest'); 
@@ -984,7 +996,7 @@
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
-                if (!user || !db || !firebaseApi) return; 
+                if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
                 const { doc, setDoc, getDoc } = firebaseApi;
                 
                 const date = Date.now();
@@ -1076,7 +1088,7 @@
                 }
             };
 
-            const startProblem = useCallback((isTut = false, phase = 0, isNewRun = false, forceSolvedCount = null) => {
+            const startProblem = useCallback((isTut = false, phase = 0, isNewRun = false, forceSolvedCount = null, currentStreak = 0) => {
                 if (!isTut && isNewRun) {
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
                     let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
@@ -1108,7 +1120,19 @@
                 setOperators(['+', '+', '+']);
                 setStartBrackets([0, 0, 0, 0]);
                 setEndBrackets([0, 0, 0, 0]);
-                setTimeLeft(isTut ? 999 : 30);
+                
+                // 연속 콤보 보너스 시간 계산 로직
+                let bonusTime = 0;
+                if (!isTut && currentStreak > 0) {
+                    if (currentStreak >= 3) {
+                        bonusTime += Math.min(currentStreak, 7) - 2; // 3~7콤보는 각 1초 추가 (최대 5초)
+                    }
+                    if (currentStreak >= 8) {
+                        bonusTime += (currentStreak - 7) * 2; // 8콤보부터는 각 2초 추가
+                    }
+                }
+                
+                setTimeLeft(isTut ? 999 : 30 + bonusTime);
                 setGameState(isTut ? 'tutorial' : 'playing');
                 setResultMessage('');
                 setSolutionStr('');
@@ -1142,7 +1166,7 @@
                 setScore(0);
                 setStreak(0);
                 setComboFlash(null);
-                startProblem(true, 1, false); 
+                startProblem(true, 1, false, null, 0); 
             };
 
             const initGame = useCallback(() => {
@@ -1150,7 +1174,7 @@
                     setShowWelcomeTutorialHook(false);
                     localStorage.setItem('make24_welcome_seen', 'true');
                 }
-                if (startProblem(false, 0, true, 0)) {
+                if (startProblem(false, 0, true, 0, 0)) {
                     setScore(0);
                     setStreak(0);
                     setComboFlash(null);
@@ -1160,7 +1184,7 @@
             const nextProblem = () => {
                 if (tutorialPhase > 0) {
                     if (tutorialPhase < 5) {
-                         startProblem(true, tutorialPhase + 1, false);
+                         startProblem(true, tutorialPhase + 1, false, null, 0);
                     } else {
                          localStorage.setItem('make24_tutorial_done', 'true');
                          setGameState('tutorial_complete');
@@ -1168,7 +1192,7 @@
                     }
                     return;
                 }
-                startProblem(false, 0, false, solvedCount + 1);
+                startProblem(false, 0, false, solvedCount + 1, streak);
             };
 
             const restartGame = () => {
@@ -1251,7 +1275,7 @@
                 if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
                     setPassItemsLeft(prev => prev - 1);
                     setResultMessage(t('pass_used'));
-                    setTimeout(() => startProblem(false, 0, false, solvedCount), 500); 
+                    setTimeout(() => startProblem(false, 0, false, solvedCount, streak), 500); 
                 } else if (passItemsLeft === 0) {
                     setResultMessage(t('pass_empty'));
                     setShake(true);
@@ -1497,6 +1521,21 @@
 
             return (
                 <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
+                    
+                    {/* 불타오르는 콤보 화면 이펙트 */}
+                    {gameState === 'playing' && streak >= 3 && !isPaused && (
+                        <div className="absolute inset-0 pointer-events-none z-[45] mix-blend-screen opacity-70">
+                            <div 
+                                className={`w-full h-full transition-all duration-1000 ${streak >= 8 ? 'animate-pulse' : 'animate-[pulse_3s_ease-in-out_infinite]'}`}
+                                style={{
+                                    boxShadow: streak >= 8 ? 'inset 0 0 120px 30px rgba(217, 70, 239, 0.5)' : 
+                                               streak >= 5 ? 'inset 0 0 90px 20px rgba(239, 68, 68, 0.4)' : 
+                                               'inset 0 0 60px 15px rgba(249, 115, 22, 0.3)' 
+                                }}
+                            />
+                        </div>
+                    )}
+
                     {/* 상단 헤더 */}
                     <div className="flex-none px-3 sm:px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center z-30 shadow-lg min-h-[80px]">
                          <div className="flex items-center gap-3 shrink-0">
@@ -1555,10 +1594,10 @@
                     {/* 게임 오버레이/팝업 영역 */}
                     {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
                     
-                    {/* A 카드 등장 알림 토스트 (애니메이션 수정 반영) */}
+                    {/* A 카드 등장 알림 토스트 */}
                     {showACardToast && (
-                        <div className="absolute top-[18%] left-1/2 transform -translate-x-1/2 z-[70] animate-popup pointer-events-none w-max max-w-[90vw]">
-                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
+                        <div className="absolute top-[18%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-max max-w-[90vw]">
+                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md animate-pop-scale">
                                 <div className="bg-white text-emerald-900 rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner">
                                     A
                                 </div>
@@ -1569,10 +1608,10 @@
                         </div>
                     )}
 
-                    {/* 행동력 부족 토스트 (애니메이션 수정 반영) */}
+                    {/* 행동력 부족 토스트 */}
                     {showEnergyToast && (
-                        <div className="absolute top-[10%] left-1/2 transform -translate-x-1/2 z-[100] animate-popup pointer-events-none w-max max-w-[90vw]">
-                            <div className="bg-rose-600/95 border-2 border-rose-400 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md">
+                        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 z-[100] pointer-events-none w-max max-w-[90vw]">
+                            <div className="bg-rose-600/95 border-2 border-rose-400 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md animate-pop-scale">
                                 <Heart size={24} className="fill-white animate-pulse shrink-0" />
                                 <div className="font-bold text-sm leading-snug whitespace-nowrap">
                                     {t('energy_shortage_toast')}
@@ -1746,6 +1785,11 @@
                                         <div className="flex items-center gap-2">
                                             <User size={18} className="text-blue-400" />
                                             <span className="font-bold text-sm text-slate-200">{nickname}</span>
+                                            {!user && (
+                                                <span className="text-[10px] text-slate-400 ml-1 font-medium tracking-tight">
+                                                    {t('guest_ranking_notice')}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1820,16 +1864,44 @@
                         </div>
                     )}
 
-                    {comboFlash && (
-                        <div className="absolute top-1/2 left-1/2 z-[70] pointer-events-none animate-big-combo flex flex-col items-center justify-center whitespace-nowrap">
-                            <div className="text-[8rem] leading-none drop-shadow-2xl filter" style={{ textShadow: '0 0 30px rgba(251, 146, 60, 0.8)' }}>
-                                <Fire size={100} className="text-orange-500 inline-block mb-2 animate-pulse" fill="currentColor" />
+                    {comboFlash && (() => {
+                        let exclamation = "!";
+                        let flameColor = "text-orange-500";
+                        let glowColor = "rgba(251, 146, 60, 0.8)";
+                        let gradient = "from-yellow-300 via-orange-500 to-red-600";
+                        
+                        if (comboFlash >= 8) {
+                            exclamation = "!!!";
+                            flameColor = "text-fuchsia-500";
+                            glowColor = "rgba(217, 70, 239, 0.9)";
+                            gradient = "from-pink-300 via-fuchsia-500 to-purple-600";
+                        } else if (comboFlash >= 5) {
+                            exclamation = "!!";
+                            flameColor = "text-red-500";
+                            glowColor = "rgba(239, 68, 68, 0.8)";
+                            gradient = "from-orange-300 via-red-500 to-rose-700";
+                        }
+
+                        let bonusAdded = 0;
+                        if (comboFlash >= 8) bonusAdded = 2;
+                        else if (comboFlash >= 3) bonusAdded = 1;
+
+                        return (
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[70] pointer-events-none animate-big-combo flex flex-col items-center justify-center whitespace-nowrap w-full">
+                                <div className="text-[8rem] leading-none drop-shadow-2xl filter" style={{ textShadow: `0 0 30px ${glowColor}` }}>
+                                    <Fire size={100} className={`${flameColor} inline-block mb-2 animate-pulse`} fill="currentColor" />
+                                </div>
+                                <div className={`text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b ${gradient} drop-shadow-lg tracking-tighter`} style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.5)' }}>
+                                    {comboFlash} COMBO{exclamation}
+                                </div>
+                                {bonusAdded > 0 && (
+                                    <div className="text-2xl font-black text-emerald-400 mt-2 drop-shadow-md animate-bounce" style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.8)' }}>
+                                        ⏰ {t('time_bonus', {sec: bonusAdded})}
+                                    </div>
+                                )}
                             </div>
-                            <div className="text-5xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 drop-shadow-lg tracking-tighter" style={{ textShadow: '3px 3px 0px rgba(0,0,0,0.5)' }}>
-                                {comboFlash} COMBO!
-                            </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* 메인 게임 영역 (종스크롤 전용 레이아웃) */}
                     <div className="flex-1 flex flex-col relative overflow-hidden">
@@ -1858,10 +1930,10 @@
                                     </p>
                                     <div className="flex flex-col gap-3 w-full pt-1 relative">
                                         
-                                        {/* 환영 안내 메시지 & 화살표 (애니메이션 수정 반영) */}
+                                        {/* 환영 안내 메시지 & 화살표 (애니메이션 분리 적용) */}
                                         {showWelcomeTutorialHook && (
-                                            <div className="absolute -top-[4.5rem] left-1/2 transform -translate-x-1/2 z-[80] w-max max-w-[90vw] animate-popup pointer-events-none">
-                                                <div className="bg-yellow-500 text-slate-900 font-black text-sm py-2 px-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.6)] border-2 border-yellow-300 flex flex-col items-center whitespace-normal break-keep text-center">
+                                            <div className="absolute -top-[4.5rem] left-1/2 -translate-x-1/2 z-[80] w-max max-w-[90vw] pointer-events-none">
+                                                <div className="bg-yellow-500 text-slate-900 font-black text-sm py-2 px-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.6)] border-2 border-yellow-300 flex flex-col items-center whitespace-normal break-keep text-center animate-pop-scale">
                                                     {t('welcome_msg', {name: nickname})}
                                                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-transparent border-t-yellow-500"></div>
                                                 </div>
@@ -1875,7 +1947,7 @@
                                             <Play size={20} fill="currentColor" /> {t('game_start')}
                                         </button>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 w-full">
                                         <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
                                             <Trophy size={18} /> {t('ranking')}
                                         </button>
@@ -1883,6 +1955,16 @@
                                             <ShoppingBag size={18} /> {t('shop')}
                                         </button>
                                     </div>
+
+                                    {/* 비로그인(게스트) 유저용 로그인 유도 안내 (애니메이션 분리 적용) */}
+                                    {!user && (
+                                        <div className="mt-2 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 shadow-inner animate-pop-scale">
+                                            <User size={16} className="text-slate-400 shrink-0" />
+                                            <span className="text-xs text-slate-300 font-medium break-keep leading-snug text-left">
+                                                {t('guest_login_prompt')}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 {/* 환영 모드일 때 로비 뒷배경 어둡게 처리 */}
                                 {showWelcomeTutorialHook && <div className="absolute inset-0 bg-black/60 z-[5] pointer-events-none"></div>}
@@ -1921,8 +2003,8 @@
                                 {/* 2. 슬롯 및 연산 영역 (중단) */}
                                 <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative bg-emerald-900 shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)]`}>
                                     {hintText && (
-                                        <div className="absolute -top-4 sm:-top-6 left-1/2 transform -translate-x-1/2 z-[60] animate-pop">
-                                            <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl">
+                                        <div className="absolute -top-4 sm:-top-6 left-1/2 -translate-x-1/2 z-[60]">
+                                            <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl animate-pop-scale">
                                                 <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-widest">{t('hint_upper')}</span>
                                                 <span className="text-xl font-black font-mono text-white tracking-widest">{hintText}</span>
                                             </div>
