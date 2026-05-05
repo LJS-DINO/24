@@ -121,9 +121,20 @@
         const SoundEngine = (() => {
             let ctx = null;
             let bgmInterval = null;
-            let isMuted = localStorage.getItem('make24_muted') === 'true';
             let bgmPlaying = false;
             let currentBgmType = null;
+            let isMuted = localStorage.getItem('make24_muted') === 'true';
+            
+            // 세부 볼륨 관리
+            let vols = { master: 1, bgm: 1, sfx: 1 };
+
+            try {
+                const saved = localStorage.getItem('make24_volumes');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    vols = { master: parsed.master / 100, bgm: parsed.bgm / 100, sfx: parsed.sfx / 100 };
+                }
+            } catch(e) {}
 
             const init = () => {
                 if (!ctx) {
@@ -132,6 +143,10 @@
                 if (ctx.state === 'suspended') {
                     ctx.resume();
                 }
+            };
+
+            const setVolumes = (newVols) => {
+                vols = { ...vols, ...newVols };
             };
 
             const setMuted = (muted, fallbackType = 'main') => {
@@ -145,6 +160,9 @@
 
             const playTone = (freq, type, duration, vol=0.1) => {
                 if (isMuted) return;
+                const finalVol = vol * vols.master * vols.sfx;
+                if (finalVol <= 0) return;
+                
                 init();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
@@ -152,7 +170,7 @@
                 osc.frequency.setValueAtTime(freq, ctx.currentTime);
                 
                 gain.gain.setValueAtTime(0, ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.05);
+                gain.gain.linearRampToValueAtTime(finalVol, ctx.currentTime + 0.05);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
                 
                 osc.connect(gain);
@@ -164,14 +182,14 @@
             const playClick = () => playTone(800, 'sine', 0.1, 0.05);
             
             const playCorrect = () => {
-                if(isMuted) return; init();
+                if (isMuted) return;
                 playTone(440, 'sine', 0.2, 0.1);
                 setTimeout(() => playTone(554.37, 'sine', 0.2, 0.1), 100);
                 setTimeout(() => playTone(659.25, 'sine', 0.4, 0.15), 200);
             };
             
             const playCombo = (streak) => {
-                if(isMuted) return; init();
+                if (isMuted) return;
                 const cappedStreak = Math.min(streak, 10);
                 const base = 400 + (cappedStreak * 50);
                 playTone(base, 'triangle', 0.2, 0.1);
@@ -181,7 +199,7 @@
             };
             
             const playWrong = () => {
-                if(isMuted) return; init();
+                if (isMuted) return;
                 playTone(300, 'sawtooth', 0.2, 0.1);
                 setTimeout(() => playTone(250, 'sawtooth', 0.4, 0.1), 150);
             };
@@ -199,7 +217,7 @@
                 const C4 = 261.6, D4 = 293.7, E4 = 329.6, F4 = 349.2, G4 = 392.0, A4 = 440.0, B4 = 493.9;
                 const C5 = 523.3, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784.0, A5 = 880.0;
 
-                // 1. 메인 화면 BGM (경쾌하고 아기자기한 왈츠 느낌)
+                // 1. 메인 화면 BGM
                 const mainMelody = [
                     C5, G4, E4, G4, C5, G4, E4, 0,
                     D5, A4, F4, A4, D5, A4, F4, 0,
@@ -211,7 +229,7 @@
                     C5, E5, C5, G4, C5, 0,  0,  0
                 ];
 
-                // 2. 게임 화면 BGM (빠르고 액티브한 아케이드 8비트 느낌)
+                // 2. 게임 화면 BGM
                 const gameMelody = [
                     E5, C5, G4, C5, E5, C5, G4, C5,
                     F5, C5, A4, C5, F5, C5, A4, C5,
@@ -224,7 +242,7 @@
                 ];
 
                 const melody = type === 'game' ? gameMelody : mainMelody;
-                const speed = type === 'game' ? 140 : 180; // 게임일 때 템포가 조금 더 빠름
+                const speed = type === 'game' ? 140 : 180; 
                 let step = 0;
 
                 const playNote = () => {
@@ -233,15 +251,14 @@
                         return;
                     }
                     const freq = melody[step % melody.length];
+                    const finalVol = (type === 'game' ? 0.05 : 0.08) * vols.master * vols.bgm;
                     
-                    if (freq > 0) {
+                    if (freq > 0 && finalVol > 0) {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
                         
-                        // 메인은 부드러운 사인파, 게임은 톡톡 튀는 트라이앵글파
                         osc.type = type === 'game' ? 'triangle' : 'sine'; 
                         
-                        // 살짝 레트로한 8비트 질감을 위한 로우패스 필터
                         const filter = ctx.createBiquadFilter();
                         filter.type = "lowpass";
                         filter.frequency.value = type === 'game' ? 1500 : 2500;
@@ -249,7 +266,7 @@
                         osc.frequency.setValueAtTime(freq, ctx.currentTime);
                         
                         gain.gain.setValueAtTime(0, ctx.currentTime);
-                        gain.gain.linearRampToValueAtTime(type === 'game' ? 0.05 : 0.08, ctx.currentTime + 0.01); 
+                        gain.gain.linearRampToValueAtTime(finalVol, ctx.currentTime + 0.01); 
                         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (speed / 1000) * 0.9); 
 
                         osc.connect(filter);
@@ -273,7 +290,7 @@
                 }
             };
 
-            return { init, setMuted, playClick, playCorrect, playCombo, playWrong, startBGM, stopBGM };
+            return { init, setMuted, setVolumes, playClick, playCorrect, playCombo, playWrong, startBGM, stopBGM };
         })();
 
 
@@ -297,10 +314,8 @@
         const FastForward = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>;
         const ShoppingBag = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
         const Coins = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>;
-        const Gem = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>;
-        const Volume2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>;
-        const VolumeX = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>;
         const ClipboardList = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>;
+        const SettingsIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
 
         // --- Constants ---
         const SUITS = ['♠', '♥', '♦', '♣'];
@@ -319,6 +334,58 @@
             { id: 'gold', price: 1500, textClass: 'text-amber-900', bgClass: 'bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 border-yellow-700 shadow-inner' },
             { id: 'neon', price: 3000, textClass: 'text-cyan-300', bgClass: 'bg-slate-900 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.6)]' },
             { id: 'cherry', price: 2000, textClass: 'text-rose-100', bgClass: 'bg-gradient-to-br from-rose-400 to-rose-600 border-rose-800' }
+        ];
+
+        // --- Board Themes ---
+        const BOARD_THEMES = [
+            { 
+                id: 'classic', price: 0, 
+                bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', borderHalfClass: 'border-emerald-800/50', 
+                gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600', 
+                textMain: 'text-emerald-400', textMuted: 'text-emerald-400/50', textSuccess: 'text-emerald-300', textHint: 'text-emerald-200',
+                btnBg: 'bg-emerald-600', btnActive: 'active:bg-emerald-700', btnBorder: 'border-emerald-400/30',
+                toastBg: 'bg-emerald-900/95', toastBorder: 'border-emerald-400', toastText: 'text-emerald-900'
+            },
+            { 
+                id: 'ocean', price: 500, 
+                bgClass: 'bg-blue-900', borderClass: 'border-blue-800', borderHalfClass: 'border-blue-800/50', 
+                gradStart: '#1e3a8a', gradEnd: '#1d4ed8', previewClass: 'bg-blue-600', 
+                textMain: 'text-blue-400', textMuted: 'text-blue-400/50', textSuccess: 'text-blue-300', textHint: 'text-blue-200',
+                btnBg: 'bg-blue-600', btnActive: 'active:bg-blue-700', btnBorder: 'border-blue-400/30',
+                toastBg: 'bg-blue-900/95', toastBorder: 'border-blue-400', toastText: 'text-blue-900'
+            },
+            { 
+                id: 'berry', price: 1000, 
+                bgClass: 'bg-rose-900', borderClass: 'border-rose-800', borderHalfClass: 'border-rose-800/50', 
+                gradStart: '#881337', gradEnd: '#9f1239', previewClass: 'bg-rose-600', 
+                textMain: 'text-rose-400', textMuted: 'text-rose-400/50', textSuccess: 'text-rose-300', textHint: 'text-rose-200',
+                btnBg: 'bg-rose-600', btnActive: 'active:bg-rose-700', btnBorder: 'border-rose-400/30',
+                toastBg: 'bg-rose-900/95', toastBorder: 'border-rose-400', toastText: 'text-rose-900'
+            },
+            { 
+                id: 'royal', price: 1500, 
+                bgClass: 'bg-purple-900', borderClass: 'border-purple-800', borderHalfClass: 'border-purple-800/50', 
+                gradStart: '#581c87', gradEnd: '#6b21a8', previewClass: 'bg-purple-600', 
+                textMain: 'text-purple-400', textMuted: 'text-purple-400/50', textSuccess: 'text-purple-300', textHint: 'text-purple-200',
+                btnBg: 'bg-purple-600', btnActive: 'active:bg-purple-700', btnBorder: 'border-purple-400/30',
+                toastBg: 'bg-purple-900/95', toastBorder: 'border-purple-400', toastText: 'text-purple-900'
+            },
+            { 
+                id: 'sunset', price: 2000, 
+                bgClass: 'bg-orange-900', borderClass: 'border-orange-800', borderHalfClass: 'border-orange-800/50', 
+                gradStart: '#7c2d12', gradEnd: '#9a3412', previewClass: 'bg-orange-600', 
+                textMain: 'text-orange-400', textMuted: 'text-orange-400/50', textSuccess: 'text-orange-300', textHint: 'text-orange-200',
+                btnBg: 'bg-orange-600', btnActive: 'active:bg-orange-700', btnBorder: 'border-orange-400/30',
+                toastBg: 'bg-orange-900/95', toastBorder: 'border-orange-400', toastText: 'text-orange-900'
+            },
+            { 
+                id: 'midnight', price: 2500, 
+                bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', 
+                gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', 
+                textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200',
+                btnBg: 'bg-slate-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30',
+                toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900'
+            }
         ];
         
         // --- i18n Translations ---
@@ -350,6 +417,7 @@
                 item_shop: "Item Shop",
                 tab_items: "Items",
                 tab_decks: "Card Decks",
+                tab_boards: "Board Themes",
                 equip: "Equip",
                 equipped: "Equipped",
                 owned: "Owned",
@@ -359,6 +427,12 @@
                 deck_gold: "Royal Gold",
                 deck_neon: "Cyber Neon",
                 deck_cherry: "Cherry Blossom",
+                board_classic: "Classic Green",
+                board_ocean: "Ocean Blue",
+                board_berry: "Berry Red",
+                board_royal: "Royal Purple",
+                board_sunset: "Sunset Orange",
+                board_midnight: "Midnight Dark",
                 energy_x3: "Energy x 3",
                 energy_desc: "Game Play Ticket",
                 get_by_ad: "Watch Ad",
@@ -426,7 +500,15 @@
                 mission_all: "Complete All Daily Missions",
                 claim: "Claim",
                 claimed: "Claimed",
-                reward: "Reward"
+                reward: "Reward",
+                settings: "Settings",
+                language: "Language",
+                sound: "Sound",
+                master_vol: "Master",
+                bgm_vol: "BGM",
+                sfx_vol: "SFX",
+                mute_all: "Mute All",
+                close: "Close"
             },
             ko: {
                 title: "24 만들기",
@@ -455,6 +537,7 @@
                 item_shop: "상점",
                 tab_items: "아이템",
                 tab_decks: "카드 덱",
+                tab_boards: "배경 테마",
                 equip: "장착",
                 equipped: "장착됨",
                 owned: "보유중",
@@ -464,6 +547,12 @@
                 deck_gold: "로얄 골드",
                 deck_neon: "사이버 네온",
                 deck_cherry: "체리 블라썸",
+                board_classic: "클래식 그린",
+                board_ocean: "오션 블루",
+                board_berry: "베리 레드",
+                board_royal: "로얄 퍼플",
+                board_sunset: "선셋 오렌지",
+                board_midnight: "미드나잇 다크",
                 energy_x3: "행동력 x 3",
                 energy_desc: "게임 플레이 티켓",
                 get_by_ad: "광고 시청으로 획득",
@@ -531,7 +620,15 @@
                 mission_all: "모든 일일 미션 완료 보상",
                 claim: "보상 받기",
                 claimed: "완료됨",
-                reward: "보상"
+                reward: "보상",
+                settings: "설정",
+                language: "언어",
+                sound: "사운드",
+                master_vol: "전체 음량",
+                bgm_vol: "배경음악",
+                sfx_vol: "효과음",
+                mute_all: "전체 음소거",
+                close: "닫기"
             },
             ja: {
                 title: "24を作る",
@@ -560,6 +657,7 @@
                 item_shop: "ショップ",
                 tab_items: "アイテム",
                 tab_decks: "カードデッキ",
+                tab_boards: "背景テーマ",
                 equip: "装備",
                 equipped: "装備中",
                 owned: "所持",
@@ -569,6 +667,12 @@
                 deck_gold: "ロイヤルゴールド",
                 deck_neon: "サイバーネオン",
                 deck_cherry: "チェリーブロッサム",
+                board_classic: "クラシックグリーン",
+                board_ocean: "オーシャンブルー",
+                board_berry: "ベリーレッド",
+                board_royal: "ロイヤルパープル",
+                board_sunset: "サンセットオレンジ",
+                board_midnight: "ミッドナイトダーク",
                 energy_x3: "スタミナ x 3",
                 energy_desc: "プレイチケット",
                 get_by_ad: "広告を見て獲得",
@@ -636,7 +740,15 @@
                 mission_all: "全ミッション完了ボーナス",
                 claim: "受取",
                 claimed: "受取済",
-                reward: "報酬"
+                reward: "報酬",
+                settings: "設定",
+                language: "言語",
+                sound: "サウンド",
+                master_vol: "マスター",
+                bgm_vol: "BGM",
+                sfx_vol: "効果音",
+                mute_all: "全てミュート",
+                close: "閉じる"
             },
             'zh-TW': {
                 title: "挑戰24",
@@ -665,6 +777,7 @@
                 item_shop: "商店",
                 tab_items: "道具",
                 tab_decks: "卡牌外觀",
+                tab_boards: "背景主題",
                 equip: "裝備",
                 equipped: "已裝備",
                 owned: "已擁有",
@@ -674,6 +787,12 @@
                 deck_gold: "皇家金",
                 deck_neon: "賽博霓虹",
                 deck_cherry: "櫻花粉",
+                board_classic: "經典綠",
+                board_ocean: "海洋藍",
+                board_berry: "莓果紅",
+                board_royal: "皇家紫",
+                board_sunset: "日落橘",
+                board_midnight: "午夜黑",
                 energy_x3: "體力 x 3",
                 energy_desc: "遊戲入場券",
                 get_by_ad: "觀看廣告獲得",
@@ -741,7 +860,15 @@
                 mission_all: "完成所有任務獎勵",
                 claim: "領取",
                 claimed: "已領取",
-                reward: "獎勵"
+                reward: "獎勵",
+                settings: "設定",
+                language: "語言",
+                sound: "聲音",
+                master_vol: "總音量",
+                bgm_vol: "背景音樂",
+                sfx_vol: "音效",
+                mute_all: "全部靜音",
+                close: "關閉"
             }
         };
 
@@ -749,17 +876,8 @@
             const lang = navigator.language || navigator.userLanguage;
             if (lang.startsWith('ko')) return 'ko';
             if (lang.startsWith('ja')) return 'ja';
-            if (lang.startsWith('zh-TW') || lang.startsWith('zh-HK') || lang === 'zh-Hant') return 'zh-TW';
+            if (lang.startsWith('zh-TW') || lang.startsWith('zh-HK') || lang === 'zh-Hant' || lang.startsWith('zh')) return 'zh-TW';
             return 'en'; // 기본 영어
-        };
-
-        const t = (key, params = {}) => {
-            const lang = getLang();
-            let text = TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key] || key;
-            Object.keys(params).forEach(k => {
-                text = text.replace(`{${k}}`, params[k]);
-            });
-            return text;
         };
 
         const OPERATOR_STYLES = {
@@ -1012,6 +1130,17 @@
         };
 
         function Make24Game() {
+            // --- State Initialization ---
+            const [language, setLanguage] = useState(() => localStorage.getItem('make24_lang') || getLang());
+
+            const t = useCallback((key, params = {}) => {
+                let text = TRANSLATIONS[language]?.[key] || TRANSLATIONS['en'][key] || key;
+                Object.keys(params).forEach(k => {
+                    text = text.replace(`{${k}}`, params[k]);
+                });
+                return text;
+            }, [language]);
+
             const [nickname, setNickname] = useState('Player');
             const [solvedCount, setSolvedCount] = useState(0);
             const [sourceCards, setSourceCards] = useState([]);
@@ -1035,18 +1164,30 @@
             const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
 
             const [showShop, setShowShop] = useState(false);
-            const [shopTab, setShopTab] = useState('items'); // 'items' | 'decks'
+            const [shopTab, setShopTab] = useState('items'); // 'items' | 'decks' | 'boards'
             const [gold, setGold] = useState(() => parseInt(localStorage.getItem('make24_gold') || '1000', 10));
             
-            // --- Deck Customization State ---
+            const [showSettings, setShowSettings] = useState(false);
+            const [volumes, setVolumesState] = useState(() => {
+                const saved = localStorage.getItem('make24_volumes');
+                return saved ? JSON.parse(saved) : { master: 100, bgm: 100, sfx: 100 };
+            });
+
+            // --- Sound State (추가됨) ---
+            const [isMuted, setIsMuted] = useState(() => localStorage.getItem('make24_muted') === 'true');
+
+            // --- Deck & Board Theme State ---
             const [ownedDecks, setOwnedDecks] = useState(() => {
                 const saved = localStorage.getItem('make24_owned_decks');
                 return saved ? JSON.parse(saved) : ['default'];
             });
             const [equippedDeck, setEquippedDeck] = useState(() => localStorage.getItem('make24_equipped_deck') || 'default');
 
-            // --- Sound State ---
-            const [isMuted, setIsMuted] = useState(() => localStorage.getItem('make24_muted') === 'true');
+            const [ownedBoards, setOwnedBoards] = useState(() => {
+                const saved = localStorage.getItem('make24_owned_boards');
+                return saved ? JSON.parse(saved) : ['classic'];
+            });
+            const [equippedBoard, setEquippedBoard] = useState(() => localStorage.getItem('make24_equipped_board') || 'classic');
 
             // --- Daily Missions State ---
             const [showMissions, setShowMissions] = useState(false);
@@ -1110,6 +1251,7 @@
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
             const currentDeckStyle = CARD_DECKS.find(d => d.id === equippedDeck) || CARD_DECKS[0];
+            const currentBoardTheme = BOARD_THEMES.find(b => b.id === equippedBoard) || BOARD_THEMES[0];
 
             // 데일리 미션 업데이트 헬퍼
             const updateMission = useCallback((type, value, isCumulative = false) => {
@@ -1130,6 +1272,33 @@
                     return { ...prev, progress: newProgress };
                 });
             }, []);
+
+            // 언어 변경 핸들러
+            const handleLanguageChange = (lang) => {
+                SoundEngine.playClick();
+                setLanguage(lang);
+                localStorage.setItem('make24_lang', lang);
+            };
+
+            // 볼륨 변경 핸들러
+            const handleVolumeChange = (type, val) => {
+                const newVols = { ...volumes, [type]: val };
+                setVolumesState(newVols);
+                SoundEngine.setVolumes({
+                    master: newVols.master / 100,
+                    bgm: newVols.bgm / 100,
+                    sfx: newVols.sfx / 100
+                });
+                localStorage.setItem('make24_volumes', JSON.stringify(newVols));
+            };
+
+            // 전체 음소거 토글 핸들러 (누락된 부분 추가)
+            const toggleSound = () => {
+                const nextMuted = !isMuted;
+                setIsMuted(nextMuted);
+                localStorage.setItem('make24_muted', nextMuted.toString());
+                SoundEngine.setMuted(nextMuted, gameState === 'start' ? 'main' : 'game');
+            };
 
             // --- BGM Auto Controller based on gameState ---
             useEffect(() => {
@@ -1344,7 +1513,9 @@
             useEffect(() => {
                 localStorage.setItem('make24_owned_decks', JSON.stringify(ownedDecks));
                 localStorage.setItem('make24_equipped_deck', equippedDeck);
-            }, [ownedDecks, equippedDeck]);
+                localStorage.setItem('make24_owned_boards', JSON.stringify(ownedBoards));
+                localStorage.setItem('make24_equipped_board', equippedBoard);
+            }, [ownedDecks, equippedDeck, ownedBoards, equippedBoard]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
                 if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
@@ -1437,13 +1608,6 @@
                 if (!localStorage.getItem('make24_welcome_seen')) {
                     setShowWelcomeTutorialHook(true);
                 }
-            };
-
-            const toggleSound = () => {
-                const nextMuted = !isMuted;
-                setIsMuted(nextMuted);
-                localStorage.setItem('make24_muted', nextMuted.toString());
-                SoundEngine.setMuted(nextMuted, gameState === 'start' ? 'main' : 'game');
             };
 
             const startProblem = useCallback((isTut = false, phase = 0, isNewRun = false, forceSolvedCount = null, currentStreak = 0) => {
@@ -1678,6 +1842,15 @@
                     setGold(prev => prev - price);
                     setOwnedDecks(prev => [...prev, deckId]);
                     setEquippedDeck(deckId);
+                }
+            };
+
+            const handleBuyBoard = (boardId, price) => {
+                SoundEngine.playClick();
+                if (gold >= price) {
+                    setGold(prev => prev - price);
+                    setOwnedBoards(prev => [...prev, boardId]);
+                    setEquippedBoard(boardId);
                 }
             };
 
@@ -1945,7 +2118,7 @@
             const missionConfig = [
                 { id: 'combo', target: 5, reward: 100, title: t('mission_combo', {n: 5}) },
                 { id: 'stages', target: 10, reward: 100, title: t('mission_stages', {n: 10}) },
-                { id: 'score', target: 3000, reward: 150, title: t('mission_score', {n: 3000}) },
+                { id: 'score', target: 50, reward: 150, title: t('mission_score', {n: 50}) },
                 { id: 'ads', target: 3, reward: 150, title: t('mission_ads', {n: 3}) },
                 { id: 'play', target: 1, reward: 50, title: t('mission_play', {n: 1}) },
             ];
@@ -2020,20 +2193,21 @@
                             </div>
                         </div>
                         <div className="flex items-center justify-end shrink-0 gap-2">
-                            {/* 사운드 토글 버튼 추가 */}
-                            <button onClick={toggleSound} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-transform active:scale-95">
-                                {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
-                            </button>
-                            
-                            {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
-                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
-                                    <Pause size={22} />
-                                </button>
-                            ) : (
+                            {/* 랭킹 버튼 (좌측 배치) 및 상태에 따른 우측 버튼(Pause/Settings) */}
+                            {gameState === 'start' || gameState === 'tutorial_complete' ? (
                                 <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
                                     <Trophy size={22} />
                                 </button>
+                            ) : (
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                    <Pause size={22} />
+                                </button>
                             )}
+                            
+                            {/* 설정창 버튼 (우측 끝에 고정 배치) */}
+                            <button onClick={() => {SoundEngine.playClick(); setShowSettings(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                <SettingsIcon size={22} />
+                            </button>
                         </div>
                     </div>
 
@@ -2048,8 +2222,8 @@
                     {/* A 카드 등장 알림 토스트 */}
                     {showACardToast && (
                         <div className="absolute top-[28%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-max max-w-[90vw]">
-                            <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md animate-pop-scale">
-                                <div className="bg-white text-emerald-900 rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner">
+                            <div className={`${currentBoardTheme.toastBg} border-2 ${currentBoardTheme.toastBorder} text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md animate-pop-scale`}>
+                                <div className={`bg-white ${currentBoardTheme.toastText} rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner`}>
                                     A
                                 </div>
                                 <div className="font-bold text-sm leading-snug whitespace-nowrap">
@@ -2206,7 +2380,7 @@
                         </div>
                     )}
 
-                    {/* 상점 모달 (덱 커스터마이징 탭 추가됨) */}
+                    {/* 상점 모달 (덱 및 보드 커스터마이징 탭 추가됨) */}
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
@@ -2219,10 +2393,11 @@
                                     <div className="flex items-center gap-2"><Coins className="text-yellow-400" size={18} /><span className="font-bold text-yellow-400">{gold.toLocaleString()}</span></div>
                                 </div>
 
-                                {/* 상점 탭 필터 */}
+                                {/* 상점 탭 필터 (3-way) */}
                                 <div className="flex border-b border-slate-700 bg-slate-800">
                                     <button onClick={() => {SoundEngine.playClick(); setShopTab('items');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'items' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_items')}</button>
                                     <button onClick={() => {SoundEngine.playClick(); setShopTab('decks');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'decks' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_decks')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('boards');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'boards' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_boards')}</button>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -2286,7 +2461,7 @@
                                                 </div>
                                             </div>
                                         </>
-                                    ) : (
+                                    ) : shopTab === 'decks' ? (
                                         // 카드 덱 스킨 렌더링 영역
                                         CARD_DECKS.map(deck => (
                                             <div key={deck.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
@@ -2322,6 +2497,40 @@
                                                 </div>
                                             </div>
                                         ))
+                                    ) : (
+                                        // 배경 보드 렌더링 영역
+                                        BOARD_THEMES.map(board => (
+                                            <div key={board.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded shadow-sm ${board.previewClass} border-2 ${board.borderClass}`}></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm text-slate-100">{t(`board_${board.id}`)}</div>
+                                                        {board.price > 0 && !ownedBoards.includes(board.id) && (
+                                                            <div className="text-[10px] text-slate-400 mt-0.5">{board.price.toLocaleString()} G</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    {equippedBoard === board.id ? (
+                                                        <button disabled className="px-3 py-1.5 bg-emerald-800/50 text-emerald-400 border border-emerald-600/50 rounded-lg font-bold text-xs cursor-default">
+                                                            <CheckCircle size={14} className="inline mr-1" />{t('equipped')}
+                                                        </button>
+                                                    ) : ownedBoards.includes(board.id) ? (
+                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedBoard(board.id);}} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors">
+                                                            {t('equip')}
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => handleBuyBoard(board.id, board.price)} 
+                                                            disabled={gold < board.price} 
+                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-colors ${gold >= board.price ? 'bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                                        >
+                                                            <Coins size={12} className={gold >= board.price ? "text-yellow-200" : "text-slate-400"} /> {board.price.toLocaleString()}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
                                     )}
                                 </div>
                             </div>
@@ -2336,6 +2545,70 @@
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* 설정 모달창 */}
+                    {showSettings && (
+                        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <SettingsIcon className="text-slate-300" size={20} />
+                                        <h2 className="text-lg font-bold text-white">{t('settings')}</h2>
+                                    </div>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowSettings(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                
+                                <div className="p-5 space-y-6">
+                                    {/* 언어 설정 (Language Settings) */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">{t('language')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {['ko', 'en', 'ja', 'zh-TW'].map(l => (
+                                                <button 
+                                                    key={l}
+                                                    onClick={() => handleLanguageChange(l)}
+                                                    className={`py-2.5 rounded-xl text-sm font-bold border transition-colors shadow-sm ${language === l ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'}`}
+                                                >
+                                                    {l === 'ko' ? '한국어' : l === 'en' ? 'English' : l === 'ja' ? '日本語' : '繁體中文'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 사운드 설정 (Sound Settings) */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h3 className="text-sm font-bold text-slate-400 flex items-center gap-2">{t('sound')}</h3>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <span className="text-xs text-slate-300 font-bold">{t('mute_all')}</span>
+                                                <div className={`w-10 h-5 relative flex items-center rounded-full transition-colors ${isMuted ? 'bg-rose-500' : 'bg-slate-600'}`}>
+                                                    <div className={`absolute left-1 bg-white w-3 h-3 rounded-full shadow-md transform transition-transform ${isMuted ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                                </div>
+                                                <input type="checkbox" checked={isMuted} onChange={toggleSound} className="hidden" />
+                                            </label>
+                                        </div>
+                                        <div className={`space-y-5 bg-slate-750 p-4 rounded-2xl border border-slate-700/50 transition-all ${isMuted ? 'opacity-40 pointer-events-none' : ''}`}>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('master_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.master} onChange={(e) => handleVolumeChange('master', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.master}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('bgm_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.bgm} onChange={(e) => handleVolumeChange('bgm', parseInt(e.target.value))} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.bgm}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('sfx_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.sfx} onChange={(e) => handleVolumeChange('sfx', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-rose-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.sfx}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -2542,7 +2815,7 @@
                         ) : (
                             <>
                                 {/* 1. 사용할 카드(Deck) 영역 */}
-                                <div className={`flex flex-col items-center justify-center py-6 bg-emerald-900 border-b-4 border-emerald-800 relative shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)]`} style={{background: 'linear-gradient(to bottom, #064e3b, #065f46)'}}>
+                                <div className={`flex flex-col items-center justify-center py-6 ${currentBoardTheme.bgClass} border-b-4 ${currentBoardTheme.borderClass} relative shadow-[inset_0_-10px_20px_rgba(0,0,0,0.2)] transition-colors duration-500`} style={{background: `linear-gradient(to bottom, ${currentBoardTheme.gradStart}, ${currentBoardTheme.gradEnd})`}}>
                                     {!isPaused && (
                                         <>
                                             {tutorialPhase > 0 ? (
@@ -2550,7 +2823,7 @@
                                                     {t(`tut_goal_${tutorialPhase}`)}
                                                 </div>
                                             ) : (
-                                                <div className="absolute top-2 left-4 text-[10px] text-emerald-200/60 font-bold uppercase tracking-wider flex items-center gap-2">
+                                                <div className="absolute top-2 left-4 text-[10px] text-white/50 font-bold uppercase tracking-wider flex items-center gap-2">
                                                     {t('cards_to_use')}
                                                 </div>
                                             )}
@@ -2565,13 +2838,13 @@
                                                     );
                                                 })}
                                             </div>
-                                            <div className="absolute -bottom-3 text-emerald-400/50 z-20 bg-emerald-900 border-2 border-emerald-800 rounded-full p-0.5"><ArrowDown size={16} /></div>
+                                            <div className={`absolute -bottom-3 ${currentBoardTheme.textMuted} z-20 ${currentBoardTheme.bgClass} border-2 ${currentBoardTheme.borderClass} rounded-full p-0.5 transition-colors duration-500`}><ArrowDown size={16} /></div>
                                         </>
                                     )}
                                 </div>
 
                                 {/* 2. 슬롯 및 연산 영역 (중단) */}
-                                <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative bg-emerald-900 shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)]`}>
+                                <div className={`flex-1 flex flex-col items-center justify-center w-full px-1 relative ${currentBoardTheme.bgClass} shadow-[inset_0_10px_20px_rgba(0,0,0,0.3)] transition-colors duration-500`}>
                                     {hintText && (
                                         <div className="absolute -top-4 sm:-top-6 left-1/2 -translate-x-1/2 z-[60]">
                                             <div className="bg-black/80 backdrop-blur-md border border-yellow-400/50 rounded-full px-5 py-2 flex items-center gap-3 shadow-2xl animate-pop-scale">
@@ -2632,14 +2905,14 @@
                                     
                                     {/* 힌트 및 결과 메시지 출력 (긴 힌트를 위해 min-h 수정) */}
                                     <div className="mt-6 flex flex-col items-center justify-center px-4">
-                                        <div className={`text-center leading-tight min-h-[1.25rem] h-auto mb-2 ${gameState === 'success' ? 'text-emerald-300' : gameState === 'fail' ? 'text-red-400' : 'text-emerald-200'}`}>
-                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md break-keep">{resultMessage}</span> : <span className="text-xs text-emerald-400/50 font-medium">{t('place_cards')}</span>}
+                                        <div className={`text-center leading-tight min-h-[1.25rem] h-auto mb-2 ${gameState === 'success' ? currentBoardTheme.textSuccess : gameState === 'fail' ? 'text-red-400' : currentBoardTheme.textHint}`}>
+                                            {resultMessage ? <span className="text-sm font-bold drop-shadow-md break-keep">{resultMessage}</span> : <span className={`text-xs ${currentBoardTheme.textMuted} font-medium`}>{t('place_cards')}</span>}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* 3. 하단 액션 & 아이템 바 */}
-                                <div className={`flex flex-col gap-4 p-4 pb-8 pt-4 bg-emerald-900 border-t border-emerald-800/50`}>
+                                <div className={`flex flex-col gap-4 p-4 pb-8 pt-4 ${currentBoardTheme.bgClass} border-t ${currentBoardTheme.borderHalfClass} transition-colors duration-500`}>
                                     {/* 가로형 아이템 배치 */}
                                     {(gameState === 'playing' || gameState === 'tutorial') && !isPaused && (
                                         <div className="flex justify-center gap-6 sm:gap-8 w-full max-w-sm mx-auto mb-2">
@@ -2676,7 +2949,7 @@
                                     {/* 메인 확인/다음 버튼 */}
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
                                         {(gameState === 'playing' || gameState === 'tutorial') ? (
-                                            <button onClick={checkResult} disabled={isPaused} className="w-full py-3.5 bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border border-emerald-400/30">
+                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} ${currentBoardTheme.btnActive} disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-colors duration-500`}>
                                                 <CheckCircle size={20} /> {t('check_answer')}
                                             </button>
                                         ) : null}
