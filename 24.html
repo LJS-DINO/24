@@ -97,6 +97,18 @@
             100% { transform: translateY(-30px) scale(1); opacity: 0; }
         }
         .animate-time-plus { animation: timePlus 0.8s ease-out forwards; }
+
+        /* 튜토리얼 괄호 가이드 애니메이션 */
+        @keyframes guidePulse {
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+        }
+        .guide-highlight {
+            animation: guidePulse 1.5s infinite;
+            border-radius: 50%;
+            background: rgba(234, 179, 8, 0.2);
+        }
     </style>
 </head>
 <body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col">
@@ -104,6 +116,166 @@
 
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
+
+        // --- Sound Engine (Web Audio API) ---
+        const SoundEngine = (() => {
+            let ctx = null;
+            let bgmInterval = null;
+            let isMuted = localStorage.getItem('make24_muted') === 'true';
+            let bgmPlaying = false;
+            let currentBgmType = null;
+
+            const init = () => {
+                if (!ctx) {
+                    ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+            };
+
+            const setMuted = (muted, fallbackType = 'main') => {
+                isMuted = muted;
+                if (isMuted) {
+                    stopBGM();
+                } else {
+                    startBGM(currentBgmType || fallbackType);
+                }
+            };
+
+            const playTone = (freq, type, duration, vol=0.1) => {
+                if (isMuted) return;
+                init();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            };
+
+            const playClick = () => playTone(800, 'sine', 0.1, 0.05);
+            
+            const playCorrect = () => {
+                if(isMuted) return; init();
+                playTone(440, 'sine', 0.2, 0.1);
+                setTimeout(() => playTone(554.37, 'sine', 0.2, 0.1), 100);
+                setTimeout(() => playTone(659.25, 'sine', 0.4, 0.15), 200);
+            };
+            
+            const playCombo = (streak) => {
+                if(isMuted) return; init();
+                const cappedStreak = Math.min(streak, 10);
+                const base = 400 + (cappedStreak * 50);
+                playTone(base, 'triangle', 0.2, 0.1);
+                setTimeout(() => playTone(base * 1.25, 'triangle', 0.2, 0.1), 100);
+                setTimeout(() => playTone(base * 1.5, 'triangle', 0.4, 0.15), 200);
+                setTimeout(() => playTone(base * 2, 'triangle', 0.6, 0.15), 300);
+            };
+            
+            const playWrong = () => {
+                if(isMuted) return; init();
+                playTone(300, 'sawtooth', 0.2, 0.1);
+                setTimeout(() => playTone(250, 'sawtooth', 0.4, 0.1), 150);
+            };
+
+            const startBGM = (type = 'main') => {
+                if (isMuted) return;
+                if (bgmPlaying && currentBgmType === type) return;
+                if (bgmPlaying) stopBGM();
+
+                init();
+                bgmPlaying = true;
+                currentBgmType = type;
+                
+                // 음계 정의
+                const C4 = 261.6, D4 = 293.7, E4 = 329.6, F4 = 349.2, G4 = 392.0, A4 = 440.0, B4 = 493.9;
+                const C5 = 523.3, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784.0, A5 = 880.0;
+
+                // 1. 메인 화면 BGM (경쾌하고 아기자기한 왈츠 느낌)
+                const mainMelody = [
+                    C5, G4, E4, G4, C5, G4, E4, 0,
+                    D5, A4, F4, A4, D5, A4, F4, 0,
+                    E5, C5, G4, C5, E5, C5, G4, 0,
+                    D5, B4, G4, B4, D5, 0,  0,  0,
+                    C5, G4, E4, G4, C5, G4, E4, 0,
+                    F5, C5, A4, C5, F5, C5, A4, 0,
+                    G5, D5, B4, D5, G5, D5, B4, 0,
+                    C5, E5, C5, G4, C5, 0,  0,  0
+                ];
+
+                // 2. 게임 화면 BGM (빠르고 액티브한 아케이드 8비트 느낌)
+                const gameMelody = [
+                    E5, C5, G4, C5, E5, C5, G4, C5,
+                    F5, C5, A4, C5, F5, C5, A4, C5,
+                    G5, D5, B4, D5, G5, D5, B4, D5,
+                    E5, C5, G4, C5, E5, C5, G4, 0,
+                    A4, C5, E5, C5, A4, C5, E5, C5,
+                    D5, F5, A5, F5, D5, F5, A5, F5,
+                    G5, D5, B4, D5, G5, D5, B4, D5,
+                    C5, G4, E4, G4, C5, 0,  0,  0
+                ];
+
+                const melody = type === 'game' ? gameMelody : mainMelody;
+                const speed = type === 'game' ? 140 : 180; // 게임일 때 템포가 조금 더 빠름
+                let step = 0;
+
+                const playNote = () => {
+                    if (!bgmPlaying || isMuted) {
+                        clearInterval(bgmInterval);
+                        return;
+                    }
+                    const freq = melody[step % melody.length];
+                    
+                    if (freq > 0) {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        // 메인은 부드러운 사인파, 게임은 톡톡 튀는 트라이앵글파
+                        osc.type = type === 'game' ? 'triangle' : 'sine'; 
+                        
+                        // 살짝 레트로한 8비트 질감을 위한 로우패스 필터
+                        const filter = ctx.createBiquadFilter();
+                        filter.type = "lowpass";
+                        filter.frequency.value = type === 'game' ? 1500 : 2500;
+
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        
+                        gain.gain.setValueAtTime(0, ctx.currentTime);
+                        gain.gain.linearRampToValueAtTime(type === 'game' ? 0.05 : 0.08, ctx.currentTime + 0.01); 
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (speed / 1000) * 0.9); 
+
+                        osc.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + (speed / 1000));
+                    }
+                    step++;
+                };
+
+                playNote();
+                bgmInterval = setInterval(playNote, speed);
+            };
+
+            const stopBGM = () => {
+                bgmPlaying = false;
+                if (bgmInterval) {
+                    clearInterval(bgmInterval);
+                    bgmInterval = null;
+                }
+            };
+
+            return { init, setMuted, playClick, playCorrect, playCombo, playWrong, startBGM, stopBGM };
+        })();
+
 
         // --- Icons ---
         const Play = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
@@ -126,6 +298,9 @@
         const ShoppingBag = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
         const Coins = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>;
         const Gem = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>;
+        const Volume2 = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>;
+        const VolumeX = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>;
+        const ClipboardList = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>;
 
         // --- Constants ---
         const SUITS = ['♠', '♥', '♦', '♣'];
@@ -136,6 +311,15 @@
         
         const MAX_ENERGY = 10;
         const RECHARGE_TIME_MS = 20 * 60 * 1000;
+
+        // --- Card Deck Styles ---
+        const CARD_DECKS = [
+            { id: 'default', price: 0, textClass: 'text-slate-800', bgClass: 'bg-white border-slate-300' },
+            { id: 'dark', price: 500, textClass: 'text-slate-200', bgClass: 'bg-slate-800 border-slate-900 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]' },
+            { id: 'gold', price: 1500, textClass: 'text-amber-900', bgClass: 'bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 border-yellow-700 shadow-inner' },
+            { id: 'neon', price: 3000, textClass: 'text-cyan-300', bgClass: 'bg-slate-900 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.6)]' },
+            { id: 'cherry', price: 2000, textClass: 'text-rose-100', bgClass: 'bg-gradient-to-br from-rose-400 to-rose-600 border-rose-800' }
+        ];
         
         // --- i18n Translations ---
         const TRANSLATIONS = {
@@ -164,6 +348,17 @@
                 hint: "Hint",
                 pass: "Pass",
                 item_shop: "Item Shop",
+                tab_items: "Items",
+                tab_decks: "Card Decks",
+                equip: "Equip",
+                equipped: "Equipped",
+                owned: "Owned",
+                buy: "Buy",
+                deck_default: "Default White",
+                deck_dark: "Dark Slate",
+                deck_gold: "Royal Gold",
+                deck_neon: "Cyber Neon",
+                deck_cherry: "Cherry Blossom",
                 energy_x3: "Energy x 3",
                 energy_desc: "Game Play Ticket",
                 get_by_ad: "Watch Ad",
@@ -221,7 +416,17 @@
                 energy_shortage_toast: "Not enough energy.",
                 game_over: "GAME OVER",
                 guest_login_prompt: "Log in with your Google account on the homepage to join the rankings!",
-                guest_ranking_notice: "(Log in on homepage to rank)"
+                guest_ranking_notice: "(Log in on homepage to rank)",
+                tab_missions: "Missions",
+                mission_play: "Play {n} Game",
+                mission_stages: "Clear {n} Stages",
+                mission_combo: "Achieve {n} Combo",
+                mission_score: "Score {n} Points",
+                mission_ads: "Watch {n} Ads",
+                mission_all: "Complete All Daily Missions",
+                claim: "Claim",
+                claimed: "Claimed",
+                reward: "Reward"
             },
             ko: {
                 title: "24 만들기",
@@ -247,7 +452,18 @@
                 time: "시간",
                 hint: "힌트",
                 pass: "패스",
-                item_shop: "아이템 상점",
+                item_shop: "상점",
+                tab_items: "아이템",
+                tab_decks: "카드 덱",
+                equip: "장착",
+                equipped: "장착됨",
+                owned: "보유중",
+                buy: "구매",
+                deck_default: "기본 화이트",
+                deck_dark: "다크 슬레이트",
+                deck_gold: "로얄 골드",
+                deck_neon: "사이버 네온",
+                deck_cherry: "체리 블라썸",
                 energy_x3: "행동력 x 3",
                 energy_desc: "게임 플레이 티켓",
                 get_by_ad: "광고 시청으로 획득",
@@ -305,7 +521,17 @@
                 energy_shortage_toast: "행동력이 부족합니다.",
                 game_over: "게임 오버",
                 guest_login_prompt: "홈페이지에서 구글 계정으로 로그인을 하고 랭킹에 진입해보세요",
-                guest_ranking_notice: "(홈페이지 로그인 시 랭킹 등록)"
+                guest_ranking_notice: "(홈페이지 로그인 시 랭킹 등록)",
+                tab_missions: "일일 미션",
+                mission_play: "게임 {n}회 플레이",
+                mission_stages: "문제 {n}개 클리어",
+                mission_combo: "{n} 콤보 달성",
+                mission_score: "{n}점 달성",
+                mission_ads: "광고 {n}회 시청",
+                mission_all: "모든 일일 미션 완료 보상",
+                claim: "보상 받기",
+                claimed: "완료됨",
+                reward: "보상"
             },
             ja: {
                 title: "24を作る",
@@ -331,7 +557,18 @@
                 time: "時間",
                 hint: "ヒント",
                 pass: "パス",
-                item_shop: "アイテムショップ",
+                item_shop: "ショップ",
+                tab_items: "アイテム",
+                tab_decks: "カードデッキ",
+                equip: "装備",
+                equipped: "装備中",
+                owned: "所持",
+                buy: "購入",
+                deck_default: "デフォルトホワイト",
+                deck_dark: "ダークスレート",
+                deck_gold: "ロイヤルゴールド",
+                deck_neon: "サイバーネオン",
+                deck_cherry: "チェリーブロッサム",
                 energy_x3: "スタミナ x 3",
                 energy_desc: "プレイチケット",
                 get_by_ad: "広告を見て獲得",
@@ -389,7 +626,17 @@
                 energy_shortage_toast: "スタミナが不足しています。",
                 game_over: "ゲームオーバー",
                 guest_login_prompt: "ホームページでGoogleログインをして、ランキングに参加しましょう！",
-                guest_ranking_notice: "(ログインするとランキングに登録されます)"
+                guest_ranking_notice: "(ログインするとランキングに登録されます)",
+                tab_missions: "デイリー",
+                mission_play: "ゲームを{n}回プレイ",
+                mission_stages: "問題を{n}問クリア",
+                mission_combo: "{n}コンボ達成",
+                mission_score: "{n}点達成",
+                mission_ads: "広告を{n}回視聴",
+                mission_all: "全ミッション完了ボーナス",
+                claim: "受取",
+                claimed: "受取済",
+                reward: "報酬"
             },
             'zh-TW': {
                 title: "挑戰24",
@@ -415,7 +662,18 @@
                 time: "時間",
                 hint: "提示",
                 pass: "跳過",
-                item_shop: "道具商店",
+                item_shop: "商店",
+                tab_items: "道具",
+                tab_decks: "卡牌外觀",
+                equip: "裝備",
+                equipped: "已裝備",
+                owned: "已擁有",
+                buy: "購買",
+                deck_default: "經典白",
+                deck_dark: "深邃黑",
+                deck_gold: "皇家金",
+                deck_neon: "賽博霓虹",
+                deck_cherry: "櫻花粉",
                 energy_x3: "體力 x 3",
                 energy_desc: "遊戲入場券",
                 get_by_ad: "觀看廣告獲得",
@@ -473,7 +731,17 @@
                 energy_shortage_toast: "體力不足。",
                 game_over: "遊戲結束",
                 guest_login_prompt: "在首頁使用Google帳號登入，來挑戰排行榜吧！",
-                guest_ranking_notice: "(登入首頁即可參與排行)"
+                guest_ranking_notice: "(登入首頁即可參與排行)",
+                tab_missions: "每日任務",
+                mission_play: "遊玩 {n} 次遊戲",
+                mission_stages: "通關 {n} 題",
+                mission_combo: "達成 {n} 連擊",
+                mission_score: "獲得 {n} 分",
+                mission_ads: "觀看 {n} 次廣告",
+                mission_all: "完成所有任務獎勵",
+                claim: "領取",
+                claimed: "已領取",
+                reward: "獎勵"
             }
         };
 
@@ -722,7 +990,10 @@
             return `${m}:${s}`;
         };
 
-        const Card = ({ card, onClick, isPlaceholder, className }) => {
+        const Card = ({ card, onClick, isPlaceholder, className, deckStyle }) => {
+            const bgClass = deckStyle ? deckStyle.bgClass : 'bg-white border-slate-300';
+            const textClass = deckStyle ? deckStyle.textClass : 'text-slate-800';
+
             if (isPlaceholder) {
                 return (
                     <div className={`border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-xs text-white/50 font-bold backdrop-blur-sm transition-all ${className}`}>
@@ -732,7 +1003,7 @@
             }
             return (
                 <div 
-                    className={`bg-white shadow-xl border-b-4 border-slate-300 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform text-slate-800 ${className}`}
+                    className={`${bgClass} ${textClass} shadow-xl border-b-4 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform ${className}`}
                     onClick={() => { onClick(); }}
                 >
                     <span className="font-black text-3xl sm:text-4xl">{card.display}</span>
@@ -764,8 +1035,37 @@
             const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
 
             const [showShop, setShowShop] = useState(false);
+            const [shopTab, setShopTab] = useState('items'); // 'items' | 'decks'
             const [gold, setGold] = useState(() => parseInt(localStorage.getItem('make24_gold') || '1000', 10));
             
+            // --- Deck Customization State ---
+            const [ownedDecks, setOwnedDecks] = useState(() => {
+                const saved = localStorage.getItem('make24_owned_decks');
+                return saved ? JSON.parse(saved) : ['default'];
+            });
+            const [equippedDeck, setEquippedDeck] = useState(() => localStorage.getItem('make24_equipped_deck') || 'default');
+
+            // --- Sound State ---
+            const [isMuted, setIsMuted] = useState(() => localStorage.getItem('make24_muted') === 'true');
+
+            // --- Daily Missions State ---
+            const [showMissions, setShowMissions] = useState(false);
+            const defaultMissions = {
+                date: getKSTDateString(),
+                progress: { combo: 0, stages: 0, score: 0, ads: 0, play: 0 },
+                claimed: { combo: false, stages: false, score: false, ads: false, play: false, all: false }
+            };
+            const [missions, setMissions] = useState(() => {
+                const saved = localStorage.getItem('make24_daily_missions');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.date === getKSTDateString()) return parsed;
+                    } catch(e) {}
+                }
+                return defaultMissions;
+            });
+
             const [score, setScore] = useState(0);
             const [lastScoreGain, setLastScoreGain] = useState(null); 
             const [allRankings, setAllRankings] = useState([]); 
@@ -809,6 +1109,38 @@
             const [adCooldowns, setAdCooldowns] = useState({ energy: 0, hint: 0, time: 0, pass: 0, revive: 0 });
 
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
+            const currentDeckStyle = CARD_DECKS.find(d => d.id === equippedDeck) || CARD_DECKS[0];
+
+            // 데일리 미션 업데이트 헬퍼
+            const updateMission = useCallback((type, value, isCumulative = false) => {
+                setMissions(prev => {
+                    const today = getKSTDateString();
+                    if (prev.date !== today) {
+                        const fresh = { ...defaultMissions, date: today };
+                        fresh.progress[type] = isCumulative ? value : value;
+                        return fresh;
+                    }
+                    
+                    const newProgress = { ...prev.progress };
+                    if (isCumulative) {
+                        newProgress[type] += value;
+                    } else {
+                        if (value > newProgress[type]) newProgress[type] = value;
+                    }
+                    return { ...prev, progress: newProgress };
+                });
+            }, []);
+
+            // --- BGM Auto Controller based on gameState ---
+            useEffect(() => {
+                if (gameState === 'start' || gameState === 'tutorial_complete') {
+                    SoundEngine.startBGM('main');
+                } else if (gameState === 'playing' || gameState === 'tutorial' || gameState === 'success') {
+                    SoundEngine.startBGM('game');
+                } else if (gameState === 'fail' || isPaused) {
+                    SoundEngine.stopBGM();
+                }
+            }, [gameState, isPaused]);
 
             // 파이어베이스 인증 및 초기화 
             useEffect(() => {
@@ -953,6 +1285,20 @@
             }, [adState.date]);
 
             useEffect(() => {
+                localStorage.setItem('make24_daily_missions', JSON.stringify(missions));
+            }, [missions]);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    const today = getKSTDateString();
+                    if (missions.date !== today) {
+                        setMissions({ ...defaultMissions, date: today });
+                    }
+                }, 10000);
+                return () => clearInterval(interval);
+            }, [missions.date]);
+
+            useEffect(() => {
                 const calculateEnergy = () => {
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
                     let lastTime = parseInt(localStorage.getItem('make24_energy_time') || Date.now().toString(), 10);
@@ -994,6 +1340,11 @@
                 localStorage.setItem('make24_timeItems', timeItemsLeft.toString());
                 localStorage.setItem('make24_passItems', passItemsLeft.toString());
             }, [gold, hintsLeft, timeItemsLeft, passItemsLeft]);
+
+            useEffect(() => {
+                localStorage.setItem('make24_owned_decks', JSON.stringify(ownedDecks));
+                localStorage.setItem('make24_equipped_deck', equippedDeck);
+            }, [ownedDecks, equippedDeck]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
                 if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
@@ -1088,6 +1439,13 @@
                 }
             };
 
+            const toggleSound = () => {
+                const nextMuted = !isMuted;
+                setIsMuted(nextMuted);
+                localStorage.setItem('make24_muted', nextMuted.toString());
+                SoundEngine.setMuted(nextMuted, gameState === 'start' ? 'main' : 'game');
+            };
+
             const startProblem = useCallback((isTut = false, phase = 0, isNewRun = false, forceSolvedCount = null, currentStreak = 0) => {
                 if (!isTut && isNewRun) {
                     let currentEnergy = parseInt(localStorage.getItem('make24_energy') ?? MAX_ENERGY.toString(), 10);
@@ -1109,6 +1467,9 @@
                     if (currentEnergy >= MAX_ENERGY && newEnergy < MAX_ENERGY) {
                         setTimeToNextEnergy(RECHARGE_TIME_MS);
                     }
+                    
+                    // 데일리 미션 업데이트 (게임 플레이 횟수)
+                    updateMission('play', 1, true);
                 }
 
                 const activeSolvedCount = forceSolvedCount !== null ? forceSolvedCount : solvedCount;
@@ -1156,7 +1517,7 @@
                    setTutorialPhase(0);
                 }
                 return true;
-            }, [solvedCount]);
+            }, [solvedCount, updateMission]);
 
             const startTutorial = () => {
                 if (showWelcomeTutorialHook) {
@@ -1166,6 +1527,7 @@
                 setScore(0);
                 setStreak(0);
                 setComboFlash(null);
+                SoundEngine.init();
                 startProblem(true, 1, false, null, 0); 
             };
 
@@ -1174,6 +1536,7 @@
                     setShowWelcomeTutorialHook(false);
                     localStorage.setItem('make24_welcome_seen', 'true');
                 }
+                SoundEngine.init();
                 if (startProblem(false, 0, true, 0, 0)) {
                     setScore(0);
                     setStreak(0);
@@ -1182,6 +1545,7 @@
             }, [startProblem, showWelcomeTutorialHook]);
 
             const nextProblem = () => {
+                SoundEngine.playClick();
                 if (tutorialPhase > 0) {
                     if (tutorialPhase < 5) {
                          startProblem(true, tutorialPhase + 1, false, null, 0);
@@ -1196,6 +1560,7 @@
             };
 
             const restartGame = () => {
+                SoundEngine.playClick();
                 if (tutorialPhase > 0) {
                     startTutorial(); 
                     setIsPaused(false);
@@ -1212,6 +1577,7 @@
             };
             
             const reviveGame = () => {
+                SoundEngine.playClick();
                 const maxViews = 3;
                 if ((adState.revive || 0) >= maxViews) return;
                 if (adCooldowns.revive > 0) return;
@@ -1246,6 +1612,7 @@
             };
 
             const useHint = () => {
+                SoundEngine.playClick();
                 if (hintsLeft > 0 && gameState === 'playing' && !isPaused) {
                     const answer = getBestSolution(sourceCards);
                     setHintText(getPartialHint(answer));
@@ -1258,6 +1625,7 @@
             };
 
             const useTimeItem = () => {
+                SoundEngine.playClick();
                 if (timeItemsLeft > 0 && gameState === 'playing' && !isPaused) {
                     setTimeItemsLeft(prev => prev - 1);
                     setTimeLeft(prev => prev + 10);
@@ -1272,6 +1640,7 @@
             };
 
             const usePassItem = () => {
+                SoundEngine.playClick();
                 if (passItemsLeft > 0 && gameState === 'playing' && !isPaused) {
                     setPassItemsLeft(prev => prev - 1);
                     setResultMessage(t('pass_used'));
@@ -1284,6 +1653,7 @@
             };
 
             const goToLobby = () => {
+                SoundEngine.playClick();
                 if (score > 0 && tutorialPhase === 0) {
                     saveRecord(score, streak, solvedCount);
                 }
@@ -1293,6 +1663,7 @@
             };
 
             const buyItem = (type, cost) => {
+                SoundEngine.playClick();
                 if (gold >= cost) {
                     setGold(prev => prev - cost);
                     if (type === 'hint') setHintsLeft(prev => prev + 3);
@@ -1301,7 +1672,17 @@
                 }
             };
 
+            const handleBuyDeck = (deckId, price) => {
+                SoundEngine.playClick();
+                if (gold >= price) {
+                    setGold(prev => prev - price);
+                    setOwnedDecks(prev => [...prev, deckId]);
+                    setEquippedDeck(deckId);
+                }
+            };
+
             const watchAd = (type) => {
+                SoundEngine.playClick();
                 const maxViews = type === 'energy' ? 5 : 3;
                 if (adState[type] >= maxViews) return;
                 if (adCooldowns[type] > 0) return;
@@ -1333,6 +1714,10 @@
                             return newE;
                         });
                     }
+                    
+                    // 데일리 미션 업데이트 (광고 보기)
+                    updateMission('ads', 1, true);
+                    
                 }, 1500);
             };
 
@@ -1342,6 +1727,7 @@
                     timer = setInterval(() => {
                         setTimeLeft((prev) => {
                             if (prev <= 1) {
+                                SoundEngine.playWrong();
                                 const answer = getBestSolution(sourceCards);
                                 setSolutionStr(answer);
                                 saveRecord(score, streak, solvedCount);
@@ -1358,6 +1744,7 @@
             const handleSourceCardClick = (card) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
+                SoundEngine.playClick();
                 
                 const emptySlotIdx = slots.indexOf(null);
                 if (emptySlotIdx !== -1) {
@@ -1373,6 +1760,7 @@
             const handleSlotCardClick = (index) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
+                SoundEngine.playClick();
                 
                 if (slots[index]) {
                     const newSlots = [...slots];
@@ -1384,6 +1772,14 @@
             const toggleStartBracket = (idx) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
+                SoundEngine.playClick();
+
+                if (gameState === 'tutorial' && tutorialPhase >= 1 && tutorialPhase <= 3) {
+                    setShake(true);
+                    setTimeout(() => setShake(false), 300);
+                    return;
+                }
+
                 const newBrackets = [...startBrackets];
                 newBrackets[idx] = (newBrackets[idx] + 1) % 3;
                 setStartBrackets(newBrackets);
@@ -1392,6 +1788,14 @@
             const toggleEndBracket = (idx) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
+                SoundEngine.playClick();
+
+                if (gameState === 'tutorial' && tutorialPhase >= 1 && tutorialPhase <= 3) {
+                    setShake(true);
+                    setTimeout(() => setShake(false), 300);
+                    return;
+                }
+
                 const newBrackets = [...endBrackets];
                 newBrackets[idx] = (newBrackets[idx] + 1) % 3;
                 setEndBrackets(newBrackets);
@@ -1400,6 +1804,7 @@
             const selectOperator = (idx, op) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
                 if (isPaused) return;
+                SoundEngine.playClick();
                 const newOps = [...operators];
                 newOps[idx] = op;
                 setOperators(newOps);
@@ -1467,6 +1872,7 @@
                     const solveDuration = now - problemStartTime;
                     
                     if (tutorialPhase > 0) {
+                        SoundEngine.playCorrect();
                         setGameState('success');
                         setResultMessage(`${t('correct')} (${winningExpression} = 24)`);
                         triggerConfetti();
@@ -1474,6 +1880,14 @@
                     }
 
                     const nextStreak = streak + 1;
+                    
+                    // 콤보 발생 여부에 따라 사운드 다르게 재생
+                    if (nextStreak > 1) {
+                        SoundEngine.playCombo(nextStreak);
+                    } else {
+                        SoundEngine.playCorrect();
+                    }
+
                     const scoreInfo = calculateScore(solveDuration, nextStreak);
                     const newTotalScore = score + scoreInfo.total;
                     const newSolvedCount = solvedCount + 1;
@@ -1482,6 +1896,11 @@
                     setGold(prev => prev + 10 + Math.min(nextStreak, 5));
                     
                     saveRecord(newTotalScore, nextStreak, newSolvedCount);
+                    
+                    // 데일리 미션 업데이트
+                    updateMission('combo', nextStreak, false);
+                    updateMission('stages', 1, true);
+                    updateMission('score', newTotalScore, false);
 
                     setLastScoreGain(scoreInfo);
                     setStreak(nextStreak);
@@ -1494,6 +1913,7 @@
                     setResultMessage(`${t('correct')} (${winningExpression} = 24)`);
                     triggerConfetti();
                 } else {
+                    SoundEngine.playWrong();
                     setShake(true);
                     setTimeout(() => setShake(false), 500);
                     
@@ -1507,6 +1927,32 @@
                     setGameState('fail'); 
                 }
             };
+
+            const claimMission = (id, reward) => {
+                SoundEngine.playClick();
+                if (missions.claimed[id]) return;
+                setGold(g => g + reward);
+                setMissions(prev => ({ ...prev, claimed: { ...prev.claimed, [id]: true } }));
+            };
+
+            const claimAll = () => {
+                SoundEngine.playClick();
+                if (missions.claimed.all) return;
+                setGold(g => g + 500);
+                setMissions(prev => ({ ...prev, claimed: { ...prev.claimed, all: true } }));
+            };
+
+            const missionConfig = [
+                { id: 'combo', target: 5, reward: 100, title: t('mission_combo', {n: 5}) },
+                { id: 'stages', target: 10, reward: 100, title: t('mission_stages', {n: 10}) },
+                { id: 'score', target: 3000, reward: 150, title: t('mission_score', {n: 3000}) },
+                { id: 'ads', target: 3, reward: 150, title: t('mission_ads', {n: 3}) },
+                { id: 'play', target: 1, reward: 50, title: t('mission_play', {n: 1}) },
+            ];
+
+            const hasClaimableMission = missionConfig.some(m => missions.progress[m.id] >= m.target && !missions.claimed[m.id]) || 
+                                        (missionConfig.every(m => missions.claimed[m.id]) && !missions.claimed.all);
+            const allClaimed = missionConfig.every(m => missions.claimed[m.id]);
 
             const deckCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
             const slotCardClass = "w-[14vw] max-w-[3.5rem] h-[18vw] max-h-[4.5rem] rounded-xl";
@@ -1573,13 +2019,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-end shrink-0">
+                        <div className="flex items-center justify-end shrink-0 gap-2">
+                            {/* 사운드 토글 버튼 추가 */}
+                            <button onClick={toggleSound} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+                            </button>
+                            
                             {gameState === 'playing' || gameState === 'tutorial' || gameState === 'fail' ? (
-                                <button onClick={() => setIsPaused(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
                                     <Pause size={22} />
                                 </button>
                             ) : (
-                                <button onClick={() => setShowRanking(true)} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
                                     <Trophy size={22} />
                                 </button>
                             )}
@@ -1596,7 +2047,7 @@
                     
                     {/* A 카드 등장 알림 토스트 */}
                     {showACardToast && (
-                        <div className="absolute top-[18%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-max max-w-[90vw]">
+                        <div className="absolute top-[28%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-max max-w-[90vw]">
                             <div className="bg-emerald-900/95 border-2 border-emerald-400 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-center gap-3 backdrop-blur-md animate-pop-scale">
                                 <div className="bg-white text-emerald-900 rounded-lg w-10 h-12 flex items-center justify-center font-black text-2xl shrink-0 shadow-inner">
                                     A
@@ -1676,7 +2127,7 @@
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
                             <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
-                                <button onClick={() => setIsPaused(false)} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
                                     <Play size={20} fill="currentColor" /> {t('continue')}
                                 </button>
                                 <button onClick={restartGame} className={`w-full py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600`}>
@@ -1689,74 +2140,189 @@
                         </div>
                     )}
 
+                    {/* 데일리 미션 팝업 */}
+                    {showMissions && (
+                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <ClipboardList className="text-fuchsia-400" size={20} />
+                                        <h2 className="text-lg font-bold">{t('tab_missions')}</h2>
+                                    </div>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowMissions(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                    {missionConfig.map(m => {
+                                        const progress = Math.min(missions.progress[m.id], m.target);
+                                        const isComplete = progress >= m.target;
+                                        const isClaimed = missions.claimed[m.id];
+                                        return (
+                                            <div key={m.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                                <div className="flex-1 pr-3">
+                                                    <div className="font-bold text-sm text-slate-100">{m.title}</div>
+                                                    <div className="flex items-center justify-between mt-1">
+                                                        <span className="text-[10px] text-slate-400 font-mono">{progress} / {m.target}</span>
+                                                        <span className="text-[10px] text-yellow-400 flex items-center gap-0.5"><Coins size={10}/> {m.reward}</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-800 rounded-full h-1.5 mt-1.5">
+                                                        <div className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(progress / m.target) * 100}%` }}></div>
+                                                    </div>
+                                                </div>
+                                                <div className="shrink-0">
+                                                    {isClaimed ? (
+                                                        <button disabled className="px-3 py-1.5 bg-slate-800/50 text-slate-500 border border-slate-600/50 rounded-lg font-bold text-xs cursor-default">
+                                                            {t('claimed')}
+                                                        </button>
+                                                    ) : isComplete ? (
+                                                        <button onClick={() => claimMission(m.id, m.reward)} className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors animate-pulse">
+                                                            {t('claim')}
+                                                        </button>
+                                                    ) : (
+                                                        <button disabled className="px-3 py-1.5 bg-slate-600 text-slate-400 rounded-lg font-bold text-xs cursor-not-allowed">
+                                                            {t('claim')}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="p-4 border-t border-slate-700 bg-slate-800/80 rounded-b-3xl">
+                                    <div className="bg-gradient-to-r from-fuchsia-900/50 to-purple-900/50 rounded-xl p-4 flex justify-between items-center border border-fuchsia-500/30">
+                                        <div>
+                                            <div className="font-black text-sm text-fuchsia-300">{t('mission_all')}</div>
+                                            <div className="text-xs text-yellow-400 font-bold flex items-center gap-1 mt-1"><Coins size={12}/> 500 G</div>
+                                        </div>
+                                        <button 
+                                            onClick={claimAll} 
+                                            disabled={!allClaimed || missions.claimed.all}
+                                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-colors ${missions.claimed.all ? 'bg-slate-800/50 text-slate-500 border border-slate-600/50 cursor-default' : allClaimed ? 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white animate-pulse' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                        >
+                                            {missions.claimed.all ? t('claimed') : t('claim')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 상점 모달 (덱 커스터마이징 탭 추가됨) */}
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
                                     <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
-                                    <button onClick={() => setShowShop(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowShop(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
+                                
                                 <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
                                     <div className="flex items-center gap-2"><Coins className="text-yellow-400" size={18} /><span className="font-bold text-yellow-400">{gold.toLocaleString()}</span></div>
                                 </div>
+
+                                {/* 상점 탭 필터 */}
+                                <div className="flex border-b border-slate-700 bg-slate-800">
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('items');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'items' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_items')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('decks');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'decks' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_decks')}</button>
+                                </div>
+
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
-                                            <div><div className="font-bold text-sm">{t('energy_x3')}</div><div className="text-[10px] text-slate-400">{t('get_by_ad')}</div></div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                            <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
-                                                <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.energy > 0 ? `${adCooldowns.energy}${t('wait_sec')}` : `${5 - adState.energy}/5`}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">{t('hint_x3')}</div><div className="text-[10px] text-slate-400">{t('hint_desc')}</div></div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                            <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
-                                                <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.hint > 0 ? `${adCooldowns.hint}s` : `${3 - adState.hint}/3`}
-                                            </button>
-                                            <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
-                                                <Coins size={12} className="text-yellow-400" /> 100
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">{t('time_x3')}</div><div className="text-[10px] text-slate-400">{t('time_desc')}</div></div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                            <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
-                                                <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.time > 0 ? `${adCooldowns.time}s` : `${3 - adState.time}/3`}
-                                            </button>
-                                            <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
-                                                <Coins size={12} className="text-yellow-400" /> 150
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
-                                            <div><div className="font-bold text-sm">{t('pass_x3')}</div><div className="text-[10px] text-slate-400">{t('pass_desc')}</div></div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                            <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
-                                                <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
-                                                {adCooldowns.pass > 0 ? `${adCooldowns.pass}s` : `${3 - adState.pass}/3`}
-                                            </button>
-                                            <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
-                                                <Coins size={12} className="text-yellow-400" /> 200
-                                            </button>
-                                        </div>
-                                    </div>
+                                    {shopTab === 'items' ? (
+                                        <>
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
+                                                    <div><div className="font-bold text-sm">{t('energy_x3')}</div><div className="text-[10px] text-slate-400">{t('get_by_ad')}</div></div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                        <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                        {adCooldowns.energy > 0 ? `${adCooldowns.energy}${t('wait_sec')}` : `${5 - adState.energy}/5`}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
+                                                    <div><div className="font-bold text-sm">{t('hint_x3')}</div><div className="text-[10px] text-slate-400">{t('hint_desc')}</div></div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                        <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                        {adCooldowns.hint > 0 ? `${adCooldowns.hint}s` : `${3 - adState.hint}/3`}
+                                                    </button>
+                                                    <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                        <Coins size={12} className="text-yellow-400" /> 100
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
+                                                    <div><div className="font-bold text-sm">{t('time_x3')}</div><div className="text-[10px] text-slate-400">{t('time_desc')}</div></div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                        <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                        {adCooldowns.time > 0 ? `${adCooldowns.time}s` : `${3 - adState.time}/3`}
+                                                    </button>
+                                                    <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                        <Coins size={12} className="text-yellow-400" /> 150
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
+                                                    <div><div className="font-bold text-sm">{t('pass_x3')}</div><div className="text-[10px] text-slate-400">{t('pass_desc')}</div></div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                        <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
+                                                        {adCooldowns.pass > 0 ? `${adCooldowns.pass}s` : `${3 - adState.pass}/3`}
+                                                    </button>
+                                                    <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                        <Coins size={12} className="text-yellow-400" /> 200
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        // 카드 덱 스킨 렌더링 영역
+                                        CARD_DECKS.map(deck => (
+                                            <div key={deck.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-14 flex items-center justify-center rounded border-b-2 shadow-sm font-black text-lg ${deck.bgClass} ${deck.textClass}`}>
+                                                        A
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-sm text-slate-100">{t(`deck_${deck.id}`)}</div>
+                                                        {deck.price > 0 && !ownedDecks.includes(deck.id) && (
+                                                            <div className="text-[10px] text-slate-400 mt-0.5">{deck.price.toLocaleString()} G</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    {equippedDeck === deck.id ? (
+                                                        <button disabled className="px-3 py-1.5 bg-emerald-800/50 text-emerald-400 border border-emerald-600/50 rounded-lg font-bold text-xs cursor-default">
+                                                            <CheckCircle size={14} className="inline mr-1" />{t('equipped')}
+                                                        </button>
+                                                    ) : ownedDecks.includes(deck.id) ? (
+                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedDeck(deck.id);}} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors">
+                                                            {t('equip')}
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => handleBuyDeck(deck.id, deck.price)} 
+                                                            disabled={gold < deck.price} 
+                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-colors ${gold >= deck.price ? 'bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                                        >
+                                                            <Coins size={12} className={gold >= deck.price ? "text-yellow-200" : "text-slate-400"} /> {deck.price.toLocaleString()}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                             
@@ -1778,7 +2344,7 @@
                             <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[75vh]" onClick={e => e.stopPropagation()}>
                                 <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
                                     <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">{t('ranking')}</h2></div>
-                                    <button onClick={() => setShowRanking(false)} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowRanking(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-750 border-b border-slate-700">
                                     <div className="flex items-center justify-between">
@@ -1796,9 +2362,9 @@
                                 
                                 {/* 랭킹 탭 필터 */}
                                 <div className="flex border-b border-slate-700 bg-slate-800">
-                                    <button onClick={() => setRankingTab('score')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'score' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_score')}</button>
-                                    <button onClick={() => setRankingTab('combo')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'combo' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_combo')}</button>
-                                    <button onClick={() => setRankingTab('solved')} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'solved' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_solved')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('score');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'score' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_score')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('combo');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'combo' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_combo')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('solved');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'solved' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_solved')}</button>
                                 </div>
                                 
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
@@ -1910,8 +2476,8 @@
                                 <div className="w-full max-w-sm text-center space-y-5 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl relative z-10">
                                     <div className="flex flex-col items-center justify-center gap-2">
                                         <div className="flex justify-center gap-3 mb-2">
-                                            <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform -rotate-12 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">2</span></div>
-                                            <div className="w-12 h-16 bg-white rounded-xl flex flex-col items-center justify-center text-slate-800 shadow-lg transform rotate-6 z-10 border-b-4 border-slate-300"><span className="text-3xl font-black leading-none">4</span></div>
+                                            <div className={`w-12 h-16 rounded-xl flex flex-col items-center justify-center shadow-lg transform -rotate-12 border-b-4 ${currentDeckStyle.bgClass} ${currentDeckStyle.textClass}`}><span className="text-3xl font-black leading-none">2</span></div>
+                                            <div className={`w-12 h-16 rounded-xl flex flex-col items-center justify-center shadow-lg transform rotate-6 z-10 border-b-4 ${currentDeckStyle.bgClass} ${currentDeckStyle.textClass}`}><span className="text-3xl font-black leading-none">4</span></div>
                                         </div>
                                         <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">{t('title')}</h1>
                                         
@@ -1948,11 +2514,15 @@
                                         </button>
                                     </div>
                                     <div className="flex gap-2 w-full">
-                                        <button onClick={() => setShowRanking(true)} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95">
-                                            <Trophy size={18} /> {t('ranking')}
+                                        <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="flex-1 py-3 bg-slate-700 active:bg-slate-600 text-slate-200 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-transform active:scale-95 border border-slate-600">
+                                            <Trophy size={18} /> <span className="text-xs sm:text-sm">{t('ranking')}</span>
                                         </button>
-                                        <button onClick={() => setShowShop(true)} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex items-center justify-center gap-2 transition-transform active:scale-95 border border-indigo-600">
-                                            <ShoppingBag size={18} /> {t('shop')}
+                                        <button onClick={() => {SoundEngine.playClick(); setShowShop(true);}} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-transform active:scale-95 border border-indigo-600">
+                                            <ShoppingBag size={18} /> <span className="text-xs sm:text-sm">{t('shop')}</span>
+                                        </button>
+                                        <button onClick={() => {SoundEngine.playClick(); setShowMissions(true);}} className="flex-1 py-3 bg-fuchsia-700 active:bg-fuchsia-600 text-fuchsia-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-transform active:scale-95 border border-fuchsia-600 relative">
+                                            <ClipboardList size={18} /> <span className="text-xs sm:text-sm">{t('tab_missions')}</span>
+                                            {hasClaimableMission && <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>}
                                         </button>
                                     </div>
 
@@ -1990,7 +2560,7 @@
                                                     const used = isCardUsed(card.id);
                                                     return (
                                                         <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 hover:scale-105 z-20'}`}>
-                                                            <Card card={card} className={deckCardClass} onClick={() => handleSourceCardClick(card)} />
+                                                            <Card card={card} deckStyle={currentDeckStyle} className={deckCardClass} onClick={() => handleSourceCardClick(card)} />
                                                         </div>
                                                     );
                                                 })}
@@ -2018,17 +2588,17 @@
                                                     {/* 카드 공간 여유 확보로 괄호가 가려지지 않음 */}
                                                     <div 
                                                         onClick={() => toggleStartBracket(idx)} 
-                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'}`}
+                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 0 && startBrackets[0] === 0) || (tutorialPhase === 5 && idx === 0 && startBrackets[0] < 2)) ? 'guide-highlight' : ''}`}
                                                         style={{ textShadow: startBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
                                                     >
                                                         {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
                                                     </div>
                                                     
-                                                    {slotCard ? <Card card={slotCard} className={slotCardClass} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} className={slotCardClass} />}
+                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={slotCardClass} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} className={slotCardClass} />}
 
                                                     <div 
                                                         onClick={() => toggleEndBracket(idx)} 
-                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'}`}
+                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 2 && endBrackets[2] === 0)) ? 'guide-highlight' : ''}`}
                                                         style={{ textShadow: endBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
                                                     >
                                                         {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
