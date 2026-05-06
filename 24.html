@@ -213,9 +213,12 @@
                 bgmPlaying = true;
                 currentBgmType = type;
                 
+                // 음계 정의 (더 따뜻한 저음역대 추가)
+                const F3 = 174.6, G3 = 196.0, A3 = 220.0, B3 = 246.9;
                 const C4 = 261.6, D4 = 293.7, E4 = 329.6, F4 = 349.2, G4 = 392.0, A4 = 440.0, B4 = 493.9;
                 const C5 = 523.3, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784.0, A5 = 880.0;
 
+                // 1. 메인 화면 BGM (기존 발랄한 멜로디 유지)
                 const mainMelody = [
                     C5, G4, E4, G4, C5, G4, E4, 0,
                     D5, A4, F4, A4, D5, A4, F4, 0,
@@ -227,19 +230,17 @@
                     C5, E5, C5, G4, C5, 0,  0,  0
                 ];
 
+                // 2. 게임 화면 BGM (심리적 안정감을 주는 따뜻하고 느린 아르페지오)
+                // C -> Am -> F -> G 코드 진행
                 const gameMelody = [
-                    E5, C5, G4, C5, E5, C5, G4, C5,
-                    F5, C5, A4, C5, F5, C5, A4, C5,
-                    G5, D5, B4, D5, G5, D5, B4, D5,
-                    E5, C5, G4, C5, E5, C5, G4, 0,
-                    A4, C5, E5, C5, A4, C5, E5, C5,
-                    D5, F5, A5, F5, D5, F5, A5, F5,
-                    G5, D5, B4, D5, G5, D5, B4, D5,
-                    C5, G4, E4, G4, C5, 0,  0,  0
+                    C4, E4, G4, C5, G4, E4,
+                    A3, C4, E4, A4, E4, C4,
+                    F3, A3, C4, F4, C4, A3,
+                    G3, B3, D4, G4, D4, B3
                 ];
 
                 const melody = type === 'game' ? gameMelody : mainMelody;
-                const speed = type === 'game' ? 220 : 260; // 템포 늦춤
+                const speed = type === 'game' ? 400 : 260; // 인게임은 400ms로 매우 여유롭게 변경
                 let step = 0;
 
                 const playNote = () => {
@@ -248,29 +249,36 @@
                         return;
                     }
                     const freq = melody[step % melody.length];
-                    const finalVol = (type === 'game' ? 0.05 : 0.08) * vols.master * vols.bgm;
+                    // 게임 중엔 기본 볼륨도 살짝 줄여서 튀지 않게 함
+                    const finalVol = (type === 'game' ? 0.04 : 0.08) * vols.master * vols.bgm;
                     
                     if (freq > 0 && finalVol > 0) {
                         const osc = ctx.createOscillator();
                         const gain = ctx.createGain();
                         
-                        osc.type = type === 'game' ? 'triangle' : 'sine'; 
+                        // 게임 중엔 가장 부드러운 사인(sine)파 사용
+                        osc.type = 'sine'; 
                         
                         const filter = ctx.createBiquadFilter();
                         filter.type = "lowpass";
-                        filter.frequency.value = type === 'game' ? 1500 : 2500;
+                        // 고음역대를 더 깎아서 명상 음악처럼 둥글고 따뜻한 소리 연출
+                        filter.frequency.value = type === 'game' ? 600 : 2500; 
 
                         osc.frequency.setValueAtTime(freq, ctx.currentTime);
                         
+                        // 게임 중엔 음의 여운을 매우 길게 주어(3.5초) 공간감을 극대화
+                        const duration = type === 'game' ? 3.5 : (speed / 1000) * 0.9;
+
                         gain.gain.setValueAtTime(0, ctx.currentTime);
-                        gain.gain.linearRampToValueAtTime(finalVol, ctx.currentTime + 0.01); 
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (speed / 1000) * 0.9); 
+                        // 서서히 페이드 인, 페이드 아웃 되도록 앰비언트 성향 부여
+                        gain.gain.linearRampToValueAtTime(finalVol, ctx.currentTime + (type === 'game' ? 0.2 : 0.01)); 
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration); 
 
                         osc.connect(filter);
                         filter.connect(gain);
                         gain.connect(ctx.destination);
                         osc.start();
-                        osc.stop(ctx.currentTime + (speed / 1000));
+                        osc.stop(ctx.currentTime + duration);
                     }
                     step++;
                 };
@@ -311,7 +319,9 @@
         const ShoppingBag = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>;
         const Coins = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M17.12 12.23A6 6 0 0 1 5 13.5"></path></svg>;
         const ClipboardList = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>;
-        const SettingsIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+        
+        // SettingsIcon SVG 경로 수정 완료 (기본 톱니바퀴 모양)
+        const SettingsIcon = ({ size = 24, className }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 
         // --- Constants ---
         const SUITS = ['♠', '♥', '♦', '♣'];
@@ -332,7 +342,7 @@
             { id: 'cherry', price: 2000, textClass: 'text-rose-100', bgClass: 'bg-gradient-to-br from-rose-400 to-rose-600 border-rose-800' }
         ];
 
-        // --- Board Themes ---
+        // --- Board & Lobby Themes ---
         const BOARD_THEMES = [
             { id: 'classic', price: 0, bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', borderHalfClass: 'border-emerald-800/50', gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600', textMain: 'text-emerald-400', textMuted: 'text-emerald-400/50', textSuccess: 'text-emerald-300', textHint: 'text-emerald-200', btnBg: 'bg-emerald-600', btnActive: 'active:bg-emerald-700', btnBorder: 'border-emerald-400/30', toastBg: 'bg-emerald-900/95', toastBorder: 'border-emerald-400', toastText: 'text-emerald-900' },
             { id: 'ocean', price: 500, bgClass: 'bg-blue-900', borderClass: 'border-blue-800', borderHalfClass: 'border-blue-800/50', gradStart: '#1e3a8a', gradEnd: '#1d4ed8', previewClass: 'bg-blue-600', textMain: 'text-blue-400', textMuted: 'text-blue-400/50', textSuccess: 'text-blue-300', textHint: 'text-blue-200', btnBg: 'bg-blue-600', btnActive: 'active:bg-blue-700', btnBorder: 'border-blue-400/30', toastBg: 'bg-blue-900/95', toastBorder: 'border-blue-400', toastText: 'text-blue-900' },
@@ -342,7 +352,6 @@
             { id: 'midnight', price: 2500, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200', btnBg: 'bg-slate-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30', toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900' }
         ];
 
-        // --- Lobby Themes ---
         const LOBBY_THEMES = [
             { id: 'midnight', price: 0, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-800' },
             { id: 'classic', price: 500, bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600' },
@@ -1093,7 +1102,7 @@
             }
             return (
                 <div 
-                    className={`${bgClass} ${textClass} shadow-xl border-b-4 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform duration-150 ${className}`}
+                    className={`${bgClass} ${textClass} shadow-xl border-b-4 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden transition-all duration-150 active:scale-95 ${className}`}
                     onClick={() => { onClick(); }}
                 >
                     <span className="font-black text-3xl sm:text-4xl">{card.display}</span>
@@ -1168,7 +1177,10 @@
             });
             const [equippedLobby, setEquippedLobby] = useState(() => {
                 const saved = localStorage.getItem('make24_equipped_lobby');
-                return (saved && saved !== 'classic') ? saved : 'midnight';
+                if (saved === 'classic' && !localStorage.getItem('make24_owned_lobbies')?.includes('classic')) {
+                    return 'midnight';
+                }
+                return saved || 'midnight';
             });
 
             // --- Daily Missions State ---
@@ -1888,9 +1900,12 @@
                 }, 1500);
             };
 
+            // 모든 모달창 상태 확인 (모달이 켜져있으면 시간 멈춤)
+            const isAnyModalOpen = showSettings || showShop || showMissions || showRanking || showNicknameModal;
+
             useEffect(() => {
                 let timer;
-                if (gameState === 'playing' && !isPaused) {
+                if (gameState === 'playing' && !isPaused && !isAnyModalOpen) {
                     timer = setInterval(() => {
                         setTimeLeft((prev) => {
                             if (prev <= 1) {
@@ -1906,7 +1921,7 @@
                     }, 1000);
                 }
                 return () => clearInterval(timer);
-            }, [gameState, isPaused, sourceCards, tutorialPhase, score, streak, solvedCount]);
+            }, [gameState, isPaused, isAnyModalOpen, sourceCards, tutorialPhase, score, streak, solvedCount]);
 
             const handleSourceCardClick = (card) => {
                 if (gameState !== 'playing' && gameState !== 'tutorial') return;
@@ -2089,9 +2104,8 @@
                         return;
                     }
 
-                    // 오답 시 시간 차감 및 실패 로직
+                    // 오답 시 시간 차감 (5초) 및 콤보 초기화
                     if (timeLeft <= 5) {
-                        // 남은 시간이 5초 이하면 차감 시 0 이하가 되므로 게임 오버
                         setTimeLeft(0);
                         const answer = getBestSolution(sourceCards);
                         setSolutionStr(answer);
@@ -2099,7 +2113,6 @@
                         saveRecord(score, streak, solvedCount);
                         setGameState('fail'); 
                     } else {
-                        // 시간이 넉넉하면 5초 차감 및 콤보 초기화
                         setTimeLeft(prev => prev - 5);
                         setStreak(0);
                         setResultMessage(`${lastError || t('wrong_answer')} ⏰ -5s`);
@@ -2148,7 +2161,7 @@
                 <div className={`flex flex-col h-full bg-slate-900 overflow-hidden relative transition-all duration-300`}>
                     
                     {/* 1. 불타오르는 콤보 화면 이펙트 */}
-                    {gameState === 'playing' && streak >= 3 && !isPaused && (
+                    {gameState === 'playing' && streak >= 3 && !isPaused && !isAnyModalOpen && (
                         <div className="absolute inset-0 pointer-events-none z-[45] mix-blend-screen opacity-70">
                             <div 
                                 className={`w-full h-full transition-all duration-1000 ${streak >= 8 ? 'animate-pulse' : 'animate-[pulse_3s_ease-in-out_infinite]'}`}
@@ -2201,17 +2214,20 @@
                         <div className="flex items-center justify-end shrink-0 gap-1.5 sm:gap-2">
                             {/* 랭킹/일시정지 버튼 */}
                             {gameState === 'start' || gameState === 'tutorial_complete' ? (
-                                <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                                <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 hover:brightness-110 active:opacity-75 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-all duration-200 active:scale-95">
                                     <Trophy size={18} className="sm:w-[22px] sm:h-[22px]" />
                                 </button>
                             ) : (
-                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-white shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 hover:brightness-110 active:opacity-75 rounded-full text-white shadow-lg border border-slate-600 transition-all duration-200 active:scale-95">
                                     <Pause size={18} className="sm:w-[22px] sm:h-[22px]" />
                                 </button>
                             )}
                             
                             {/* 설정창 버튼 */}
-                            <button onClick={() => {SoundEngine.playClick(); setShowSettings(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                            <button onClick={() => {
+                                SoundEngine.playClick(); 
+                                setShowSettings(true);
+                            }} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 hover:brightness-110 active:opacity-75 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-all duration-200 active:scale-95">
                                 <SettingsIcon size={18} className="sm:w-[22px] sm:h-[22px]" />
                             </button>
                         </div>
@@ -2231,7 +2247,7 @@
                                 
                                 {/* 로비 좌측 상단 닉네임 표시 */}
                                 <div 
-                                    className={`absolute top-4 left-4 z-50 flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-700/50 shadow-sm backdrop-blur-sm transition-all duration-150 ${user ? 'cursor-pointer hover:bg-slate-800 active:scale-95 active:opacity-50' : 'cursor-default'}`} 
+                                    className={`absolute top-4 left-4 z-50 flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-700/50 shadow-sm backdrop-blur-sm animate-pop-scale transition-all duration-200 ${user ? 'cursor-pointer hover:bg-slate-800 active:scale-95 active:opacity-75' : 'cursor-default'}`} 
                                     onClick={() => {
                                         if (user) {
                                             SoundEngine.playClick(); 
@@ -2269,33 +2285,32 @@
                                             </div>
                                         )}
 
-                                        <button onClick={startTutorial} className={`w-full py-3 bg-emerald-700/90 backdrop-blur text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-emerald-500/50 relative ${showWelcomeTutorialHook ? 'animate-pulse ring-4 ring-yellow-400 z-50' : 'hover:brightness-110'}`}>
+                                        <button onClick={startTutorial} className={`w-full py-3 bg-emerald-700/90 backdrop-blur text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 active:opacity-75 border border-emerald-500/50 relative hover:brightness-110 ${showWelcomeTutorialHook ? 'animate-pulse ring-4 ring-yellow-400 z-50' : ''}`}>
                                             <CheckCircle size={18} /> {t('tutorial_btn')}
                                         </button>
-                                        <button onClick={initGame} className="w-full py-3.5 bg-blue-600/90 backdrop-blur text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-blue-500/50 hover:brightness-110">
+                                        <button onClick={initGame} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 active:opacity-75 hover:brightness-110 bg-blue-600/90 backdrop-blur border border-blue-500/50`}>
                                             <Play size={20} fill="currentColor" /> {t('game_start')}
                                         </button>
                                     </div>
                                     <div className="flex gap-2 w-full">
-                                        <button onClick={() => {SoundEngine.playClick(); setShowShop(true);}} className="flex-1 py-3 bg-indigo-700/80 backdrop-blur text-indigo-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-indigo-500/50 hover:brightness-110">
+                                        <button onClick={() => {SoundEngine.playClick(); setShowShop(true);}} className="flex-1 py-3 bg-indigo-700/80 backdrop-blur hover:brightness-110 active:opacity-75 text-indigo-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-200 active:scale-95 border border-indigo-500/50">
                                             <ShoppingBag size={18} /> <span className="text-xs sm:text-sm">{t('shop')}</span>
                                         </button>
-                                        <button onClick={() => {SoundEngine.playClick(); setShowMissions(true);}} className="flex-1 py-3 bg-fuchsia-700/80 backdrop-blur text-fuchsia-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-fuchsia-500/50 relative hover:brightness-110">
+                                        <button onClick={() => {SoundEngine.playClick(); setShowMissions(true);}} className="flex-1 py-3 bg-fuchsia-700/80 backdrop-blur hover:brightness-110 active:opacity-75 text-fuchsia-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-200 active:scale-95 border border-fuchsia-500/50 relative">
                                             <ClipboardList size={18} /> <span className="text-xs sm:text-sm">{t('tab_missions')}</span>
                                             {hasClaimableMission && <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>}
                                         </button>
                                     </div>
 
-                                    {/* 비로그인(게스트) 유저용 로그인 유도 안내 */}
+                                    {/* 로그인 안내 문구 */}
                                     {!user && (
-                                        <div className="mt-2 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 shadow-inner transition-all duration-150">
+                                        <div className="mt-2 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 shadow-inner transition-all duration-200">
                                             <User size={16} className="text-slate-400 shrink-0" />
                                             <span className="text-xs text-slate-300 font-medium break-keep leading-snug text-left">
                                                 {t('guest_login_prompt')}
                                             </span>
                                         </div>
                                     )}
-
                                 </div>
                                 {showWelcomeTutorialHook && <div className="absolute inset-0 bg-black/60 z-[5] pointer-events-none"></div>}
                             </div>
@@ -2320,7 +2335,7 @@
                                                     const used = isCardUsed(card.id);
                                                     return (
                                                         <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 z-20'}`}>
-                                                            <Card card={card} deckStyle={currentDeckStyle} className={`${deckCardClass} hover:brightness-110 active:scale-95`} onClick={() => handleSourceCardClick(card)} />
+                                                            <Card card={card} deckStyle={currentDeckStyle} className={`${deckCardClass} hover:brightness-110 transition-all duration-150 active:scale-95 active:opacity-75`} onClick={() => handleSourceCardClick(card)} />
                                                         </div>
                                                     );
                                                 })}
@@ -2355,7 +2370,7 @@
                                                     </div>
                                                     
                                                     {/* 슬롯 카드 (빈칸 다국어 지원 적용됨) */}
-                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={`${slotCardClass} hover:brightness-110 active:scale-95`} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
+                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={`${slotCardClass} hover:brightness-110 transition-all duration-150 active:scale-95 active:opacity-75`} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
 
                                                     {/* 오른쪽 괄호 */}
                                                     <div 
@@ -2438,13 +2453,13 @@
                                     {/* 확인/다음 버튼 */}
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
                                         {(gameState === 'playing' || gameState === 'tutorial') ? (
-                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110`}>
+                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} hover:brightness-110 active:opacity-75 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-all duration-200 active:scale-95`}>
                                                 <CheckCircle size={20} /> {t('check_answer')}
                                             </button>
                                         ) : null}
                                         
                                         {gameState === 'success' && (
-                                            <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 animate-bounce">
+                                            <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2 transition-all duration-200 active:scale-95">
                                                 {tutorialPhase > 0 ? (tutorialPhase === 5 ? t('tutorial_complete') : t('next_problem')) : t('next_problem')} <Play size={20} fill="currentColor" />
                                             </button>
                                         )}
@@ -2457,7 +2472,7 @@
                     {/* 5. 게임 오버레이/팝업 영역 */}
 
                     {/* 시간이 10초 이하일 때 나타나는 레드 얼럿 효과 */}
-                    {gameState === 'playing' && timeLeft <= 10 && !isPaused && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
+                    {gameState === 'playing' && timeLeft <= 10 && !isPaused && !isAnyModalOpen && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
                     
                     {/* A 카드 등장 안내 토스트 */}
                     {showACardToast && (
@@ -2491,7 +2506,7 @@
                             <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-sm shadow-2xl w-full">
                                 <h2 className="text-2xl font-black text-emerald-400 mb-4">{t('tutorial_complete')}</h2>
                                 <p className="text-base text-slate-200 mb-8 leading-relaxed">{t('tutorial_done_desc1')}<br/><b>{t('tutorial_done_desc2')}</b></p>
-                                <button onClick={goToLobby} className="w-full py-3 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                <button onClick={goToLobby} className="w-full py-3 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-200 active:scale-95">
                                     <Home size={20} fill="currentColor" /> {t('goto_lobby')}
                                 </button>
                             </div>
@@ -2520,16 +2535,16 @@
                                     <button 
                                         onClick={reviveGame} 
                                         disabled={(adState.revive || 0) >= 3 || adCooldowns.revive > 0}
-                                        className={`w-full py-3.5 font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 ${((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 text-white'}`}
+                                        className={`w-full py-3.5 font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 active:opacity-75 hover:brightness-110 ${((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 text-white'}`}
                                     >
                                         <VideoIcon size={20} className={((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? "text-slate-500" : "text-indigo-200"} /> 
                                         {t('revive_ad')} {adCooldowns.revive > 0 ? `(${adCooldowns.revive}s)` : `(${3 - (adState.revive || 0)}/3)`}
                                     </button>
                                     <div className="flex gap-2 w-full">
-                                        <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                        <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 hover:brightness-110 active:opacity-75 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600 transition-all duration-200 active:scale-95">
                                             <RotateCcw size={18} /> {t('restart')}
                                         </button>
-                                        <button onClick={goToLobby} className="flex-1 py-3.5 bg-rose-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-rose-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                        <button onClick={goToLobby} className="flex-1 py-3.5 bg-rose-700 hover:brightness-110 active:opacity-75 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-rose-600 transition-all duration-200 active:scale-95">
                                             <Home size={18} /> {t('exit_lobby')}
                                         </button>
                                     </div>
@@ -2543,13 +2558,13 @@
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
                             <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
-                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all duration-200 active:scale-95">
                                     <Play size={20} fill="currentColor" /> {t('continue')}
                                 </button>
-                                <button onClick={restartGame} className="w-full py-3.5 bg-slate-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                <button onClick={restartGame} className={`w-full py-3.5 bg-slate-700 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 transition-all duration-200 active:scale-95`}>
                                     <RotateCcw size={20} /> {t('restart')}
                                 </button>
-                                <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600 transition-all duration-200 active:scale-95">
                                     <Home size={20} /> {t('exit_lobby')}
                                 </button>
                             </div>
@@ -2565,7 +2580,7 @@
                                         <ClipboardList className="text-fuchsia-400" size={20} />
                                         <h2 className="text-lg font-bold">{t('tab_missions')}</h2>
                                     </div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowMissions(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowMissions(false);}} className="text-slate-400 p-1 hover:text-white transition-colors duration-150 active:scale-90"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                     {missionConfig.map(m => {
@@ -2573,7 +2588,7 @@
                                         const isComplete = progress >= m.target;
                                         const isClaimed = missions.claimed[m.id];
                                         return (
-                                            <div key={m.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                            <div key={m.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all h-[76px]">
                                                 <div className="flex-1 pr-3">
                                                     <div className="font-bold text-sm text-slate-100">{m.title}</div>
                                                     <div className="flex items-center justify-between mt-1">
@@ -2604,7 +2619,7 @@
                                     })}
                                 </div>
                                 <div className="p-4 border-t border-slate-700 bg-slate-800/80 rounded-b-3xl">
-                                    <div className="bg-gradient-to-r from-fuchsia-900/50 to-purple-900/50 rounded-xl p-4 flex justify-between items-center border border-fuchsia-500/30">
+                                    <div className="bg-gradient-to-r from-fuchsia-900/50 to-purple-900/50 rounded-xl p-4 flex justify-between items-center border border-fuchsia-500/30 h-[76px]">
                                         <div>
                                             <div className="font-black text-sm text-fuchsia-300">{t('mission_all')}</div>
                                             <div className="text-xs text-yellow-400 font-bold flex items-center gap-1 mt-1"><Coins size={12}/> 500 G</div>
@@ -2622,20 +2637,19 @@
                         </div>
                     )}
 
-                    {/* 상점 모달 (아이템/덱/배경/로비 테마) */}
+                    {/* 상점 모달 (고정 높이 적용) */}
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col h-[75vh] max-h-[600px]">
-                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center shrink-0">
                                     <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowShop(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowShop(false);}} className="text-slate-400 p-1 transition-colors hover:text-white active:scale-90"><CloseIcon size={20} /></button>
                                 </div>
                                 
-                                <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
+                                <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700 shrink-0">
                                     <div className="flex items-center gap-2"><Coins className="text-yellow-400" size={18} /><span className="font-bold text-yellow-400">{gold.toLocaleString()}</span></div>
                                 </div>
 
-                                {/* 상점 탭 필터 (4-way) */}
                                 <div className="flex border-b border-slate-700 bg-slate-800 shrink-0">
                                     <button onClick={() => {SoundEngine.playClick(); setShopTab('items');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'items' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_items')}</button>
                                     <button onClick={() => {SoundEngine.playClick(); setShopTab('decks');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'decks' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_decks')}</button>
@@ -2828,7 +2842,7 @@
                             <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[75vh]" onClick={e => e.stopPropagation()}>
                                 <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
                                     <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">{t('ranking')}</h2></div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowRanking(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowRanking(false);}} className="text-slate-400 p-1 transition-colors hover:text-white hover:scale-110 active:scale-90"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-750 border-b border-slate-700">
                                     <div className="flex items-center justify-between">
@@ -2930,7 +2944,7 @@
                                         <SettingsIcon className="text-slate-300" size={20} />
                                         <h2 className="text-lg font-bold text-white">{t('settings')}</h2>
                                     </div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowSettings(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowSettings(false);}} className="text-slate-400 p-1 transition-colors hover:text-white hover:scale-110 active:scale-90"><CloseIcon size={20} /></button>
                                 </div>
                                 
                                 <div className="p-5 space-y-6">
@@ -2985,7 +2999,7 @@
                         </div>
                     )}
 
-                    {/* 콤보 달성 중앙 이펙트 (누락 복구) */}
+                    {/* 콤보 달성 중앙 이펙트 */}
                     {comboFlash && (() => {
                         let exclamation = "!";
                         let flameColor = "text-orange-500";
