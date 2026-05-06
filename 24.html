@@ -111,7 +111,7 @@
         }
     </style>
 </head>
-<body class="checkerboard-bg text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col">
+<body class="text-white h-[100dvh] w-[100dvw] overflow-hidden select-none flex flex-col bg-slate-900">
     <div id="root" class="h-full w-full flex flex-col"></div>
 
     <script type="text/babel">
@@ -334,54 +334,22 @@
 
         // --- Board Themes ---
         const BOARD_THEMES = [
-            { 
-                id: 'classic', price: 0, 
-                bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', borderHalfClass: 'border-emerald-800/50', 
-                gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600', 
-                textMain: 'text-emerald-400', textMuted: 'text-emerald-400/50', textSuccess: 'text-emerald-300', textHint: 'text-emerald-200',
-                btnBg: 'bg-emerald-600', btnActive: 'active:bg-emerald-700', btnBorder: 'border-emerald-400/30',
-                toastBg: 'bg-emerald-900/95', toastBorder: 'border-emerald-400', toastText: 'text-emerald-900'
-            },
-            { 
-                id: 'ocean', price: 500, 
-                bgClass: 'bg-blue-900', borderClass: 'border-blue-800', borderHalfClass: 'border-blue-800/50', 
-                gradStart: '#1e3a8a', gradEnd: '#1d4ed8', previewClass: 'bg-blue-600', 
-                textMain: 'text-blue-400', textMuted: 'text-blue-400/50', textSuccess: 'text-blue-300', textHint: 'text-blue-200',
-                btnBg: 'bg-blue-600', btnActive: 'active:bg-blue-700', btnBorder: 'border-blue-400/30',
-                toastBg: 'bg-blue-900/95', toastBorder: 'border-blue-400', toastText: 'text-blue-900'
-            },
-            { 
-                id: 'berry', price: 1000, 
-                bgClass: 'bg-rose-900', borderClass: 'border-rose-800', borderHalfClass: 'border-rose-800/50', 
-                gradStart: '#881337', gradEnd: '#9f1239', previewClass: 'bg-rose-600', 
-                textMain: 'text-rose-400', textMuted: 'text-rose-400/50', textSuccess: 'text-rose-300', textHint: 'text-rose-200',
-                btnBg: 'bg-rose-600', btnActive: 'active:bg-rose-700', btnBorder: 'border-rose-400/30',
-                toastBg: 'bg-rose-900/95', toastBorder: 'border-rose-400', toastText: 'text-rose-900'
-            },
-            { 
-                id: 'royal', price: 1500, 
-                bgClass: 'bg-purple-900', borderClass: 'border-purple-800', borderHalfClass: 'border-purple-800/50', 
-                gradStart: '#581c87', gradEnd: '#6b21a8', previewClass: 'bg-purple-600', 
-                textMain: 'text-purple-400', textMuted: 'text-purple-400/50', textSuccess: 'text-purple-300', textHint: 'text-purple-200',
-                btnBg: 'bg-purple-600', btnActive: 'active:bg-purple-700', btnBorder: 'border-purple-400/30',
-                toastBg: 'bg-purple-900/95', toastBorder: 'border-purple-400', toastText: 'text-purple-900'
-            },
-            { 
-                id: 'sunset', price: 2000, 
-                bgClass: 'bg-orange-900', borderClass: 'border-orange-800', borderHalfClass: 'border-orange-800/50', 
-                gradStart: '#7c2d12', gradEnd: '#9a3412', previewClass: 'bg-orange-600', 
-                textMain: 'text-orange-400', textMuted: 'text-orange-400/50', textSuccess: 'text-orange-300', textHint: 'text-orange-200',
-                btnBg: 'bg-orange-600', btnActive: 'active:bg-orange-700', btnBorder: 'border-orange-400/30',
-                toastBg: 'bg-orange-900/95', toastBorder: 'border-orange-400', toastText: 'text-orange-900'
-            },
-            { 
-                id: 'midnight', price: 2500, 
-                bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', 
-                gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', 
-                textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200',
-                btnBg: 'bg-slate-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30',
-                toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900'
-            }
+            { id: 'classic', price: 0, bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', borderHalfClass: 'border-emerald-800/50', gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600', textMain: 'text-emerald-400', textMuted: 'text-emerald-400/50', textSuccess: 'text-emerald-300', textHint: 'text-emerald-200', btnBg: 'bg-emerald-600', btnActive: 'active:bg-emerald-700', btnBorder: 'border-emerald-400/30', toastBg: 'bg-emerald-900/95', toastBorder: 'border-emerald-400', toastText: 'text-emerald-900' },
+            { id: 'ocean', price: 500, bgClass: 'bg-blue-900', borderClass: 'border-blue-800', borderHalfClass: 'border-blue-800/50', gradStart: '#1e3a8a', gradEnd: '#1d4ed8', previewClass: 'bg-blue-600', textMain: 'text-blue-400', textMuted: 'text-blue-400/50', textSuccess: 'text-blue-300', textHint: 'text-blue-200', btnBg: 'bg-blue-600', btnActive: 'active:bg-blue-700', btnBorder: 'border-blue-400/30', toastBg: 'bg-blue-900/95', toastBorder: 'border-blue-400', toastText: 'text-blue-900' },
+            { id: 'berry', price: 1000, bgClass: 'bg-rose-900', borderClass: 'border-rose-800', borderHalfClass: 'border-rose-800/50', gradStart: '#881337', gradEnd: '#9f1239', previewClass: 'bg-rose-600', textMain: 'text-rose-400', textMuted: 'text-rose-400/50', textSuccess: 'text-rose-300', textHint: 'text-rose-200', btnBg: 'bg-rose-600', btnActive: 'active:bg-rose-700', btnBorder: 'border-rose-400/30', toastBg: 'bg-rose-900/95', toastBorder: 'border-rose-400', toastText: 'text-rose-900' },
+            { id: 'royal', price: 1500, bgClass: 'bg-purple-900', borderClass: 'border-purple-800', borderHalfClass: 'border-purple-800/50', gradStart: '#581c87', gradEnd: '#6b21a8', previewClass: 'bg-purple-600', textMain: 'text-purple-400', textMuted: 'text-purple-400/50', textSuccess: 'text-purple-300', textHint: 'text-purple-200', btnBg: 'bg-purple-600', btnActive: 'active:bg-purple-700', btnBorder: 'border-purple-400/30', toastBg: 'bg-purple-900/95', toastBorder: 'border-purple-400', toastText: 'text-purple-900' },
+            { id: 'sunset', price: 2000, bgClass: 'bg-orange-900', borderClass: 'border-orange-800', borderHalfClass: 'border-orange-800/50', gradStart: '#7c2d12', gradEnd: '#9a3412', previewClass: 'bg-orange-600', textMain: 'text-orange-400', textMuted: 'text-orange-400/50', textSuccess: 'text-orange-300', textHint: 'text-orange-200', btnBg: 'bg-orange-600', btnActive: 'active:bg-orange-700', btnBorder: 'border-orange-400/30', toastBg: 'bg-orange-900/95', toastBorder: 'border-orange-400', toastText: 'text-orange-900' },
+            { id: 'midnight', price: 2500, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200', btnBg: 'bg-slate-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30', toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900' }
+        ];
+
+        // --- Lobby Themes ---
+        const LOBBY_THEMES = [
+            { id: 'midnight', price: 0, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-800' },
+            { id: 'classic', price: 500, bgClass: 'bg-emerald-900', borderClass: 'border-emerald-800', gradStart: '#064e3b', gradEnd: '#065f46', previewClass: 'bg-emerald-600' },
+            { id: 'ocean', price: 500, bgClass: 'bg-blue-900', borderClass: 'border-blue-800', gradStart: '#1e3a8a', gradEnd: '#1d4ed8', previewClass: 'bg-blue-600' },
+            { id: 'berry', price: 1000, bgClass: 'bg-rose-900', borderClass: 'border-rose-800', gradStart: '#881337', gradEnd: '#9f1239', previewClass: 'bg-rose-600' },
+            { id: 'royal', price: 1500, bgClass: 'bg-purple-900', borderClass: 'border-purple-800', gradStart: '#581c87', gradEnd: '#6b21a8', previewClass: 'bg-purple-600' },
+            { id: 'sunset', price: 2000, bgClass: 'bg-orange-900', borderClass: 'border-orange-800', gradStart: '#7c2d12', gradEnd: '#9a3412', previewClass: 'bg-orange-600' }
         ];
         
         // --- i18n Translations ---
@@ -413,7 +381,8 @@
                 item_shop: "Item Shop",
                 tab_items: "Items",
                 tab_decks: "Card Decks",
-                tab_boards: "Board Themes",
+                tab_boards: "Game Themes",
+                tab_lobbies: "Lobby Themes",
                 equip: "Equip",
                 equipped: "Equipped",
                 owned: "Owned",
@@ -534,7 +503,8 @@
                 item_shop: "상점",
                 tab_items: "아이템",
                 tab_decks: "카드 덱",
-                tab_boards: "배경 테마",
+                tab_boards: "게임 배경",
+                tab_lobbies: "로비 배경",
                 equip: "장착",
                 equipped: "장착됨",
                 owned: "보유중",
@@ -655,7 +625,8 @@
                 item_shop: "ショップ",
                 tab_items: "アイテム",
                 tab_decks: "カードデッキ",
-                tab_boards: "背景テーマ",
+                tab_boards: "ゲームテーマ",
+                tab_lobbies: "ロビー背景",
                 equip: "装備",
                 equipped: "装備中",
                 owned: "所持",
@@ -776,7 +747,8 @@
                 item_shop: "商店",
                 tab_items: "道具",
                 tab_decks: "卡牌外觀",
-                tab_boards: "背景主題",
+                tab_boards: "遊戲主題",
+                tab_lobbies: "大廳背景",
                 equip: "裝備",
                 equipped: "已裝備",
                 owned: "已擁有",
@@ -1114,14 +1086,14 @@
 
             if (isPlaceholder) {
                 return (
-                    <div className={`border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-xs text-white/50 font-bold backdrop-blur-sm transition-all ${className}`}>
-                        {placeholderText || '빈칸'}
+                    <div className={`border-2 border-dashed border-white/30 flex items-center justify-center bg-white/5 text-[10px] sm:text-xs text-white/50 font-bold backdrop-blur-sm transition-all duration-150 ${className}`}>
+                        {placeholderText || 'EMPTY'}
                     </div>
                 );
             }
             return (
                 <div 
-                    className={`${bgClass} ${textClass} shadow-xl border-b-4 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform ${className}`}
+                    className={`${bgClass} ${textClass} shadow-xl border-b-4 flex flex-col items-center justify-center cursor-pointer relative z-10 overflow-hidden active:scale-95 transition-transform duration-150 ${className}`}
                     onClick={() => { onClick(); }}
                 >
                     <span className="font-black text-3xl sm:text-4xl">{card.display}</span>
@@ -1164,7 +1136,7 @@
             const [showTimePlusEffect, setShowTimePlusEffect] = useState(false);
 
             const [showShop, setShowShop] = useState(false);
-            const [shopTab, setShopTab] = useState('items'); // 'items' | 'decks' | 'boards'
+            const [shopTab, setShopTab] = useState('items'); // 'items' | 'decks' | 'boards' | 'lobbies'
             const [gold, setGold] = useState(() => parseInt(localStorage.getItem('make24_gold') || '1000', 10));
             
             const [showSettings, setShowSettings] = useState(false);
@@ -1173,10 +1145,9 @@
                 return saved ? JSON.parse(saved) : { master: 100, bgm: 100, sfx: 100 };
             });
 
-            // --- Sound State ---
             const [isMuted, setIsMuted] = useState(() => localStorage.getItem('make24_muted') === 'true');
 
-            // --- Deck & Board Theme State ---
+            // --- Deck & Board & Lobby Theme State ---
             const [ownedDecks, setOwnedDecks] = useState(() => {
                 const saved = localStorage.getItem('make24_owned_decks');
                 return saved ? JSON.parse(saved) : ['default'];
@@ -1188,6 +1159,17 @@
                 return saved ? JSON.parse(saved) : ['classic'];
             });
             const [equippedBoard, setEquippedBoard] = useState(() => localStorage.getItem('make24_equipped_board') || 'classic');
+
+            const [ownedLobbies, setOwnedLobbies] = useState(() => {
+                const saved = localStorage.getItem('make24_owned_lobbies');
+                let parsed = saved ? JSON.parse(saved) : [];
+                if (!parsed.includes('midnight')) parsed.push('midnight');
+                return parsed;
+            });
+            const [equippedLobby, setEquippedLobby] = useState(() => {
+                const saved = localStorage.getItem('make24_equipped_lobby');
+                return (saved && saved !== 'classic') ? saved : 'midnight';
+            });
 
             // --- Daily Missions State ---
             const [showMissions, setShowMissions] = useState(false);
@@ -1252,6 +1234,7 @@
             const isCardUsed = (cardId) => slots.some(s => s && s.id === cardId);
             const currentDeckStyle = CARD_DECKS.find(d => d.id === equippedDeck) || CARD_DECKS[0];
             const currentBoardTheme = BOARD_THEMES.find(b => b.id === equippedBoard) || BOARD_THEMES[0];
+            const currentLobbyTheme = LOBBY_THEMES.find(b => b.id === equippedLobby) || LOBBY_THEMES[0];
 
             // 데일리 미션 업데이트 헬퍼
             const updateMission = useCallback((type, value, isCumulative = false) => {
@@ -1515,7 +1498,9 @@
                 localStorage.setItem('make24_equipped_deck', equippedDeck);
                 localStorage.setItem('make24_owned_boards', JSON.stringify(ownedBoards));
                 localStorage.setItem('make24_equipped_board', equippedBoard);
-            }, [ownedDecks, equippedDeck, ownedBoards, equippedBoard]);
+                localStorage.setItem('make24_owned_lobbies', JSON.stringify(ownedLobbies));
+                localStorage.setItem('make24_equipped_lobby', equippedLobby);
+            }, [ownedDecks, equippedDeck, ownedBoards, equippedBoard, ownedLobbies, equippedLobby]);
 
             const saveRecord = async (currentScore, currentCombo, currentSolved) => {
                 if (!user || !db || !firebaseApi || user.uid.startsWith('guest-') || user.uid.startsWith('offline-')) return; 
@@ -1854,6 +1839,15 @@
                 }
             };
 
+            const handleBuyLobby = (lobbyId, price) => {
+                SoundEngine.playClick();
+                if (gold >= price) {
+                    setGold(prev => prev - price);
+                    setOwnedLobbies(prev => [...prev, lobbyId]);
+                    setEquippedLobby(lobbyId);
+                }
+            };
+
             const watchAd = (type) => {
                 SoundEngine.playClick();
                 const maxViews = type === 'energy' ? 5 : 3;
@@ -2095,9 +2089,21 @@
                         return;
                     }
 
-                    setResultMessage(lastError || t('wrong_answer'));
-                    saveRecord(score, streak, solvedCount);
-                    setGameState('fail'); 
+                    // 오답 시 시간 차감 및 실패 로직
+                    if (timeLeft <= 5) {
+                        // 남은 시간이 5초 이하면 차감 시 0 이하가 되므로 게임 오버
+                        setTimeLeft(0);
+                        const answer = getBestSolution(sourceCards);
+                        setSolutionStr(answer);
+                        setResultMessage(lastError || t('wrong_answer'));
+                        saveRecord(score, streak, solvedCount);
+                        setGameState('fail'); 
+                    } else {
+                        // 시간이 넉넉하면 5초 차감 및 콤보 초기화
+                        setTimeLeft(prev => prev - 5);
+                        setStreak(0);
+                        setResultMessage(`${lastError || t('wrong_answer')} ⏰ -5s`);
+                    }
                 }
             };
 
@@ -2195,17 +2201,17 @@
                         <div className="flex items-center justify-end shrink-0 gap-1.5 sm:gap-2">
                             {/* 랭킹/일시정지 버튼 */}
                             {gameState === 'start' || gameState === 'tutorial_complete' ? (
-                                <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                <button onClick={() => {SoundEngine.playClick(); setShowRanking(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-yellow-400 shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
                                     <Trophy size={18} className="sm:w-[22px] sm:h-[22px]" />
                                 </button>
                             ) : (
-                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 rounded-full text-white shadow-lg border border-slate-600 transition-transform active:scale-95">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-white shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
                                     <Pause size={18} className="sm:w-[22px] sm:h-[22px]" />
                                 </button>
                             )}
                             
                             {/* 설정창 버튼 */}
-                            <button onClick={() => {SoundEngine.playClick(); setShowSettings(true);}} className="p-2.5 sm:p-3 bg-slate-700 active:bg-slate-600 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-transform active:scale-95">
+                            <button onClick={() => {SoundEngine.playClick(); setShowSettings(true);}} className="p-2.5 sm:p-3 bg-slate-700 rounded-full text-slate-300 shadow-lg border border-slate-600 transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
                                 <SettingsIcon size={18} className="sm:w-[22px] sm:h-[22px]" />
                             </button>
                         </div>
@@ -2216,11 +2222,30 @@
                         <div className="fixed inset-0 z-[35]" onClick={() => setActiveOpSelector(null)} />
                     )}
 
-                    {/* 4. 메인 게임 영역 (종스크롤 전용 레이아웃) */}
+                    {/* 4. 메인 게임 영역 */}
                     <div className="flex-1 flex flex-col relative overflow-hidden">
+                        
+                        {/* 로비 화면 */}
                         {gameState === 'start' ? (
-                            <div className="flex items-center justify-center w-full h-full p-4 relative">
-                                <div className="w-full max-w-sm text-center space-y-5 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl relative z-10">
+                            <div className={`flex items-center justify-center w-full h-full p-4 relative ${currentLobbyTheme.bgClass} transition-colors duration-500`} style={{background: `linear-gradient(to bottom, ${currentLobbyTheme.gradStart}, ${currentLobbyTheme.gradEnd})`}}>
+                                
+                                {/* 로비 좌측 상단 닉네임 표시 */}
+                                <div 
+                                    className={`absolute top-4 left-4 z-50 flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-700/50 shadow-sm backdrop-blur-sm transition-all duration-150 ${user ? 'cursor-pointer hover:bg-slate-800 active:scale-95 active:opacity-50' : 'cursor-default'}`} 
+                                    onClick={() => {
+                                        if (user) {
+                                            SoundEngine.playClick(); 
+                                            setShowNicknameModal(true);
+                                        }
+                                    }}
+                                >
+                                    <User size={14} className="text-slate-400" />
+                                    <span className="text-xs font-bold text-slate-200">
+                                        {nickname}
+                                    </span>
+                                </div>
+
+                                <div className="w-full max-w-sm text-center space-y-5 bg-slate-800/80 backdrop-blur-sm p-6 rounded-3xl border border-slate-700/50 shadow-2xl relative z-10">
                                     <div className="flex flex-col items-center justify-center gap-2">
                                         <div className="flex justify-center gap-3 mb-2">
                                             <div className={`w-12 h-16 rounded-xl flex flex-col items-center justify-center shadow-lg transform -rotate-12 border-b-4 ${currentDeckStyle.bgClass} ${currentDeckStyle.textClass}`}><span className="text-3xl font-black leading-none">2</span></div>
@@ -2228,13 +2253,13 @@
                                         </div>
                                         <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm">{t('title')}</h1>
                                     </div>
-                                    <p className="text-slate-300 text-xs flex flex-col gap-1 px-4">
+                                    <p className="text-slate-200 text-xs flex flex-col gap-1 px-4">
                                         <span>{t('subtitle1')}<br/>{t('subtitle2')}</span>
-                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/30 py-1 px-2 rounded-full">{t('a_card_info')}</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold mt-1 bg-emerald-900/50 py-1 px-2 rounded-full border border-emerald-500/30">{t('a_card_info')}</span>
                                     </p>
                                     <div className="flex flex-col gap-3 w-full pt-1 relative">
                                         
-                                        {/* 환영 안내 메시지 & 화살표 (애니메이션 분리 적용) */}
+                                        {/* 환영 안내 메시지 */}
                                         {showWelcomeTutorialHook && (
                                             <div className="absolute -top-[4.5rem] left-1/2 -translate-x-1/2 z-[80] w-max max-w-[90vw] pointer-events-none">
                                                 <div className="bg-yellow-500 text-slate-900 font-black text-sm py-2 px-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.6)] border-2 border-yellow-300 flex flex-col items-center whitespace-normal break-keep text-center animate-pop-scale">
@@ -2244,34 +2269,34 @@
                                             </div>
                                         )}
 
-                                        <button onClick={startTutorial} className={`w-full py-3 bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 border border-emerald-600 relative ${showWelcomeTutorialHook ? 'animate-pulse ring-4 ring-yellow-400 z-50' : 'hover:bg-emerald-600'}`}>
+                                        <button onClick={startTutorial} className={`w-full py-3 bg-emerald-700/90 backdrop-blur text-white font-bold text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-emerald-500/50 relative ${showWelcomeTutorialHook ? 'animate-pulse ring-4 ring-yellow-400 z-50' : 'hover:brightness-110'}`}>
                                             <CheckCircle size={18} /> {t('tutorial_btn')}
                                         </button>
-                                        <button onClick={initGame} className={`w-full py-3.5 text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 bg-blue-600 active:bg-blue-700`}>
+                                        <button onClick={initGame} className="w-full py-3.5 bg-blue-600/90 backdrop-blur text-white font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-blue-500/50 hover:brightness-110">
                                             <Play size={20} fill="currentColor" /> {t('game_start')}
                                         </button>
                                     </div>
                                     <div className="flex gap-2 w-full">
-                                        <button onClick={() => {SoundEngine.playClick(); setShowShop(true);}} className="flex-1 py-3 bg-indigo-700 active:bg-indigo-600 text-indigo-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-transform active:scale-95 border border-indigo-600">
+                                        <button onClick={() => {SoundEngine.playClick(); setShowShop(true);}} className="flex-1 py-3 bg-indigo-700/80 backdrop-blur text-indigo-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-indigo-500/50 hover:brightness-110">
                                             <ShoppingBag size={18} /> <span className="text-xs sm:text-sm">{t('shop')}</span>
                                         </button>
-                                        <button onClick={() => {SoundEngine.playClick(); setShowMissions(true);}} className="flex-1 py-3 bg-fuchsia-700 active:bg-fuchsia-600 text-fuchsia-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-transform active:scale-95 border border-fuchsia-600 relative">
+                                        <button onClick={() => {SoundEngine.playClick(); setShowMissions(true);}} className="flex-1 py-3 bg-fuchsia-700/80 backdrop-blur text-fuchsia-100 font-bold text-sm rounded-xl shadow flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all duration-150 active:scale-95 active:opacity-50 border border-fuchsia-500/50 relative hover:brightness-110">
                                             <ClipboardList size={18} /> <span className="text-xs sm:text-sm">{t('tab_missions')}</span>
-                                            {hasClaimableMission && <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>}
+                                            {hasClaimableMission && <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>}
                                         </button>
                                     </div>
 
                                     {/* 비로그인(게스트) 유저용 로그인 유도 안내 */}
                                     {!user && (
-                                        <div className="mt-2 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 shadow-inner animate-pop-scale">
+                                        <div className="mt-2 bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 shadow-inner transition-all duration-150">
                                             <User size={16} className="text-slate-400 shrink-0" />
                                             <span className="text-xs text-slate-300 font-medium break-keep leading-snug text-left">
                                                 {t('guest_login_prompt')}
                                             </span>
                                         </div>
                                     )}
+
                                 </div>
-                                {/* 환영 모드일 때 로비 뒷배경 어둡게 처리 */}
                                 {showWelcomeTutorialHook && <div className="absolute inset-0 bg-black/60 z-[5] pointer-events-none"></div>}
                             </div>
                         ) : (
@@ -2294,8 +2319,8 @@
                                                 {sourceCards.map((card, idx) => {
                                                     const used = isCardUsed(card.id);
                                                     return (
-                                                        <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 hover:scale-105 z-20'}`}>
-                                                            <Card card={card} deckStyle={currentDeckStyle} className={deckCardClass} onClick={() => handleSourceCardClick(card)} />
+                                                        <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 z-20'}`}>
+                                                            <Card card={card} deckStyle={currentDeckStyle} className={`${deckCardClass} hover:brightness-110 active:scale-95`} onClick={() => handleSourceCardClick(card)} />
                                                         </div>
                                                     );
                                                 })}
@@ -2323,19 +2348,19 @@
                                                     {/* 왼쪽 괄호 */}
                                                     <div 
                                                         onClick={() => toggleStartBracket(idx)} 
-                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 0 && startBrackets[0] === 0) || (tutorialPhase === 5 && idx === 0 && startBrackets[0] < 2)) ? 'guide-highlight' : ''}`}
+                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 0 && startBrackets[0] === 0) || (tutorialPhase === 5 && idx === 0 && startBrackets[0] < 2)) ? 'guide-highlight' : ''}`}
                                                         style={{ textShadow: startBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
                                                     >
                                                         {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
                                                     </div>
                                                     
-                                                    {/* 슬롯 카드 렌더링 (빈칸 다국어 지원 적용됨) */}
-                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={slotCardClass} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
+                                                    {/* 슬롯 카드 (빈칸 다국어 지원 적용됨) */}
+                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={`${slotCardClass} hover:brightness-110 active:scale-95`} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
 
                                                     {/* 오른쪽 괄호 */}
                                                     <div 
                                                         onClick={() => toggleEndBracket(idx)} 
-                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-200 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 2 && endBrackets[2] === 0)) ? 'guide-highlight' : ''}`}
+                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 2 && endBrackets[2] === 0)) ? 'guide-highlight' : ''}`}
                                                         style={{ textShadow: endBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
                                                     >
                                                         {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
@@ -2352,10 +2377,10 @@
                                                                     e.stopPropagation(); 
                                                                     selectOperator(idx, op); 
                                                                 }}
-                                                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 ${
+                                                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${
                                                                     operators[idx] === op 
                                                                     ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
-                                                                    : OPERATOR_STYLES_INACTIVE[op] + ' hover:scale-105 opacity-60 hover:opacity-100'
+                                                                    : OPERATOR_STYLES_INACTIVE[op] + ' opacity-60 hover:opacity-100'
                                                                 }`}
                                                             >
                                                                 {OPERATOR_DISPLAY[op]}
@@ -2380,8 +2405,8 @@
                                     {/* 아이템 버튼 */}
                                     {(gameState === 'playing' || gameState === 'tutorial') && !isPaused && (
                                         <div className="flex justify-center gap-6 sm:gap-8 w-full max-w-sm mx-auto mb-2">
-                                            <button onClick={useTimeItem} disabled={timeItemsLeft === 0} className="flex flex-col items-center group">
-                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${timeItemsLeft > 0 ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                            <button onClick={useTimeItem} disabled={timeItemsLeft === 0} className="flex flex-col items-center group transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-colors ${timeItemsLeft > 0 ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
                                                     <ClockPlus size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
@@ -2389,8 +2414,8 @@
                                                     <span className={`text-lg font-black ${timeItemsLeft > 0 ? 'text-indigo-300' : 'text-slate-500'}`}>{timeItemsLeft}</span>
                                                 </div>
                                             </button>
-                                            <button onClick={useHint} disabled={hintsLeft === 0} className="flex flex-col items-center group">
-                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${hintsLeft > 0 ? 'bg-yellow-600 border-yellow-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                            <button onClick={useHint} disabled={hintsLeft === 0} className="flex flex-col items-center group transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-colors ${hintsLeft > 0 ? 'bg-yellow-600 border-yellow-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
                                                     <Lightbulb size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
@@ -2398,8 +2423,8 @@
                                                     <span className={`text-lg font-black ${hintsLeft > 0 ? 'text-yellow-300' : 'text-slate-500'}`}>{hintsLeft}</span>
                                                 </div>
                                             </button>
-                                            <button onClick={usePassItem} disabled={passItemsLeft === 0} className="flex flex-col items-center group">
-                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-transform active:scale-90 ${passItemsLeft > 0 ? 'bg-rose-600 border-rose-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
+                                            <button onClick={usePassItem} disabled={passItemsLeft === 0} className="flex flex-col items-center group transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110">
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl border-2 shadow-lg transition-colors ${passItemsLeft > 0 ? 'bg-rose-600 border-rose-400 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-500'}`}>
                                                     <FastForward size={28} />
                                                 </div>
                                                 <div className="mt-2 text-center leading-tight">
@@ -2413,13 +2438,13 @@
                                     {/* 확인/다음 버튼 */}
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
                                         {(gameState === 'playing' || gameState === 'tutorial') ? (
-                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} ${currentBoardTheme.btnActive} disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-colors duration-500`}>
+                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110`}>
                                                 <CheckCircle size={20} /> {t('check_answer')}
                                             </button>
                                         ) : null}
                                         
                                         {gameState === 'success' && (
-                                            <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2">
+                                            <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 animate-bounce">
                                                 {tutorialPhase > 0 ? (tutorialPhase === 5 ? t('tutorial_complete') : t('next_problem')) : t('next_problem')} <Play size={20} fill="currentColor" />
                                             </button>
                                         )}
@@ -2466,7 +2491,7 @@
                             <div className="bg-slate-800 border-2 border-emerald-500 rounded-3xl p-8 max-w-sm shadow-2xl w-full">
                                 <h2 className="text-2xl font-black text-emerald-400 mb-4">{t('tutorial_complete')}</h2>
                                 <p className="text-base text-slate-200 mb-8 leading-relaxed">{t('tutorial_done_desc1')}<br/><b>{t('tutorial_done_desc2')}</b></p>
-                                <button onClick={goToLobby} className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                                <button onClick={goToLobby} className="w-full py-3 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                     <Home size={20} fill="currentColor" /> {t('goto_lobby')}
                                 </button>
                             </div>
@@ -2495,16 +2520,16 @@
                                     <button 
                                         onClick={reviveGame} 
                                         disabled={(adState.revive || 0) >= 3 || adCooldowns.revive > 0}
-                                        className={`w-full py-3.5 font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all ${((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white'}`}
+                                        className={`w-full py-3.5 font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 ${((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 text-white'}`}
                                     >
                                         <VideoIcon size={20} className={((adState.revive || 0) >= 3 || adCooldowns.revive > 0) ? "text-slate-500" : "text-indigo-200"} /> 
                                         {t('revive_ad')} {adCooldowns.revive > 0 ? `(${adCooldowns.revive}s)` : `(${3 - (adState.revive || 0)}/3)`}
                                     </button>
                                     <div className="flex gap-2 w-full">
-                                        <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600">
+                                        <button onClick={restartGame} className="flex-1 py-3.5 bg-slate-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                             <RotateCcw size={18} /> {t('restart')}
                                         </button>
-                                        <button onClick={goToLobby} className="flex-1 py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-rose-600">
+                                        <button onClick={goToLobby} className="flex-1 py-3.5 bg-rose-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 border border-rose-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                             <Home size={18} /> {t('exit_lobby')}
                                         </button>
                                     </div>
@@ -2518,13 +2543,13 @@
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
                             <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
-                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3">
+                                <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                     <Play size={20} fill="currentColor" /> {t('continue')}
                                 </button>
-                                <button onClick={restartGame} className={`w-full py-3.5 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600`}>
+                                <button onClick={restartGame} className="w-full py-3.5 bg-slate-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-slate-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                     <RotateCcw size={20} /> {t('restart')}
                                 </button>
-                                <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 hover:bg-rose-600 active:bg-rose-500 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600">
+                                <button onClick={goToLobby} className="w-full py-3.5 bg-rose-700 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 border border-rose-600 transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                     <Home size={20} /> {t('exit_lobby')}
                                 </button>
                             </div>
@@ -2540,7 +2565,7 @@
                                         <ClipboardList className="text-fuchsia-400" size={20} />
                                         <h2 className="text-lg font-bold">{t('tab_missions')}</h2>
                                     </div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowMissions(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowMissions(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                     {missionConfig.map(m => {
@@ -2565,7 +2590,7 @@
                                                             {t('claimed')}
                                                         </button>
                                                     ) : isComplete ? (
-                                                        <button onClick={() => claimMission(m.id, m.reward)} className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors animate-pulse">
+                                                        <button onClick={() => claimMission(m.id, m.reward)} className="px-4 py-1.5 bg-yellow-600 text-white rounded-lg font-bold text-xs shadow-md transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 animate-pulse">
                                                             {t('claim')}
                                                         </button>
                                                     ) : (
@@ -2587,7 +2612,7 @@
                                         <button 
                                             onClick={claimAll} 
                                             disabled={!allClaimed || missions.claimed.all}
-                                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-colors ${missions.claimed.all ? 'bg-slate-800/50 text-slate-500 border border-slate-600/50 cursor-default' : allClaimed ? 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white animate-pulse' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-all duration-150 ${missions.claimed.all ? 'bg-slate-800/50 text-slate-500 border border-slate-600/50 cursor-default' : allClaimed ? 'bg-fuchsia-600 text-white active:scale-95 active:opacity-50 hover:brightness-110 animate-pulse' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
                                         >
                                             {missions.claimed.all ? t('claimed') : t('claim')}
                                         </button>
@@ -2597,81 +2622,83 @@
                         </div>
                     )}
 
-                    {/* 상점 모달 (아이템/덱/배경 테마) */}
+                    {/* 상점 모달 (아이템/덱/배경/로비 테마) */}
                     {showShop && (
                         <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
-                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
+                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col h-[75vh] max-h-[600px]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
                                     <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowShop(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowShop(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 
                                 <div className="p-3 bg-slate-900/50 flex justify-center items-center border-b border-slate-700">
                                     <div className="flex items-center gap-2"><Coins className="text-yellow-400" size={18} /><span className="font-bold text-yellow-400">{gold.toLocaleString()}</span></div>
                                 </div>
 
-                                <div className="flex border-b border-slate-700 bg-slate-800">
-                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('items');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'items' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_items')}</button>
-                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('decks');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'decks' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_decks')}</button>
-                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('boards');}} className={`flex-1 py-3 text-sm font-bold text-center transition-colors ${shopTab === 'boards' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_boards')}</button>
+                                {/* 상점 탭 필터 (4-way) */}
+                                <div className="flex border-b border-slate-700 bg-slate-800 shrink-0">
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('items');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'items' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_items')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('decks');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'decks' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_decks')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('boards');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'boards' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_boards')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShopTab('lobbies');}} className={`flex-1 py-3 text-[10px] sm:text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${shopTab === 'lobbies' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_lobbies')}</button>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                     {shopTab === 'items' ? (
                                         <>
-                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2.5 bg-rose-500 rounded-lg"><Heart size={20} className="text-white fill-white"/></div>
                                                     <div><div className="font-bold text-sm">{t('energy_x3')}</div><div className="text-[10px] text-slate-400">{t('get_by_ad')}</div></div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                                    <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                    <button onClick={() => watchAd('energy')} disabled={adState.energy >= 5 || adCooldowns.energy > 0} className={`px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all duration-150 ${adState.energy < 5 && adCooldowns.energy === 0 ? 'bg-blue-600 text-white shadow-md active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                         <VideoIcon size={14} className={adState.energy < 5 && adCooldowns.energy === 0 ? "text-blue-200" : "text-slate-400"} /> 
                                                         {adCooldowns.energy > 0 ? `${adCooldowns.energy}${t('wait_sec')}` : `${5 - adState.energy}/5`}
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2.5 bg-yellow-600 rounded-lg"><Lightbulb size={20} className="text-white"/></div>
                                                     <div><div className="font-bold text-sm">{t('hint_x3')}</div><div className="text-[10px] text-slate-400">{t('hint_desc')}</div></div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                                    <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                    <button onClick={() => watchAd('hint')} disabled={adState.hint >= 3 || adCooldowns.hint > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 ${adState.hint < 3 && adCooldowns.hint === 0 ? 'bg-blue-600 text-white shadow-md active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                         <VideoIcon size={14} className={adState.hint < 3 && adCooldowns.hint === 0 ? "text-blue-200" : "text-slate-400"} /> 
                                                         {adCooldowns.hint > 0 ? `${adCooldowns.hint}s` : `${3 - adState.hint}/3`}
                                                     </button>
-                                                    <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 hover:bg-yellow-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                    <button onClick={() => buyItem('hint', 100)} className="px-2 py-1.5 bg-slate-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 shadow-md active:scale-95 active:opacity-50 hover:brightness-110">
                                                         <Coins size={12} className="text-yellow-400" /> 100
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2.5 bg-indigo-600 rounded-lg"><ClockPlus size={20} className="text-white"/></div>
                                                     <div><div className="font-bold text-sm">{t('time_x3')}</div><div className="text-[10px] text-slate-400">{t('time_desc')}</div></div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                                    <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                    <button onClick={() => watchAd('time')} disabled={adState.time >= 3 || adCooldowns.time > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 ${adState.time < 3 && adCooldowns.time === 0 ? 'bg-blue-600 text-white shadow-md active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                         <VideoIcon size={14} className={adState.time < 3 && adCooldowns.time === 0 ? "text-blue-200" : "text-slate-400"} /> 
                                                         {adCooldowns.time > 0 ? `${adCooldowns.time}s` : `${3 - adState.time}/3`}
                                                     </button>
-                                                    <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 hover:bg-indigo-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                    <button onClick={() => buyItem('time', 150)} className="px-2 py-1.5 bg-slate-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 shadow-md active:scale-95 active:opacity-50 hover:brightness-110">
                                                         <Coins size={12} className="text-yellow-400" /> 150
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
+                                            <div className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2.5 bg-rose-600 rounded-lg"><FastForward size={20} className="text-white"/></div>
                                                     <div><div className="font-bold text-sm">{t('pass_x3')}</div><div className="text-[10px] text-slate-400">{t('pass_desc')}</div></div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                                    <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-md' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
+                                                    <button onClick={() => watchAd('pass')} disabled={adState.pass >= 3 || adCooldowns.pass > 0} className={`px-2 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 ${adState.pass < 3 && adCooldowns.pass === 0 ? 'bg-blue-600 text-white shadow-md active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}>
                                                         <VideoIcon size={14} className={adState.pass < 3 && adCooldowns.pass === 0 ? "text-blue-200" : "text-slate-400"} /> 
                                                         {adCooldowns.pass > 0 ? `${adCooldowns.pass}s` : `${3 - adState.pass}/3`}
                                                     </button>
-                                                    <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 hover:bg-rose-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors shadow-md">
+                                                    <button onClick={() => buyItem('pass', 200)} className="px-2 py-1.5 bg-slate-600 rounded-lg font-bold text-xs flex items-center gap-1 transition-all duration-150 shadow-md active:scale-95 active:opacity-50 hover:brightness-110">
                                                         <Coins size={12} className="text-yellow-400" /> 200
                                                     </button>
                                                 </div>
@@ -2679,7 +2706,7 @@
                                         </>
                                     ) : shopTab === 'decks' ? (
                                         CARD_DECKS.map(deck => (
-                                            <div key={deck.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                            <div key={deck.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-14 flex items-center justify-center rounded border-b-2 shadow-sm font-black text-lg ${deck.bgClass} ${deck.textClass}`}>
                                                         A
@@ -2697,14 +2724,14 @@
                                                             <CheckCircle size={14} className="inline mr-1" />{t('equipped')}
                                                         </button>
                                                     ) : ownedDecks.includes(deck.id) ? (
-                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedDeck(deck.id);}} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors">
+                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedDeck(deck.id);}} className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow-md transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                                             {t('equip')}
                                                         </button>
                                                     ) : (
                                                         <button 
                                                             onClick={() => handleBuyDeck(deck.id, deck.price)} 
                                                             disabled={gold < deck.price} 
-                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-colors ${gold >= deck.price ? 'bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-all duration-150 ${gold >= deck.price ? 'bg-yellow-600 text-white active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
                                                         >
                                                             <Coins size={12} className={gold >= deck.price ? "text-yellow-200" : "text-slate-400"} /> {deck.price.toLocaleString()}
                                                         </button>
@@ -2712,9 +2739,9 @@
                                                 </div>
                                             </div>
                                         ))
-                                    ) : (
+                                    ) : shopTab === 'boards' ? (
                                         BOARD_THEMES.map(board => (
-                                            <div key={board.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center transition-all">
+                                            <div key={board.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded shadow-sm ${board.previewClass} border-2 ${board.borderClass}`}></div>
                                                     <div>
@@ -2730,16 +2757,49 @@
                                                             <CheckCircle size={14} className="inline mr-1" />{t('equipped')}
                                                         </button>
                                                     ) : ownedBoards.includes(board.id) ? (
-                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedBoard(board.id);}} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors">
+                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedBoard(board.id);}} className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow-md transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
                                                             {t('equip')}
                                                         </button>
                                                     ) : (
                                                         <button 
                                                             onClick={() => handleBuyBoard(board.id, board.price)} 
                                                             disabled={gold < board.price} 
-                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-colors ${gold >= board.price ? 'bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-all duration-150 ${gold >= board.price ? 'bg-yellow-600 text-white active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
                                                         >
                                                             <Coins size={12} className={gold >= board.price ? "text-yellow-200" : "text-slate-400"} /> {board.price.toLocaleString()}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        LOBBY_THEMES.map(lobby => (
+                                            <div key={lobby.id} className="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center h-[84px] transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded shadow-sm ${lobby.previewClass} border-2 ${lobby.borderClass}`}></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm text-slate-100">{t(`board_${lobby.id}`)}</div>
+                                                        {lobby.price > 0 && !ownedLobbies.includes(lobby.id) && (
+                                                            <div className="text-[10px] text-slate-400 mt-0.5">{lobby.price.toLocaleString()} G</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    {equippedLobby === lobby.id ? (
+                                                        <button disabled className="px-3 py-1.5 bg-emerald-800/50 text-emerald-400 border border-emerald-600/50 rounded-lg font-bold text-xs cursor-default">
+                                                            <CheckCircle size={14} className="inline mr-1" />{t('equipped')}
+                                                        </button>
+                                                    ) : ownedLobbies.includes(lobby.id) ? (
+                                                        <button onClick={() => {SoundEngine.playClick(); setEquippedLobby(lobby.id);}} className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow-md transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110">
+                                                            {t('equip')}
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => handleBuyLobby(lobby.id, lobby.price)} 
+                                                            disabled={gold < lobby.price} 
+                                                            className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-md transition-all duration-150 ${gold >= lobby.price ? 'bg-yellow-600 text-white active:scale-95 active:opacity-50 hover:brightness-110' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+                                                        >
+                                                            <Coins size={12} className={gold >= lobby.price ? "text-yellow-200" : "text-slate-400"} /> {lobby.price.toLocaleString()}
                                                         </button>
                                                     )}
                                                 </div>
@@ -2748,70 +2808,17 @@
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    )}
-
-                    {/* 설정 모달창 */}
-                    {showSettings && (
-                        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
-                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col">
-                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <SettingsIcon className="text-slate-300" size={20} />
-                                        <h2 className="text-lg font-bold text-white">{t('settings')}</h2>
-                                    </div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowSettings(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
-                                </div>
-                                
-                                <div className="p-5 space-y-6">
-                                    {/* 언어 설정 */}
-                                    <div>
-                                        <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">{t('language')}</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {['ko', 'en', 'ja', 'zh-TW'].map(l => (
-                                                <button 
-                                                    key={l}
-                                                    onClick={() => handleLanguageChange(l)}
-                                                    className={`py-2.5 rounded-xl text-sm font-bold border transition-colors shadow-sm ${language === l ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'}`}
-                                                >
-                                                    {l === 'ko' ? '한국어' : l === 'en' ? 'English' : l === 'ja' ? '日本語' : '繁體中文'}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* 사운드 설정 */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h3 className="text-sm font-bold text-slate-400 flex items-center gap-2">{t('sound')}</h3>
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <span className="text-xs text-slate-300 font-bold">{t('mute_all')}</span>
-                                                <div className={`w-10 h-5 relative flex items-center rounded-full transition-colors ${isMuted ? 'bg-rose-500' : 'bg-slate-600'}`}>
-                                                    <div className={`absolute left-1 bg-white w-3 h-3 rounded-full shadow-md transform transition-transform ${isMuted ? 'translate-x-5' : 'translate-x-0'}`}></div>
-                                                </div>
-                                                <input type="checkbox" checked={isMuted} onChange={toggleSound} className="hidden" />
-                                            </label>
-                                        </div>
-                                        <div className={`space-y-5 bg-slate-750 p-4 rounded-2xl border border-slate-700/50 transition-all ${isMuted ? 'opacity-40 pointer-events-none' : ''}`}>
-                                            <div className="flex items-center gap-3">
-                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('master_vol')}</span>
-                                                <input type="range" min="0" max="100" value={volumes.master} onChange={(e) => handleVolumeChange('master', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.master}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('bgm_vol')}</span>
-                                                <input type="range" min="0" max="100" value={volumes.bgm} onChange={(e) => handleVolumeChange('bgm', parseInt(e.target.value))} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
-                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.bgm}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('sfx_vol')}</span>
-                                                <input type="range" min="0" max="100" value={volumes.sfx} onChange={(e) => handleVolumeChange('sfx', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-rose-500" />
-                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.sfx}</span>
-                                            </div>
-                                        </div>
+                            
+                            {/* 광고 시청 중 오버레이 */}
+                            {isWatchingAd && (
+                                <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center text-white">
+                                    <div className="flex flex-col items-center justify-center animate-pop-scale">
+                                        <VideoIcon size={64} className="animate-pulse mb-6 text-blue-400" />
+                                        <div className="text-2xl font-black">{t('watching_ad')}</div>
+                                        <div className="text-base text-slate-400 mt-2 font-bold">{t('please_wait')}</div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
 
@@ -2821,7 +2828,7 @@
                             <div className="bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-600 flex flex-col h-[75vh]" onClick={e => e.stopPropagation()}>
                                 <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-2xl">
                                     <div className="flex items-center gap-2"><Trophy className="text-yellow-400" size={18} /><h2 className="text-lg font-bold">{t('ranking')}</h2></div>
-                                    <button onClick={() => {SoundEngine.playClick(); setShowRanking(false);}} className="text-slate-400 p-1 hover:text-white"><CloseIcon size={20} /></button>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowRanking(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
                                 </div>
                                 <div className="p-3 bg-slate-750 border-b border-slate-700">
                                     <div className="flex items-center justify-between">
@@ -2838,9 +2845,9 @@
                                 </div>
                                 
                                 <div className="flex border-b border-slate-700 bg-slate-800">
-                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('score');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'score' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_score')}</button>
-                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('combo');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'combo' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_combo')}</button>
-                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('solved');}} className={`flex-1 py-3 text-xs font-bold text-center transition-colors ${rankingTab === 'solved' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_solved')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('score');}} className={`flex-1 py-3 text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${rankingTab === 'score' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_score')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('combo');}} className={`flex-1 py-3 text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${rankingTab === 'combo' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_combo')}</button>
+                                    <button onClick={() => {SoundEngine.playClick(); setRankingTab('solved');}} className={`flex-1 py-3 text-xs font-bold text-center transition-all duration-150 active:bg-slate-600 active:opacity-50 ${rankingTab === 'solved' ? 'text-yellow-400 border-b-2 border-yellow-400 bg-slate-700/50' : 'text-slate-400 hover:text-slate-200'}`}>{t('tab_solved')}</button>
                                 </div>
                                 
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
@@ -2895,29 +2902,90 @@
                                     <div className="text-red-400 text-xs font-bold mb-4 animate-shake">{nicknameError}</div>
                                 )}
                                 {!nicknameError && <div className="mb-4"></div>}
-                                <button 
-                                    onClick={updateNickname}
-                                    disabled={tempName.trim().length === 0}
-                                    className={`w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 ${tempName.trim().length > 0 ? 'bg-blue-600 hover:bg-blue-500' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}
-                                >
-                                    <CheckCircle size={20} /> {t('confirm')}
-                                </button>
+                                <div className="flex gap-2 w-full">
+                                    <button 
+                                        onClick={() => setShowNicknameModal(false)}
+                                        className={`flex-1 py-3.5 rounded-xl font-bold text-white shadow-lg transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 bg-slate-700 flex items-center justify-center`}
+                                    >
+                                        {t('close')}
+                                    </button>
+                                    <button 
+                                        onClick={updateNickname}
+                                        disabled={tempName.trim().length === 0}
+                                        className={`flex-[2] py-3.5 rounded-xl font-bold text-white shadow-lg transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 flex items-center justify-center gap-2 ${tempName.trim().length > 0 ? 'bg-blue-600' : 'bg-slate-700 opacity-50 cursor-not-allowed'}`}
+                                    >
+                                        <CheckCircle size={20} /> {t('confirm')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* 광고 시청 중 오버레이 */}
-                    {isWatchingAd && (
-                        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center text-white">
-                            <div className="flex flex-col items-center justify-center animate-pop-scale">
-                                <VideoIcon size={64} className="animate-pulse mb-6 text-blue-400" />
-                                <div className="text-2xl font-black">{t('watching_ad')}</div>
-                                <div className="text-base text-slate-400 mt-2 font-bold">{t('please_wait')}</div>
+                    {/* 설정 모달창 */}
+                    {showSettings && (
+                        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                            <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col">
+                                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <SettingsIcon className="text-slate-300" size={20} />
+                                        <h2 className="text-lg font-bold text-white">{t('settings')}</h2>
+                                    </div>
+                                    <button onClick={() => {SoundEngine.playClick(); setShowSettings(false);}} className="text-slate-400 p-1 transition-colors hover:text-white"><CloseIcon size={20} /></button>
+                                </div>
+                                
+                                <div className="p-5 space-y-6">
+                                    {/* 언어 설정 */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">{t('language')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {['ko', 'en', 'ja', 'zh-TW'].map(l => (
+                                                <button 
+                                                    key={l}
+                                                    onClick={() => handleLanguageChange(l)}
+                                                    className={`py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 active:scale-95 active:opacity-50 hover:brightness-110 shadow-sm ${language === l ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-700 text-slate-300 border-slate-600'}`}
+                                                >
+                                                    {l === 'ko' ? '한국어' : l === 'en' ? 'English' : l === 'ja' ? '日本語' : '繁體中文'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 사운드 설정 */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h3 className="text-sm font-bold text-slate-400 flex items-center gap-2">{t('sound')}</h3>
+                                            <label className="flex items-center gap-2 cursor-pointer transition-all duration-150 active:scale-95 active:opacity-50">
+                                                <span className="text-xs text-slate-300 font-bold select-none">{t('mute_all')}</span>
+                                                <div className={`w-10 h-5 relative flex items-center rounded-full transition-colors ${isMuted ? 'bg-rose-500' : 'bg-slate-600'}`}>
+                                                    <div className={`absolute left-1 bg-white w-3 h-3 rounded-full shadow-md transform transition-transform ${isMuted ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                                </div>
+                                                <input type="checkbox" checked={isMuted} onChange={toggleSound} className="hidden" />
+                                            </label>
+                                        </div>
+                                        <div className={`space-y-5 bg-slate-750 p-4 rounded-2xl border border-slate-700/50 transition-all ${isMuted ? 'opacity-40 pointer-events-none' : ''}`}>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('master_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.master} onChange={(e) => handleVolumeChange('master', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.master}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('bgm_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.bgm} onChange={(e) => handleVolumeChange('bgm', parseInt(e.target.value))} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.bgm}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-16 text-xs font-bold text-slate-300 whitespace-nowrap">{t('sfx_vol')}</span>
+                                                <input type="range" min="0" max="100" value={volumes.sfx} onChange={(e) => handleVolumeChange('sfx', parseInt(e.target.value))} onMouseUp={() => SoundEngine.playClick()} onTouchEnd={() => SoundEngine.playClick()} className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-rose-500" />
+                                                <span className="w-8 text-right text-xs font-mono text-slate-400">{volumes.sfx}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* 콤보 달성 중앙 이펙트 */}
+                    {/* 콤보 달성 중앙 이펙트 (누락 복구) */}
                     {comboFlash && (() => {
                         let exclamation = "!";
                         let flameColor = "text-orange-500";
