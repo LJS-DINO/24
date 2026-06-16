@@ -98,16 +98,21 @@
         }
         .animate-time-plus { animation: timePlus 0.8s ease-out forwards; }
 
-        /* 튜토리얼 괄호 가이드 애니메이션 */
+        /* 튜토리얼 괄호 및 오브젝트 가이드 애니메이션 */
         @keyframes guidePulse {
-            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.8); }
             70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
             100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
         }
         .guide-highlight {
             animation: guidePulse 1.5s infinite;
             border-radius: 50%;
-            background: rgba(234, 179, 8, 0.2);
+            background: rgba(234, 179, 8, 0.3);
+        }
+        .guide-rect-highlight {
+            animation: guidePulse 1.5s infinite;
+            border-radius: 0.75rem;
+            background: rgba(234, 179, 8, 0.25);
         }
     </style>
 </head>
@@ -337,7 +342,7 @@
             { id: 'berry', price: 1000, bgClass: 'bg-rose-900', borderClass: 'border-rose-800', borderHalfClass: 'border-rose-800/50', gradStart: '#881337', gradEnd: '#9f1239', previewClass: 'bg-rose-600', textMain: 'text-rose-400', textMuted: 'text-rose-400/50', textSuccess: 'text-rose-300', textHint: 'text-rose-200', btnBg: 'bg-rose-600', btnActive: 'active:bg-rose-700', btnBorder: 'border-rose-400/30', toastBg: 'bg-rose-900/95', toastBorder: 'border-rose-400', toastText: 'text-rose-900' },
             { id: 'royal', price: 1500, bgClass: 'bg-purple-900', borderClass: 'border-purple-800', borderHalfClass: 'border-purple-800/50', gradStart: '#581c87', gradEnd: '#6b21a8', previewClass: 'bg-purple-600', textMain: 'text-purple-400', textMuted: 'text-purple-400/50', textSuccess: 'text-purple-300', textHint: 'text-purple-200', btnBg: 'bg-purple-600', btnActive: 'active:bg-purple-700', btnBorder: 'border-purple-400/30', toastBg: 'bg-purple-900/95', toastBorder: 'border-purple-400', toastText: 'text-purple-900' },
             { id: 'sunset', price: 2000, bgClass: 'bg-orange-900', borderClass: 'border-orange-800', borderHalfClass: 'border-orange-800/50', gradStart: '#7c2d12', gradEnd: '#9a3412', previewClass: 'bg-orange-600', textMain: 'text-orange-400', textMuted: 'text-orange-400/50', textSuccess: 'text-orange-300', textHint: 'text-orange-200', btnBg: 'bg-orange-600', btnActive: 'active:bg-orange-700', btnBorder: 'border-orange-400/30', toastBg: 'bg-orange-900/95', toastBorder: 'border-orange-400', toastText: 'text-orange-900' },
-            { id: 'midnight', price: 2500, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200', btnBg: 'bg-slate-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30', toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900' }
+            { id: 'midnight', price: 2500, bgClass: 'bg-slate-900', borderClass: 'border-slate-800', borderHalfClass: 'border-slate-800/50', gradStart: '#0f172a', gradEnd: '#1e293b', previewClass: 'bg-slate-600', textMain: 'text-slate-400', textMuted: 'text-slate-400/50', textSuccess: 'text-slate-300', textHint: 'text-slate-200', btnBg: 'bg-emerald-600', btnActive: 'active:bg-slate-700', btnBorder: 'border-slate-400/30', toastBg: 'bg-slate-900/95', toastBorder: 'border-slate-400', toastText: 'text-slate-900' }
         ];
 
         const LOBBY_THEMES = [
@@ -840,7 +845,7 @@
                 bgm_vol: "背景音樂",
                 sfx_vol: "音效",
                 mute_all: "全部靜音",
-                close: "關閉",
+                close: "閉じる",
                 empty_slot: "空位"
             }
         };
@@ -940,7 +945,7 @@
 
         const generateProblem = (isTut, phase, currentSolved) => { 
             if (isTut) {
-                if (phase === 1) return [{ id: 't1-1', value: 8, suit: '♠', display: '8' }, { id: 't1-2', value: 3, suit: '♥', display: '3' }, { id: 't1-3', value: 1, suit: '♣', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
+                if (phase === 0 || phase === 1) return [{ id: 't1-1', value: 8, suit: '♠', display: '8' }, { id: 't1-2', value: 3, suit: '♥', display: '3' }, { id: 't1-3', value: 1, suit: '♣', display: 'A' }, { id: 't1-4', value: 1, suit: '♦', display: 'A' }];
                 if (phase === 2) return [{ id: 't2-1', value: 6, suit: '♠', display: '6' }, { id: 't2-2', value: 4, suit: '♥', display: '4' }, { id: 't2-3', value: 1, suit: '♣', display: 'A' }, { id: 't2-4', value: 1, suit: '♦', display: 'A' }];
                 if (phase === 3) return [{ id: 't3-1', value: 5, suit: '♠', display: '5' }, { id: 't3-2', value: 7, suit: '♥', display: '7' }, { id: 't3-3', value: 8, suit: '♣', display: '8' }, { id: 't3-4', value: 4, suit: '♦', display: '4' }];
                 if (phase === 4) return [{ id: 't4-1', value: 3, suit: '♠', display: '3' }, { id: 't4-2', value: 5, suit: '♥', display: '5' }, { id: 't4-3', value: 3, suit: '♣', display: '3' }, { id: 't4-4', value: 1, suit: '♦', display: 'A' }];
@@ -1673,7 +1678,7 @@
                 setStreak(0);
                 setComboFlash(null);
                 SoundEngine.init();
-                startProblem(true, 1, false, null, 0); 
+                startProblem(true, 0, false, null, 0); // 0단계(환영 팝업)부터 시작하도록 연계 설정
             };
 
             const initGame = useCallback(() => {
@@ -1691,7 +1696,7 @@
 
             const nextProblem = () => {
                 SoundEngine.playClick();
-                if (tutorialPhase > 0) {
+                if (tutorialPhase >= 0) {
                     if (tutorialPhase < 5) {
                          startProblem(true, tutorialPhase + 1, false, null, 0);
                     } else {
@@ -1706,7 +1711,7 @@
 
             const restartGame = () => {
                 SoundEngine.playClick();
-                if (tutorialPhase > 0) {
+                if (tutorialPhase >= 0) {
                     startTutorial(); 
                     setIsPaused(false);
                 } else {
@@ -2330,8 +2335,55 @@
                                             <div className="flex items-center justify-center gap-3 md:gap-4 w-full px-4">
                                                 {sourceCards.map((card, idx) => {
                                                     const used = isCardUsed(card.id);
+                                                    
+                                                    // --- 튜토리얼 소스 카드 하일라이트 포커스 로직 추가 ---
+                                                    let isCardHighlighted = false;
+                                                    if (gameState === 'tutorial') {
+                                                        if (tutorialPhase === 1) {
+                                                            if (slots[0] === null && card.value === 8) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] === null && card.value === 3 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] === null && card.value === 1 && !used) {
+                                                                const firstUnusedA = sourceCards.find(c => c.value === 1 && !slots.some(s => s && s.id === c.id));
+                                                                if (firstUnusedA && firstUnusedA.id === card.id) isCardHighlighted = true;
+                                                            }
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] !== null && slots[3] === null && card.value === 1 && !used) isCardHighlighted = true;
+                                                        } else if (tutorialPhase === 2) {
+                                                            if (slots[0] === null && card.value === 6) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] === null && card.value === 4 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] === null && card.value === 1 && !used) {
+                                                                const firstUnusedA = sourceCards.find(c => c.value === 1 && !slots.some(s => s && s.id === c.id));
+                                                                if (firstUnusedA && firstUnusedA.id === card.id) isCardHighlighted = true;
+                                                            }
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] !== null && slots[3] === null && card.value === 1 && !used) isCardHighlighted = true;
+                                                        } else if (tutorialPhase === 3) {
+                                                            if (slots[0] === null && card.value === 5) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] === null && card.value === 7 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] === null && card.value === 8 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] !== null && slots[3] === null && card.value === 4 && !used) isCardHighlighted = true;
+                                                        } else if (tutorialPhase === 4) {
+                                                            if (slots[0] === null && card.value === 3) {
+                                                                const first3 = sourceCards.find(c => c.value === 3);
+                                                                if (first3 && first3.id === card.id) isCardHighlighted = true;
+                                                            }
+                                                            else if (slots[0] !== null && slots[1] === null && card.value === 5 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] === null && card.value === 3 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] !== null && slots[3] === null && card.value === 1 && !used) isCardHighlighted = true;
+                                                        } else if (tutorialPhase === 5) {
+                                                            if (slots[0] === null && card.value === 2) {
+                                                                const first2 = sourceCards.find(c => c.value === 2);
+                                                                if (first2 && first2.id === card.id) isCardHighlighted = true;
+                                                            }
+                                                            else if (slots[0] !== null && slots[1] === null && card.value === 2 && !used) {
+                                                                const remaining2 = sourceCards.filter(c => c.value === 2 && !slots.some(s => s && s.id === c.id));
+                                                                if (remaining2.length > 0 && remaining2[0].id === card.id) isCardHighlighted = true;
+                                                            }
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] === null && card.value === 3 && !used) isCardHighlighted = true;
+                                                            else if (slots[0] !== null && slots[1] !== null && slots[2] !== null && slots[3] === null && card.value === 2 && !used) isCardHighlighted = true;
+                                                        }
+                                                    }
+
                                                     return (
-                                                        <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 z-20'}`}>
+                                                        <div key={card.id} className={`transition-all duration-300 ${used ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100 z-20'} ${isCardHighlighted ? 'guide-rect-highlight ring-4 ring-yellow-400' : ''}`}>
                                                             <Card card={card} deckStyle={currentDeckStyle} className={`${deckCardClass} hover:brightness-110 transition-all duration-150 active:scale-95 active:opacity-75`} onClick={() => handleSourceCardClick(card)} />
                                                         </div>
                                                     );
@@ -2354,54 +2406,98 @@
                                     )}
 
                                     <div className={`flex items-center justify-center gap-1 sm:gap-2 w-full max-w-lg mx-auto ${shake ? 'animate-shake' : ''}`}>
-                                        {slots.map((slotCard, idx) => (
-                                            <React.Fragment key={idx}>
-                                                <div className="relative flex items-center justify-center">
-                                                    {/* 왼쪽 괄호 */}
-                                                    <div 
-                                                        onClick={() => toggleStartBracket(idx)} 
-                                                        className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 0 && startBrackets[0] === 0) || (tutorialPhase === 5 && idx === 0 && startBrackets[0] < 2)) ? 'guide-highlight' : ''}`}
-                                                        style={{ textShadow: startBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
-                                                    >
-                                                        {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
-                                                    </div>
-                                                    
-                                                    {/* 슬롯 카드 */}
-                                                    {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={`${slotCardClass} hover:brightness-110 transition-all duration-150 active:scale-95 active:opacity-75`} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
+                                        {slots.map((slotCard, idx) => {
+                                            // --- 연산 및 괄호 구조 선후 관계 포커싱 검증 변수 수립 ---
+                                            const slotsFilled = slots.every(s => s !== null);
+                                            const opsReadyPhase4 = operators[0] === '+' && operators[1] === '*' && operators[2] === '*';
+                                            const opsReadyPhase5 = operators[0] === '+' && operators[1] === '*' && operators[2] === '*';
 
-                                                    {/* 오른쪽 괄호 */}
-                                                    <div 
-                                                        onClick={() => toggleEndBracket(idx)} 
-                                                        className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${gameState === 'tutorial' && ((tutorialPhase === 4 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 1 && endBrackets[1] === 0) || (tutorialPhase === 5 && idx === 2 && endBrackets[2] === 0)) ? 'guide-highlight' : ''}`}
-                                                        style={{ textShadow: endBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
-                                                    >
-                                                        {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
-                                                    </div>
-                                                </div>
+                                            let isLeftBracketHighlighted = false;
+                                            if (gameState === 'tutorial' && slotsFilled) {
+                                                if (tutorialPhase === 4 && opsReadyPhase4 && idx === 0 && startBrackets[0] === 0) isLeftBracketHighlighted = true;
+                                                if (tutorialPhase === 5 && opsReadyPhase5 && idx === 0 && startBrackets[0] < 2) isLeftBracketHighlighted = true;
+                                            }
 
-                                                {/* 연산자 버튼 */}
-                                                {idx < 3 && (
-                                                    <div className="relative z-[40] flex flex-col items-center justify-center mx-1 sm:mx-1.5 gap-1">
-                                                        {OPERATORS.map(op => (
-                                                            <button 
-                                                                key={op}
-                                                                onClick={(e) => { 
-                                                                    e.stopPropagation(); 
-                                                                    selectOperator(idx, op); 
-                                                                }}
-                                                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${
-                                                                    operators[idx] === op 
-                                                                    ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
-                                                                    : OPERATOR_STYLES_INACTIVE[op] + ' opacity-60 hover:opacity-100'
-                                                                }`}
-                                                            >
-                                                                {OPERATOR_DISPLAY[op]}
-                                                            </button>
-                                                        ))}
+                                            let isRightBracketHighlighted = false;
+                                            if (gameState === 'tutorial' && slotsFilled) {
+                                                if (tutorialPhase === 4 && opsReadyPhase4 && startBrackets[0] >= 1 && idx === 1 && endBrackets[1] === 0) isRightBracketHighlighted = true;
+                                                if (tutorialPhase === 5 && opsReadyPhase5 && startBrackets[0] === 2 && idx === 1 && endBrackets[1] === 0) isRightBracketHighlighted = true;
+                                                if (tutorialPhase === 5 && opsReadyPhase5 && startBrackets[0] === 2 && endBrackets[1] === 1 && idx === 2 && endBrackets[2] === 0) isRightBracketHighlighted = true;
+                                            }
+
+                                            return (
+                                                <React.Fragment key={idx}>
+                                                    <div className="relative flex items-center justify-center">
+                                                        {/* 왼쪽 괄호 */}
+                                                        <div 
+                                                            onClick={() => toggleStartBracket(idx)} 
+                                                            className={`absolute -left-4 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${startBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${isLeftBracketHighlighted ? 'guide-highlight ring-2 ring-yellow-400' : ''}`}
+                                                            style={{ textShadow: startBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                                        >
+                                                            {startBrackets[idx] === 1 ? '(' : startBrackets[idx] === 2 ? '((' : '('}
+                                                        </div>
+                                                        
+                                                        {/* 슬롯 카드 */}
+                                                        {slotCard ? <Card card={slotCard} deckStyle={currentDeckStyle} className={`${slotCardClass} hover:brightness-110 transition-all duration-150 active:scale-95 active:opacity-75`} onClick={() => handleSlotCardClick(idx)} /> : <Card isPlaceholder={true} placeholderText={t('empty_slot')} className={slotCardClass} />}
+
+                                                        {/* 오른쪽 괄호 */}
+                                                        <div 
+                                                            onClick={() => toggleEndBracket(idx)} 
+                                                            className={`absolute -right-4 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-8 h-full flex items-center justify-center cursor-pointer select-none transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${endBrackets[idx] > 0 ? 'text-yellow-400 font-black text-4xl sm:text-5xl scale-110' : 'text-white/40 font-bold text-2xl sm:text-3xl'} ${isRightBracketHighlighted ? 'guide-highlight ring-2 ring-yellow-400' : ''}`}
+                                                            style={{ textShadow: endBrackets[idx] > 0 ? '2px 2px 0 #1e293b, -1.5px -1.5px 0 #1e293b, 1.5px -1.5px 0 #1e293b, -1.5px 1.5px 0 #1e293b, 0 4px 8px rgba(0,0,0,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                                        >
+                                                            {endBrackets[idx] === 1 ? ')' : endBrackets[idx] === 2 ? '))' : ')'}
+                                                        </div>
                                                     </div>
-                                                )}
-                                            </React.Fragment>
-                                        ))}
+
+                                                    {/* 연산자 버튼 */}
+                                                    {idx < 3 && (
+                                                        <div className="relative z-[40] flex flex-col items-center justify-center mx-1 sm:mx-1.5 gap-1">
+                                                            {OPERATORS.map(op => {
+                                                                // --- 튜토리얼 연산 부호 가이드 포커싱 조건 수립 ---
+                                                                let isOpHighlighted = false;
+                                                                if (gameState === 'tutorial' && slotsFilled) {
+                                                                    if (tutorialPhase === 1 || tutorialPhase === 2) {
+                                                                        if (op === '*') {
+                                                                            if (idx === 0 && operators[0] !== '*') isOpHighlighted = true;
+                                                                            else if (operators[0] === '*' && idx === 1 && operators[1] !== '*') isOpHighlighted = true;
+                                                                            else if (operators[0] === '*' && operators[1] === '*' && idx === 2 && operators[2] !== '*') isOpHighlighted = true;
+                                                                        }
+                                                                    } else if (tutorialPhase === 3) {
+                                                                        if (op === '+') {
+                                                                            if (idx === 0 && operators[0] !== '+') isOpHighlighted = true;
+                                                                            else if (operators[0] === '+' && idx === 1 && operators[1] !== '+') isOpHighlighted = true;
+                                                                            else if (operators[0] === '+' && operators[1] === '+' && idx === 2 && operators[2] !== '+') isOpHighlighted = true;
+                                                                        }
+                                                                    } else if (tutorialPhase === 4 || tutorialPhase === 5) {
+                                                                        if (idx === 0 && operators[0] !== '+' && op === '+') isOpHighlighted = true;
+                                                                        else if (operators[0] === '+' && idx === 1 && operators[1] !== '*' && op === '*') isOpHighlighted = true;
+                                                                        else if (operators[0] === '+' && operators[1] === '*' && idx === 2 && operators[2] !== '*' && op === '*') isOpHighlighted = true;
+                                                                    }
+                                                                }
+
+                                                                return (
+                                                                    <button 
+                                                                        key={op}
+                                                                        onClick={(e) => { 
+                                                                            e.stopPropagation(); 
+                                                                            selectOperator(idx, op); 
+                                                                        }}
+                                                                        className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-black text-sm sm:text-base transition-all duration-150 active:scale-90 active:opacity-50 hover:brightness-110 ${
+                                                                            operators[idx] === op 
+                                                                            ? OPERATOR_STYLES[op] + ' scale-110 ring-2 ring-white/50 z-10' 
+                                                                            : OPERATOR_STYLES_INACTIVE[op] + ' opacity-60 hover:opacity-100'
+                                                                        } ${isOpHighlighted ? 'guide-rect-highlight ring-2 ring-yellow-400' : ''}`}
+                                                                    >
+                                                                        {OPERATOR_DISPLAY[op]}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </React.Fragment>
+                                            );
+                                        })}
                                     </div>
                                     
                                     {/* 힌트 및 결과 메시지 출력 + A카드 안내 */}
@@ -2455,11 +2551,28 @@
 
                                     {/* 확인/다음 버튼 */}
                                     <div className="flex justify-center w-full max-w-sm mx-auto">
-                                        {(gameState === 'playing' || gameState === 'tutorial') ? (
-                                            <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} hover:brightness-110 active:opacity-75 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-all duration-200 active:scale-95`}>
-                                                <CheckCircle size={20} /> {t('check_answer')}
-                                            </button>
-                                        ) : null}
+                                        {(gameState === 'playing' || gameState === 'tutorial') ? (() => {
+                                            // --- 정답 확인 버튼 하일라이트 포커스 분석 ---
+                                            let isCheckBtnHighlighted = false;
+                                            if (gameState === 'tutorial') {
+                                                const slotsFilled = slots.every(s => s !== null);
+                                                if (tutorialPhase === 1 || tutorialPhase === 2) {
+                                                    if (slotsFilled && operators.every(op => op === '*')) isCheckBtnHighlighted = true;
+                                                } else if (tutorialPhase === 3) {
+                                                    if (slotsFilled && operators.every(op => op === '+')) isCheckBtnHighlighted = true;
+                                                } else if (tutorialPhase === 4) {
+                                                    if (slotsFilled && operators[0] === '+' && operators[1] === '*' && operators[2] === '*' && startBrackets[0] === 1 && endBrackets[1] === 1) isCheckBtnHighlighted = true;
+                                                } else if (tutorialPhase === 5) {
+                                                    if (slotsFilled && operators[0] === '+' && operators[1] === '*' && operators[2] === '*' && startBrackets[0] === 2 && endBrackets[1] === 1 && endBrackets[2] === 1) isCheckBtnHighlighted = true;
+                                                }
+                                            }
+
+                                            return (
+                                                <button onClick={checkResult} disabled={isPaused} className={`w-full py-3.5 ${currentBoardTheme.btnBg} hover:brightness-110 active:opacity-75 disabled:opacity-50 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2 border ${currentBoardTheme.btnBorder} transition-all duration-200 active:scale-95 ${isCheckBtnHighlighted ? 'guide-rect-highlight ring-4 ring-yellow-400 font-black scale-105' : ''}`}>
+                                                    <CheckCircle size={20} /> {t('check_answer')}
+                                                </button>
+                                            );
+                                        })() : null}
                                         
                                         {gameState === 'success' && (
                                             <button onClick={nextProblem} className="w-full py-3.5 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl animate-bounce flex items-center justify-center gap-2 transition-all duration-200 active:scale-95">
@@ -2473,6 +2586,32 @@
                     </div>
 
                     {/* 5. 게임 오버레이/팝업 영역 */}
+
+                    {/* --- 튜토리얼 0단계: 환영인사 및 규칙 명시 오버레이 팝업 기획 추가 --- */}
+                    {gameState === 'tutorial' && tutorialPhase === 0 && (
+                        <div className="absolute inset-0 z-[90] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-pop-scale">
+                            <div className="bg-slate-800 border-2 border-blue-500 rounded-3xl p-6 max-w-sm shadow-2xl w-full space-y-5">
+                                <div className="flex justify-center gap-2">
+                                    <div className="w-10 h-14 rounded-lg bg-white text-slate-900 font-black flex items-center justify-center text-xl shadow-md">2</div>
+                                    <div className="w-10 h-14 rounded-lg bg-white text-slate-900 font-black flex items-center justify-center text-xl shadow-md">4</div>
+                                </div>
+                                <h2 className="text-2xl font-black text-blue-400">환영합니다! 🎉</h2>
+                                <p className="text-sm text-slate-200 leading-relaxed break-keep px-2">
+                                    이 게임은 <span className="text-yellow-400 font-black">4개의 숫자</span>와 <span className="text-yellow-400 font-black">사칙연산 부호</span>를 <span className="text-rose-400 font-black underline underline-offset-4">'모두'</span> 활용해서 <span className="text-emerald-400 font-black">24</span>를 만드는 게임입니다.
+                                </p>
+                                <button 
+                                    onClick={() => {
+                                        SoundEngine.playClick();
+                                        setTutorialPhase(1);
+                                        setProblemStartTime(Date.now());
+                                    }} 
+                                    className="w-full py-3.5 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-base rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
+                                >
+                                    튜토리얼 시작하기 <Play size={16} fill="currentColor" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* 시간이 10초 이하일 때 나타나는 레드 얼럿 효과 */}
                     {gameState === 'playing' && timeLeft <= 10 && !isPaused && !isAnyModalOpen && <div className="absolute inset-0 pointer-events-none z-[60] animate-red-alert" />}
@@ -2518,7 +2657,7 @@
 
                     {/* 게임 실패(시간오버/오답) 모달 */}
                     {gameState === 'fail' && (
-                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                        <div className="absolute inset-0 z-[80] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl border-2 border-red-500/50 p-6 flex flex-col gap-5 items-center text-center">
                                 <h2 className="text-3xl font-black text-red-400 drop-shadow-lg uppercase tracking-widest">{t('game_over')}</h2>
                                 
@@ -2558,7 +2697,7 @@
 
                     {/* 게임 일시정지 모달 */}
                     {isPaused && (
-                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
+                        <div className="absolute inset-0 z-[80] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-pop-scale p-4">
                             <h2 className="text-4xl font-black text-white tracking-widest drop-shadow-lg">{t('paused')}</h2>
                             <div className="flex flex-col gap-4 w-full max-w-xs">
                                 <button onClick={() => {SoundEngine.playClick(); setIsPaused(false);}} className="w-full py-3.5 bg-blue-600 hover:brightness-110 active:opacity-75 text-white font-bold text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all duration-200 active:scale-95">
@@ -2576,7 +2715,7 @@
 
                     {/* 데일리 미션 모달 */}
                     {showMissions && (
-                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                        <div className="absolute inset-0 z-[80] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col max-h-[85vh]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
                                     <div className="flex items-center gap-2">
@@ -2640,9 +2779,9 @@
                         </div>
                     )}
 
-                    {/* 상점 모달 (고정 높이 적용) */}
+                    {/* 상점 모달 */}
                     {showShop && (
-                        <div className="absolute inset-0 z-[80] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
+                        <div className="absolute inset-0 z-[80] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-pop-scale">
                             <div className="w-full max-w-sm bg-slate-800 rounded-3xl shadow-2xl border border-slate-600 flex flex-col h-[75vh] max-h-[600px]">
                                 <div className="p-4 border-b border-slate-700 flex justify-between items-center shrink-0">
                                     <div className="flex items-center gap-2"><ShoppingBag className="text-indigo-400" size={20} /><h2 className="text-lg font-bold">{t('item_shop')}</h2></div>
